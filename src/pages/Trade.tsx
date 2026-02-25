@@ -1,4 +1,5 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { useGame } from '@/context/GameContext';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -9,10 +10,21 @@ import type { TradeQuote } from '@/engine/types';
 
 export default function Trade() {
   const { state, locale, buy, sell, getBuyQuote, getSellQuote, t } = useGame();
+  const [searchParams] = useSearchParams();
+
   const [assetId, setAssetId] = useState('');
   const [quantity, setQuantity] = useState('');
   const [side, setSide] = useState<'buy' | 'sell'>('buy');
   const [lastQuote, setLastQuote] = useState<TradeQuote | null>(null);
+
+  // Pre-select asset from URL params
+  useEffect(() => {
+    const paramAsset = searchParams.get('asset');
+    if (paramAsset && state.assetCatalog[paramAsset]) {
+      setAssetId(paramAsset);
+      setLastQuote(null);
+    }
+  }, [searchParams, state.assetCatalog]);
 
   const qty = parseInt(quantity) || 0;
 

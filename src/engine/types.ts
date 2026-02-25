@@ -62,7 +62,7 @@ export interface GameState {
   regime: RegimeId;
   calendar: CalendarState;
   credit: { watch: Record<string, CreditWatchState> };
-  history: { equity: number[]; drawdown: number[] };
+  history: { equity: number[]; drawdown: number[]; cdiAccumulated: number[] };
   seed: number;
   rngState: number;
 }
@@ -81,10 +81,12 @@ export interface EventCard {
 export interface DayResult {
   dayIndex: number;
   regime: RegimeId;
+  previousRegime: RegimeId;
   events: EventCard[];
   marketSummary: { topGainers: string[]; topLosers: string[] };
   equityBefore: number;
   equityAfter: number;
+  dividendsPaid: number;
 }
 
 export interface PeriodResult {

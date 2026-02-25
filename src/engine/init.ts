@@ -36,7 +36,7 @@ export function createGameState(seed: number): GameState {
       nextStockPayDay: DIVIDENDS.stockPeriodDays,
     },
     credit: { watch: {} },
-    history: { equity: [INITIAL_CASH], drawdown: [0] },
+    history: { equity: [INITIAL_CASH], drawdown: [0], cdiAccumulated: [INITIAL_CASH] },
     seed,
     rngState: rng.state(),
   };

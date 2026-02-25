@@ -1,24 +1,55 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useGame } from '@/context/GameContext';
-import { computeEquity } from '@/engine/invariants';
+import { INITIAL_CASH } from '@/engine/params';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Play, FastForward, TrendingUp, TrendingDown, AlertTriangle } from 'lucide-react';
+import { toast } from 'sonner';
 import type { DayResult, PeriodResult } from '@/engine/types';
+import { useNavigate } from 'react-router-dom';
 
 export default function Dashboard() {
   const { state, locale, equity, advanceDay, fastForward, dayResults, t } = useGame();
   const [lastDay, setLastDay] = useState<DayResult | null>(null);
   const [lastPeriod, setLastPeriod] = useState<PeriodResult | null>(null);
+  const navigate = useNavigate();
 
   const formatCurrency = (v: number) =>
     new Intl.NumberFormat(locale, { style: 'currency', currency: 'BRL', minimumFractionDigits: 2 }).format(v);
   const formatPct = (v: number) => (v >= 0 ? '+' : '') + (v * 100).toFixed(2) + '%';
 
+  const showDayNotifications = (r: DayResult) => {
+    // Regime change
+    if (r.previousRegime !== r.regime) {
+      toast.warning(
+        locale === 'pt-BR'
+          ? `⚡ Regime: ${t(`regime.${r.previousRegime}`)} → ${t(`regime.${r.regime}`)}`
+          : `⚡ Regime: ${t(`regime.${r.previousRegime}`)} → ${t(`regime.${r.regime}`)}`,
+        { duration: 5000 }
+      );
+    }
+    // Dividends
+    if (r.dividendsPaid > 0) {
+      toast.success(
+        locale === 'pt-BR'
+          ? `💰 Dividendos recebidos: ${formatCurrency(r.dividendsPaid)}`
+          : `💰 Dividends received: ${formatCurrency(r.dividendsPaid)}`,
+        { duration: 4000 }
+      );
+    }
+    // Events (credit watch, defaults, etc.)
+    for (const ev of r.events) {
+      if (ev.type === 'CREDIT_DOWNGRADE') {
+        toast.error(`⚠️ ${t(ev.titleKey)}: ${t(ev.descriptionKey)}`, { duration: 5000 });
+      }
+    }
+  };
+
   const handleAdvance = () => {
     const r = advanceDay();
     setLastDay(r);
     setLastPeriod(null);
+    showDayNotifications(r);
   };
 
   const handleFF = (days: number) => {
@@ -31,10 +62,14 @@ export default function Dashboard() {
   const currentDD = peak > 0 ? (peak - equity) / peak : 0;
   const maxDD = Math.max(...state.history.drawdown);
 
+  // CDI benchmark comparison
+  const cdiValue = state.history.cdiAccumulated[state.history.cdiAccumulated.length - 1] ?? INITIAL_CASH;
+  const vsCDI = equity - cdiValue;
+
   return (
     <div className="space-y-4">
       {/* Action Bar */}
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-2 flex-wrap">
         <Button onClick={handleAdvance} size="sm" className="gap-1.5 font-mono text-xs">
           <Play className="h-3.5 w-3.5" />
           {locale === 'pt-BR' ? 'Avançar Dia' : 'Next Day'}
@@ -48,11 +83,17 @@ export default function Dashboard() {
       </div>
 
       {/* Stats grid */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
         <StatCard label={locale === 'pt-BR' ? 'Patrimônio' : 'Equity'} value={formatCurrency(equity)} />
         <StatCard label={locale === 'pt-BR' ? 'Caixa' : 'Cash'} value={formatCurrency(state.cash)} />
         <StatCard label="Drawdown" value={formatPct(-currentDD)} negative={currentDD > 0} />
         <StatCard label={locale === 'pt-BR' ? 'DD Máximo' : 'Max DD'} value={formatPct(-maxDD)} negative={maxDD > 0} />
+        <StatCard
+          label={locale === 'pt-BR' ? 'vs CDI' : 'vs CDI'}
+          value={formatCurrency(vsCDI)}
+          negative={vsCDI < 0}
+          positive={vsCDI > 0}
+        />
       </div>
 
       {/* Day Result */}
@@ -83,17 +124,29 @@ export default function Dashboard() {
                 ))}
               </div>
             )}
-            <div className="flex gap-6">
+            <div className="flex gap-6 flex-wrap">
               <div>
                 <TrendingUp className="h-3 w-3 inline mr-1 text-terminal-green" />
                 {lastDay.marketSummary.topGainers.map(id => (
-                  <span key={id} className="mr-2 text-terminal-green">{id}</span>
+                  <span
+                    key={id}
+                    className="mr-2 text-terminal-green cursor-pointer hover:underline"
+                    onClick={() => navigate(`/trade?asset=${id}`)}
+                  >
+                    {id}
+                  </span>
                 ))}
               </div>
               <div>
                 <TrendingDown className="h-3 w-3 inline mr-1 text-terminal-red" />
                 {lastDay.marketSummary.topLosers.map(id => (
-                  <span key={id} className="mr-2 text-terminal-red">{id}</span>
+                  <span
+                    key={id}
+                    className="mr-2 text-terminal-red cursor-pointer hover:underline"
+                    onClick={() => navigate(`/trade?asset=${id}`)}
+                  >
+                    {id}
+                  </span>
                 ))}
               </div>
             </div>
@@ -129,7 +182,11 @@ export default function Dashboard() {
                 <span className="text-muted-foreground">{locale === 'pt-BR' ? 'Maiores Movimentos' : 'Top Movers'}:</span>
                 <div className="grid grid-cols-3 gap-1 mt-1">
                   {lastPeriod.topMovers.map(m => (
-                    <span key={m.asset} className={m.return >= 0 ? 'price-up' : 'price-down'}>
+                    <span
+                      key={m.asset}
+                      className={`cursor-pointer hover:underline ${m.return >= 0 ? 'price-up' : 'price-down'}`}
+                      onClick={() => navigate(`/trade?asset=${m.asset}`)}
+                    >
                       {m.asset} {formatPct(m.return)}
                     </span>
                   ))}
@@ -175,12 +232,12 @@ export default function Dashboard() {
   );
 }
 
-function StatCard({ label, value, negative }: { label: string; value: string; negative?: boolean }) {
+function StatCard({ label, value, negative, positive }: { label: string; value: string; negative?: boolean; positive?: boolean }) {
   return (
     <Card className="terminal-card">
       <CardContent className="p-3">
         <div className="text-[10px] text-muted-foreground uppercase tracking-wider">{label}</div>
-        <div className={`text-sm font-mono font-semibold mt-0.5 ${negative ? 'price-down' : 'text-foreground'}`}>
+        <div className={`text-sm font-mono font-semibold mt-0.5 ${negative ? 'price-down' : positive ? 'price-up' : 'text-foreground'}`}>
           {value}
         </div>
       </CardContent>
