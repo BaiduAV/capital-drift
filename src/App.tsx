@@ -10,6 +10,7 @@ import Market from "@/pages/Market";
 import Portfolio from "@/pages/Portfolio";
 import Trade from "@/pages/Trade";
 import History from "@/pages/History";
+import Welcome from "@/pages/Welcome";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -22,6 +23,7 @@ const App = () => (
       <BrowserRouter>
         <GameProvider>
           <Routes>
+            <Route path="/welcome" element={<Welcome />} />
             <Route element={<AppLayout />}>
               <Route path="/" element={<Dashboard />} />
               <Route path="/market" element={<Market />} />

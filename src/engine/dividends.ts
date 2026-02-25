@@ -2,7 +2,9 @@
 
 import type { GameState } from './types';
 
-export function applyDividendsAndDistributions(state: GameState): void {
+export function applyDividendsAndDistributions(state: GameState): number {
+  let totalPaid = 0;
+
   // FII monthly
   if (state.dayIndex >= state.calendar.nextFiiPayDay) {
     for (const [assetId, def] of Object.entries(state.assetCatalog)) {
@@ -13,6 +15,7 @@ export function applyDividendsAndDistributions(state: GameState): void {
       const periodYield = def.dividendYieldAnnual * (def.dividendPeriodDays / 365);
       const dividend = pos.quantity * state.assets[assetId].price * periodYield;
       state.cash += dividend;
+      totalPaid += dividend;
     }
     state.calendar.nextFiiPayDay += 30;
   }
@@ -27,7 +30,10 @@ export function applyDividendsAndDistributions(state: GameState): void {
       const periodYield = def.dividendYieldAnnual * (def.dividendPeriodDays / 365);
       const dividend = pos.quantity * state.assets[assetId].price * periodYield;
       state.cash += dividend;
+      totalPaid += dividend;
     }
     state.calendar.nextStockPayDay += 90;
   }
+
+  return totalPaid;
 }

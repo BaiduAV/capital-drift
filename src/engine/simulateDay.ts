@@ -1,7 +1,7 @@
 // ── Day simulation orchestrator ──
 
 import type { GameState, DayResult } from './types';
-import { createRNG, type RNG } from './rng';
+import { createRNG } from './rng';
 import { maybeSwitchRegime } from './regimes';
 import { updateMacro } from './macro';
 import { generateReturns, applyReturnsToPrices } from './pricing';
@@ -13,6 +13,7 @@ import { checkInvariants, computeEquity } from './invariants';
 export function simulateDay(state: GameState): DayResult {
   const rng = createRNG(state.rngState);
   const equityBefore = computeEquity(state);
+  const previousRegime = state.regime;
 
   // 1. Regime
   state.regime = maybeSwitchRegime(state, rng);
@@ -32,13 +33,18 @@ export function simulateDay(state: GameState): DayResult {
   applyReturnsToPrices(state, returns);
 
   // 6. Dividends
-  applyDividendsAndDistributions(state);
+  const dividendsPaid = applyDividendsAndDistributions(state);
 
   // 7. Credit
   const creditEvents = processCreditWatchAndDefaults(state, rng);
   events.push(...creditEvents);
 
-  // 8. History
+  // 8. CDI accumulation
+  const dailyCDI = state.macro.baseRateAnnual / 252;
+  const lastCDI = state.history.cdiAccumulated[state.history.cdiAccumulated.length - 1];
+  state.history.cdiAccumulated.push(lastCDI * (1 + dailyCDI));
+
+  // 9. History
   const equityAfter = computeEquity(state);
   state.history.equity.push(equityAfter);
 
@@ -64,9 +70,11 @@ export function simulateDay(state: GameState): DayResult {
   return {
     dayIndex: state.dayIndex,
     regime: state.regime,
+    previousRegime,
     events,
     marketSummary: { topGainers, topLosers },
     equityBefore,
     equityAfter,
+    dividendsPaid,
   };
 }

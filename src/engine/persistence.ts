@@ -17,7 +17,18 @@ export function loadGame(): GameState | null {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) return null;
-    return JSON.parse(raw) as GameState;
+    const state = JSON.parse(raw) as GameState;
+    // Backwards compat: add cdiAccumulated if missing
+    if (!state.history.cdiAccumulated) {
+      state.history.cdiAccumulated = [state.history.equity[0] ?? 5000];
+      // Backfill CDI for existing days
+      for (let i = 1; i < state.history.equity.length; i++) {
+        const dailyCDI = state.macro.baseRateAnnual / 252;
+        const prev = state.history.cdiAccumulated[i - 1];
+        state.history.cdiAccumulated.push(prev * (1 + dailyCDI));
+      }
+    }
+    return state;
   } catch {
     return null;
   }

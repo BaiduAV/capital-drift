@@ -4,7 +4,7 @@ import { INITIAL_CASH } from '@/engine/params';
 import { useMemo } from 'react';
 import {
   AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer,
-  ReferenceLine, CartesianGrid,
+  ReferenceLine, CartesianGrid, Line, ComposedChart,
 } from 'recharts';
 
 export default function History() {
@@ -16,13 +16,18 @@ export default function History() {
 
   const eqData = state.history.equity;
   const ddData = state.history.drawdown;
+  const cdiData = state.history.cdiAccumulated;
   const len = eqData.length;
 
   const displayStart = Math.max(0, len - 100);
 
   const equityChartData = useMemo(() =>
-    eqData.slice(-100).map((v, i) => ({ day: displayStart + i, equity: v })),
-    [eqData, displayStart]
+    eqData.slice(-100).map((v, i) => ({
+      day: displayStart + i,
+      equity: v,
+      cdi: cdiData[displayStart + i] ?? INITIAL_CASH,
+    })),
+    [eqData, cdiData, displayStart]
   );
 
   const ddChartData = useMemo(() =>
@@ -41,24 +46,36 @@ export default function History() {
     labelStyle: { color: 'hsl(220, 10%, 60%)' },
   };
 
+  const currentCDI = cdiData[cdiData.length - 1] ?? INITIAL_CASH;
+  const currentEquity = eqData[eqData.length - 1];
+  const beatingCDI = currentEquity >= currentCDI;
+
   return (
     <div className="space-y-4">
-      {/* Equity curve */}
+      {/* Equity curve with CDI */}
       <Card className="terminal-card">
         <CardHeader className="py-3 px-4">
-          <CardTitle className="text-sm font-sans">
-            {locale === 'pt-BR' ? 'Curva de Patrimônio' : 'Equity Curve'}
+          <CardTitle className="text-sm font-sans flex items-center justify-between">
+            <span>{locale === 'pt-BR' ? 'Patrimônio vs CDI' : 'Equity vs CDI'}</span>
+            <span className={`text-xs font-mono ${beatingCDI ? 'price-up' : 'price-down'}`}>
+              {beatingCDI ? '▲' : '▼'} {formatCurrency(currentEquity - currentCDI)}
+            </span>
           </CardTitle>
         </CardHeader>
         <CardContent className="px-4 pb-3">
-          <div className="flex justify-between text-xs font-mono text-muted-foreground mb-2">
+          <div className="flex justify-between text-xs font-mono text-muted-foreground mb-2 flex-wrap gap-2">
             <span>{locale === 'pt-BR' ? 'Dia' : 'Day'} {displayStart}–{len - 1}</span>
-            <span className={eqData[eqData.length - 1] >= INITIAL_CASH ? 'price-up' : 'price-down'}>
-              {formatCurrency(eqData[eqData.length - 1])}
-            </span>
+            <div className="flex gap-4">
+              <span className={currentEquity >= INITIAL_CASH ? 'price-up' : 'price-down'}>
+                {locale === 'pt-BR' ? 'Patrimônio' : 'Equity'}: {formatCurrency(currentEquity)}
+              </span>
+              <span className="text-terminal-cyan">
+                CDI: {formatCurrency(currentCDI)}
+              </span>
+            </div>
           </div>
-          <ResponsiveContainer width="100%" height={160}>
-            <AreaChart data={equityChartData} margin={{ top: 4, right: 4, bottom: 0, left: 0 }}>
+          <ResponsiveContainer width="100%" height={180}>
+            <ComposedChart data={equityChartData} margin={{ top: 4, right: 4, bottom: 0, left: 0 }}>
               <defs>
                 <linearGradient id="eqGrad" x1="0" y1="0" x2="0" y2="1">
                   <stop offset="0%" stopColor="hsl(140, 70%, 50%)" stopOpacity={0.3} />
@@ -67,11 +84,19 @@ export default function History() {
               </defs>
               <CartesianGrid strokeDasharray="3 3" stroke="hsl(220, 10%, 18%)" />
               <XAxis dataKey="day" tick={{ fontSize: 10, fill: 'hsl(220, 10%, 45%)' }} tickLine={false} axisLine={false} />
-              <YAxis tick={{ fontSize: 10, fill: 'hsl(220, 10%, 45%)' }} tickLine={false} axisLine={false} tickFormatter={(v: number) => (v / 1000).toFixed(0) + 'k'} width={40} />
-              <Tooltip {...tooltipStyle} formatter={(v: number) => [formatCurrency(v), locale === 'pt-BR' ? 'Patrimônio' : 'Equity']} labelFormatter={(l) => `${locale === 'pt-BR' ? 'Dia' : 'Day'} ${l}`} />
+              <YAxis tick={{ fontSize: 10, fill: 'hsl(220, 10%, 45%)' }} tickLine={false} axisLine={false} tickFormatter={(v: number) => (v / 1000).toFixed(1) + 'k'} width={40} />
+              <Tooltip
+                {...tooltipStyle}
+                formatter={(v: number, name: string) => [
+                  formatCurrency(v),
+                  name === 'equity' ? (locale === 'pt-BR' ? 'Patrimônio' : 'Equity') : 'CDI'
+                ]}
+                labelFormatter={(l) => `${locale === 'pt-BR' ? 'Dia' : 'Day'} ${l}`}
+              />
               <ReferenceLine y={INITIAL_CASH} stroke="hsl(220, 10%, 30%)" strokeDasharray="4 4" />
               <Area type="monotone" dataKey="equity" stroke="hsl(140, 70%, 50%)" fill="url(#eqGrad)" strokeWidth={1.5} dot={false} />
-            </AreaChart>
+              <Line type="monotone" dataKey="cdi" stroke="hsl(190, 80%, 55%)" strokeWidth={1.5} dot={false} strokeDasharray="5 3" />
+            </ComposedChart>
           </ResponsiveContainer>
         </CardContent>
       </Card>
@@ -153,8 +178,20 @@ export default function History() {
           </div>
           <div className="flex justify-between">
             <span className="text-muted-foreground">{locale === 'pt-BR' ? 'Retorno total' : 'Total return'}</span>
-            <span className={eqData[eqData.length - 1] >= INITIAL_CASH ? 'price-up' : 'price-down'}>
-              {formatPct((eqData[eqData.length - 1] - INITIAL_CASH) / INITIAL_CASH)}
+            <span className={currentEquity >= INITIAL_CASH ? 'price-up' : 'price-down'}>
+              {formatPct((currentEquity - INITIAL_CASH) / INITIAL_CASH)}
+            </span>
+          </div>
+          <div className="flex justify-between">
+            <span className="text-muted-foreground">{locale === 'pt-BR' ? 'Retorno CDI' : 'CDI return'}</span>
+            <span className="text-terminal-cyan">
+              {formatPct((currentCDI - INITIAL_CASH) / INITIAL_CASH)}
+            </span>
+          </div>
+          <div className="flex justify-between">
+            <span className="text-muted-foreground">vs CDI</span>
+            <span className={beatingCDI ? 'price-up' : 'price-down'}>
+              {formatCurrency(currentEquity - currentCDI)}
             </span>
           </div>
           <div className="flex justify-between">
