@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useCallback, useEffect, type ReactNode } from 'react';
-import type { GameState, DayResult, PeriodResult, TradeQuote } from '@/engine/types';
+import type { GameState, DayResult, PeriodResult, TradeQuote, MacroState } from '@/engine/types';
 import { createGameState } from '@/engine/init';
 import { simulateDay } from '@/engine/simulateDay';
 import { simulatePeriod } from '@/engine/simulatePeriod';
@@ -13,6 +13,7 @@ interface GameContextType {
   dayResults: DayResult[];
   locale: 'pt-BR' | 'en';
   equity: number;
+  prevMacro: MacroState | null;
 
   advanceDay: () => DayResult;
   fastForward: (days: number) => PeriodResult;
@@ -40,6 +41,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
   });
 
   const [dayResults, setDayResults] = useState<DayResult[]>([]);
+  const [prevMacro, setPrevMacro] = useState<MacroState | null>(null);
 
   // Auto-save on state change
   useEffect(() => {
@@ -50,6 +52,8 @@ export function GameProvider({ children }: { children: ReactNode }) {
 
   const advanceDay = useCallback(() => {
     const stateCopy = structuredClone(state);
+    // Save macro before simulation for trend arrows
+    setPrevMacro({ ...stateCopy.macro });
     const result = simulateDay(stateCopy);
     setState(stateCopy);
     setDayResults(prev => [...prev.slice(-99), result]);
@@ -58,6 +62,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
 
   const fastForward = useCallback((days: number) => {
     const stateCopy = structuredClone(state);
+    setPrevMacro({ ...stateCopy.macro });
     const result = simulatePeriod(stateCopy, days);
     setState(stateCopy);
     return result;
@@ -92,6 +97,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
     const s = createGameState(seed ?? Date.now());
     setState(s);
     setDayResults([]);
+    setPrevMacro(null);
   }, []);
 
   const switchLocale = useCallback(() => {
@@ -102,7 +108,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
   }, [locale]);
 
   return (
-    <GameContext.Provider value={{ state, dayResults, locale, equity, advanceDay, fastForward, getBuyQuote, getSellQuote, buy, sell, newGame, switchLocale, t }}>
+    <GameContext.Provider value={{ state, dayResults, locale, equity, prevMacro, advanceDay, fastForward, getBuyQuote, getSellQuote, buy, sell, newGame, switchLocale, t }}>
       {children}
     </GameContext.Provider>
   );
