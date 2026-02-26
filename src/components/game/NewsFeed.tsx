@@ -3,16 +3,16 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import type { EventCard, EventType } from '@/engine/types';
 
 const eventMeta: Record<EventType, { icon: string; colorClass: string }> = {
-  RATE_HIKE:              { icon: '📈', colorClass: 'text-[hsl(var(--terminal-red))]' },
-  RATE_CUT:               { icon: '📉', colorClass: 'text-[hsl(var(--terminal-green))]' },
-  INFLATION_UP:           { icon: '🔥', colorClass: 'text-[hsl(var(--terminal-red))]' },
-  INFLATION_DOWN:         { icon: '❄️', colorClass: 'text-[hsl(var(--terminal-green))]' },
-  SECTOR_BOOM:            { icon: '🚀', colorClass: 'text-[hsl(var(--terminal-green))]' },
-  SECTOR_BUST:            { icon: '📉', colorClass: 'text-[hsl(var(--terminal-red))]' },
-  CRYPTO_HACK:            { icon: '🔓', colorClass: 'text-[hsl(var(--terminal-red))]' },
-  CRYPTO_EUPHORIA_EVENT:  { icon: '🎉', colorClass: 'text-[hsl(var(--terminal-amber))]' },
-  CRYPTO_RUG_PULL:        { icon: '💀', colorClass: 'text-[hsl(var(--terminal-red))]' },
-  CREDIT_DOWNGRADE:       { icon: '⚠️', colorClass: 'text-[hsl(var(--terminal-amber))]' },
+  RATE_HIKE:              { icon: '📈', colorClass: 'text-terminal-red' },
+  RATE_CUT:               { icon: '📉', colorClass: 'text-terminal-green' },
+  INFLATION_UP:           { icon: '🔥', colorClass: 'text-terminal-red' },
+  INFLATION_DOWN:         { icon: '❄️', colorClass: 'text-terminal-green' },
+  SECTOR_BOOM:            { icon: '🚀', colorClass: 'text-terminal-green' },
+  SECTOR_BUST:            { icon: '📉', colorClass: 'text-terminal-red' },
+  CRYPTO_HACK:            { icon: '🔓', colorClass: 'text-terminal-red' },
+  CRYPTO_EUPHORIA_EVENT:  { icon: '🎉', colorClass: 'text-terminal-amber' },
+  CRYPTO_RUG_PULL:        { icon: '💀', colorClass: 'text-terminal-red' },
+  CREDIT_DOWNGRADE:       { icon: '⚠️', colorClass: 'text-terminal-amber' },
 };
 
 interface NewsItem {
@@ -23,7 +23,6 @@ interface NewsItem {
 export default function NewsFeed() {
   const { dayResults, t, locale } = useGame();
 
-  // Collect all events from recent days, newest first
   const items: NewsItem[] = [];
   for (let i = dayResults.length - 1; i >= 0 && items.length < 8; i--) {
     const dr = dayResults[i];
@@ -53,7 +52,11 @@ export default function NewsFeed() {
   return (
     <Card className="terminal-card h-full">
       <CardHeader className="py-2 px-3">
-        <CardTitle className="text-xs font-sans text-muted-foreground">
+        <CardTitle className="text-xs font-sans text-muted-foreground flex items-center gap-1.5">
+          <span className="relative flex h-2 w-2">
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-terminal-green opacity-75" />
+            <span className="relative inline-flex rounded-full h-2 w-2 bg-terminal-green" />
+          </span>
           {locale === 'pt-BR' ? 'Notícias' : 'News'}
         </CardTitle>
       </CardHeader>
@@ -62,20 +65,31 @@ export default function NewsFeed() {
           const meta = eventMeta[item.event.type] ?? { icon: '📌', colorClass: 'text-foreground' };
           return (
             <div
-              key={`${item.dayIndex}-${i}`}
-              className="flex items-start gap-2 py-1 border-b border-border/50 last:border-0 animate-fade-in"
+              key={`${item.dayIndex}-${item.event.type}-${i}`}
+              className="flex items-start gap-2 py-1.5 border-b border-border/50 last:border-0 animate-news-slide-in group hover:bg-secondary/30 rounded px-1 transition-colors duration-200"
+              style={{ animationDelay: `${i * 60}ms` }}
             >
-              <span className="text-sm shrink-0">{meta.icon}</span>
-              <div className="min-w-0">
+              <span className="text-sm shrink-0 group-hover:scale-110 transition-transform duration-200">{meta.icon}</span>
+              <div className="min-w-0 flex-1">
                 <div className={`text-xs font-mono font-semibold ${meta.colorClass} truncate`}>
                   {t(item.event.titleKey)}
                 </div>
-                <div className="text-[10px] text-muted-foreground leading-tight">
+                <div className="text-[10px] text-muted-foreground leading-tight mt-0.5">
                   {t(item.event.descriptionKey)}
                 </div>
-                <div className="text-[9px] text-muted-foreground/60 mt-0.5">
+                <div className="text-[9px] text-muted-foreground/50 mt-0.5 font-mono">
                   D{item.dayIndex}
                 </div>
+              </div>
+              {/* Impact bar */}
+              <div className="shrink-0 w-1 h-6 rounded-full mt-0.5 overflow-hidden bg-secondary">
+                <div
+                  className={`w-full rounded-full transition-all duration-500 ${
+                    meta.colorClass.includes('red') ? 'bg-terminal-red' :
+                    meta.colorClass.includes('green') ? 'bg-terminal-green' : 'bg-terminal-amber'
+                  }`}
+                  style={{ height: `${Math.min(100, item.event.magnitude * 500)}%` }}
+                />
               </div>
             </div>
           );
