@@ -1,6 +1,6 @@
 // ── Event generation and application ──
 
-import type { GameState, EventCard, EventType, AssetDefinition } from './types';
+import type { GameState, EventCard, EventType } from './types';
 import type { RNG } from './rng';
 import { EVENT_BASE_PROB, DOUBLE_EVENT_PROB, EVENT_IMPACTS } from './params';
 
@@ -20,7 +20,6 @@ function pickSector(state: GameState, rng: RNG): { sector: string; assets: strin
 function generateSingleEvent(state: GameState, rng: RNG): EventCard | null {
   const regime = state.regime;
 
-  // Weight event types by regime
   const weights: [EventType, number][] = [
     ['RATE_HIKE', regime === 'BEAR' || regime === 'CRISIS' ? 3 : 1],
     ['RATE_CUT', regime === 'BULL' || regime === 'CALM' ? 3 : 1],
@@ -30,8 +29,11 @@ function generateSingleEvent(state: GameState, rng: RNG): EventCard | null {
     ['SECTOR_BUST', regime === 'BEAR' || regime === 'CRISIS' ? 3 : 1],
     ['CRYPTO_HACK', regime === 'CRISIS' ? 2 : 0.5],
     ['CRYPTO_EUPHORIA_EVENT', regime === 'CRYPTO_EUPHORIA' ? 4 : 0.3],
-    ['CRYPTO_RUG_PULL', 0.15], // rare
+    ['CRYPTO_RUG_PULL', 0.15],
     ['CREDIT_DOWNGRADE', regime === 'CRISIS' ? 2 : 0.5],
+    ['FX_SHOCK', regime === 'CRISIS' ? 3 : regime === 'BEAR' ? 2 : 0.5],
+    ['FISCAL_STRESS', regime === 'CRISIS' ? 3 : regime === 'BEAR' ? 2 : 0.3],
+    ['COMMODITY_BOOM', regime === 'BULL' ? 3 : regime === 'CRYPTO_EUPHORIA' ? 2 : 0.5],
   ];
 
   const totalWeight = weights.reduce((s, [, w]) => s + w, 0);
@@ -50,11 +52,10 @@ function generateSingleEvent(state: GameState, rng: RNG): EventCard | null {
     case 'RATE_HIKE': {
       const delta = randRange(rng, EVENT_IMPACTS.rateHike.rateDelta as [number, number]);
       macroImpact = { baseRateDelta: delta };
-      // Equities get negative shock
       const shock = randRange(rng, EVENT_IMPACTS.rateHike.equityShock as [number, number]);
       for (const [id, def] of Object.entries(state.assetCatalog)) {
         if (def.corrGroup === 'EQUITY') impact[id] = shock;
-        if (def.class === 'RF_PRE' || def.class === 'RF_IPCA') impact[id] = -shock * 0.8; // bonds benefit
+        if (def.class === 'RF_PRE' || def.class === 'RF_IPCA') impact[id] = -shock * 0.8;
       }
       magnitude = Math.abs(delta);
       break;
@@ -73,7 +74,6 @@ function generateSingleEvent(state: GameState, rng: RNG): EventCard | null {
     case 'INFLATION_UP': {
       const delta = randRange(rng, EVENT_IMPACTS.inflationUp.inflDelta as [number, number]);
       macroImpact = { inflationDelta: delta };
-      // Retail suffers
       for (const [id, def] of Object.entries(state.assetCatalog)) {
         if (def.sector === 'RETAIL') impact[id] = -0.01 * rng.next();
       }
@@ -129,6 +129,43 @@ function generateSingleEvent(state: GameState, rng: RNG): EventCard | null {
       }
       break;
     }
+    case 'FX_SHOCK': {
+      const fxD = randRange(rng, EVENT_IMPACTS.fxShock.fxDelta as [number, number]);
+      const riskD = randRange(rng, EVENT_IMPACTS.fxShock.riskDelta as [number, number]);
+      const eqShock = randRange(rng, EVENT_IMPACTS.fxShock.equityShock as [number, number]);
+      macroImpact = { fxDelta: fxD, riskDelta: riskD };
+      for (const [id, def] of Object.entries(state.assetCatalog)) {
+        if (def.corrGroup === 'EQUITY') impact[id] = eqShock;
+      }
+      magnitude = fxD;
+      break;
+    }
+    case 'FISCAL_STRESS': {
+      const riskD = randRange(rng, EVENT_IMPACTS.fiscalStress.riskDelta as [number, number]);
+      const rateD = randRange(rng, EVENT_IMPACTS.fiscalStress.rateDelta as [number, number]);
+      const actD = randRange(rng, EVENT_IMPACTS.fiscalStress.activityDelta as [number, number]);
+      const eqShock = randRange(rng, EVENT_IMPACTS.fiscalStress.equityShock as [number, number]);
+      macroImpact = { riskDelta: riskD, baseRateDelta: rateD, activityDelta: actD };
+      for (const [id, def] of Object.entries(state.assetCatalog)) {
+        if (def.corrGroup === 'EQUITY') impact[id] = eqShock;
+        if (def.class === 'RF_PRE' || def.class === 'RF_IPCA') impact[id] = eqShock * 0.6;
+      }
+      magnitude = riskD;
+      break;
+    }
+    case 'COMMODITY_BOOM': {
+      const actD = randRange(rng, EVENT_IMPACTS.commodityBoom.activityDelta as [number, number]);
+      const fxD = randRange(rng, EVENT_IMPACTS.commodityBoom.fxDelta as [number, number]);
+      const riskD = randRange(rng, EVENT_IMPACTS.commodityBoom.riskDelta as [number, number]);
+      const eqShock = randRange(rng, EVENT_IMPACTS.commodityBoom.equityShock as [number, number]);
+      macroImpact = { activityDelta: actD, fxDelta: fxD, riskDelta: riskD };
+      for (const [id, def] of Object.entries(state.assetCatalog)) {
+        if (def.corrGroup === 'EQUITY') impact[id] = eqShock;
+        if (def.sector === 'ENERGY') impact[id] = (impact[id] ?? 0) + eqShock * 0.5;
+      }
+      magnitude = actD;
+      break;
+    }
   }
 
   const typeToKey: Record<EventType, string> = {
@@ -137,6 +174,7 @@ function generateSingleEvent(state: GameState, rng: RNG): EventCard | null {
     SECTOR_BOOM: 'sector_boom', SECTOR_BUST: 'sector_bust',
     CRYPTO_HACK: 'crypto_hack', CRYPTO_EUPHORIA_EVENT: 'crypto_euphoria',
     CRYPTO_RUG_PULL: 'crypto_rug_pull', CREDIT_DOWNGRADE: 'credit_downgrade',
+    FX_SHOCK: 'fx_shock', FISCAL_STRESS: 'fiscal_stress', COMMODITY_BOOM: 'commodity_boom',
   };
 
   return {
@@ -157,7 +195,6 @@ export function maybeGenerateEvents(state: GameState, rng: RNG): EventCard[] {
   const first = generateSingleEvent(state, rng);
   if (first) events.push(first);
 
-  // 10% chance of second event
   if (rng.next() < DOUBLE_EVENT_PROB) {
     const second = generateSingleEvent(state, rng);
     if (second) events.push(second);
@@ -175,6 +212,18 @@ export function applyEventMacro(state: GameState, events: EventCard[]): void {
     if (ev.macroImpact?.inflationDelta) {
       state.macro.inflationAnnual = Math.max(0.00, Math.min(0.12,
         state.macro.inflationAnnual + ev.macroImpact.inflationDelta));
+    }
+    if (ev.macroImpact?.fxDelta) {
+      state.macro.fxUSDBRL = Math.max(3.5, Math.min(7.5,
+        state.macro.fxUSDBRL * (1 + ev.macroImpact.fxDelta)));
+    }
+    if (ev.macroImpact?.activityDelta) {
+      state.macro.activityAnnual = Math.max(-0.05, Math.min(0.08,
+        state.macro.activityAnnual + ev.macroImpact.activityDelta));
+    }
+    if (ev.macroImpact?.riskDelta) {
+      state.macro.riskIndex = Math.max(0.05, Math.min(0.95,
+        state.macro.riskIndex + ev.macroImpact.riskDelta));
     }
   }
 }

@@ -46,7 +46,12 @@ export interface CreditWatchState {
 export interface MacroState {
   baseRateAnnual: number;
   inflationAnnual: number;
+  fxUSDBRL: number;
+  activityAnnual: number;
+  riskIndex: number;
 }
+
+
 
 export interface CalendarState {
   nextFiiPayDay: number;
@@ -63,19 +68,19 @@ export interface GameState {
   regime: RegimeId;
   calendar: CalendarState;
   credit: { watch: Record<string, CreditWatchState> };
-  history: { equity: number[]; drawdown: number[]; cdiAccumulated: number[] };
+  history: { equity: number[]; drawdown: number[]; cdiAccumulated: number[]; inflationAccumulated: number[] };
   seed: number;
   rngState: number;
 }
 
-export type EventType = 'RATE_HIKE' | 'RATE_CUT' | 'INFLATION_UP' | 'INFLATION_DOWN' | 'SECTOR_BOOM' | 'SECTOR_BUST' | 'CRYPTO_HACK' | 'CRYPTO_EUPHORIA_EVENT' | 'CRYPTO_RUG_PULL' | 'CREDIT_DOWNGRADE';
+export type EventType = 'RATE_HIKE' | 'RATE_CUT' | 'INFLATION_UP' | 'INFLATION_DOWN' | 'SECTOR_BOOM' | 'SECTOR_BUST' | 'CRYPTO_HACK' | 'CRYPTO_EUPHORIA_EVENT' | 'CRYPTO_RUG_PULL' | 'CREDIT_DOWNGRADE' | 'FX_SHOCK' | 'FISCAL_STRESS' | 'COMMODITY_BOOM';
 
 export interface EventCard {
   type: EventType;
   titleKey: string;
   descriptionKey: string;
   impact: Record<string, number>; // assetId -> return shock
-  macroImpact?: { baseRateDelta?: number; inflationDelta?: number };
+  macroImpact?: { baseRateDelta?: number; inflationDelta?: number; fxDelta?: number; activityDelta?: number; riskDelta?: number };
   magnitude: number; // absolute impact for ranking
 }
 

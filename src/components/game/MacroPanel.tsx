@@ -14,7 +14,7 @@ function TrendArrow({ current, previous }: { current: number; previous: number |
   return <Minus className="h-3 w-3 text-muted-foreground" />;
 }
 
-function MacroItem({ label, value, trend, flash }: { label: string; value: string; trend?: React.ReactNode; flash?: boolean }) {
+function MacroItem({ label, value, trend }: { label: string; value: string; trend?: React.ReactNode }) {
   const [key, setKey] = useState(0);
   const prevValue = useRef(value);
 
@@ -28,10 +28,7 @@ function MacroItem({ label, value, trend, flash }: { label: string; value: strin
   return (
     <div className="flex items-center gap-1.5 px-2 py-1.5 rounded bg-secondary/50 border border-border transition-colors duration-300">
       <span className="text-[10px] text-muted-foreground uppercase tracking-wider whitespace-nowrap">{label}</span>
-      <span
-        key={key}
-        className={`text-xs font-mono font-semibold text-foreground ml-auto ${flash !== false ? 'animate-value-flash' : ''}`}
-      >
+      <span key={key} className="text-xs font-mono font-semibold text-foreground ml-auto animate-value-flash">
         {value}
       </span>
       {trend}
@@ -64,49 +61,39 @@ export default function MacroPanel() {
     }
   }, [regime, prevRegime]);
 
-  const selic = macro.baseRateAnnual;
-  const cdiDaily = selic / 252;
-  const ipca = macro.inflationAnnual;
-
-  const peak = Math.max(...state.history.equity);
-  const currentDD = peak > 0 ? (peak - equity) / peak : 0;
-
-  const cdiValue = state.history.cdiAccumulated[state.history.cdiAccumulated.length - 1] ?? INITIAL_CASH;
-  const vsCDI = equity - cdiValue;
-
-  const riskIndex = useMemo(() => {
-    const regimeScore: Record<string, number> = { CALM: 10, BULL: 20, BEAR: 50, CRISIS: 80, CRYPTO_EUPHORIA: 60 };
-    const rScore = regimeScore[regime] ?? 30;
-    const ddScore = Math.min(currentDD * 200, 40);
-    const vol = volatility(state.history.equity);
-    const volScore = Math.min(vol * 80, 30);
-    return Math.min(100, Math.round(rScore * 0.4 + ddScore + volScore));
-  }, [regime, currentDD, state.history.equity]);
-
   const regimeLabels: Record<string, Record<RegimeId, string>> = {
     'pt-BR': { CALM: 'Calmo', BULL: 'Bull', BEAR: 'Bear', CRISIS: 'Crise', CRYPTO_EUPHORIA: 'Euforia' },
     'en': { CALM: 'Calm', BULL: 'Bull', BEAR: 'Bear', CRISIS: 'Crisis', CRYPTO_EUPHORIA: 'Euphoria' },
   };
 
   const formatPct = (v: number) => (v * 100).toFixed(2) + '%';
-  const formatCurrency = (v: number) =>
-    new Intl.NumberFormat(locale, { style: 'currency', currency: 'BRL', minimumFractionDigits: 0 }).format(v);
 
   return (
-    <div className="grid grid-cols-3 md:grid-cols-6 gap-1.5">
+    <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-8 gap-1.5">
       <MacroItem
         label="SELIC"
-        value={formatPct(selic)}
-        trend={<TrendArrow current={selic} previous={prevMacro?.baseRateAnnual} />}
-      />
-      <MacroItem
-        label={locale === 'pt-BR' ? 'CDI/dia' : 'CDI/day'}
-        value={(cdiDaily * 100).toFixed(4) + '%'}
+        value={formatPct(macro.baseRateAnnual)}
+        trend={<TrendArrow current={macro.baseRateAnnual} previous={prevMacro?.baseRateAnnual} />}
       />
       <MacroItem
         label="IPCA"
-        value={formatPct(ipca)}
-        trend={<TrendArrow current={ipca} previous={prevMacro?.inflationAnnual} />}
+        value={formatPct(macro.inflationAnnual)}
+        trend={<TrendArrow current={macro.inflationAnnual} previous={prevMacro?.inflationAnnual} />}
+      />
+      <MacroItem
+        label="USD/BRL"
+        value={macro.fxUSDBRL.toFixed(2)}
+        trend={<TrendArrow current={macro.fxUSDBRL} previous={prevMacro?.fxUSDBRL} />}
+      />
+      <MacroItem
+        label={locale === 'pt-BR' ? 'Atividade' : 'Activity'}
+        value={formatPct(macro.activityAnnual)}
+        trend={<TrendArrow current={macro.activityAnnual} previous={prevMacro?.activityAnnual} />}
+      />
+      <MacroItem
+        label={locale === 'pt-BR' ? 'Risco' : 'Risk'}
+        value={(macro.riskIndex * 100).toFixed(0)}
+        trend={<TrendArrow current={macro.riskIndex} previous={prevMacro?.riskIndex} />}
       />
       <div
         className={`flex items-center gap-1.5 px-2 py-1.5 rounded border border-border bg-secondary/50 transition-all duration-500 ${
@@ -120,12 +107,16 @@ export default function MacroPanel() {
         </span>
       </div>
       <MacroItem
-        label={locale === 'pt-BR' ? 'Risco' : 'Risk'}
-        value={String(riskIndex)}
+        label={locale === 'pt-BR' ? 'CDI/dia' : 'CDI/day'}
+        value={(macro.baseRateAnnual / 252 * 100).toFixed(4) + '%'}
       />
       <MacroItem
-        label="vs CDI"
-        value={formatCurrency(vsCDI)}
+        label="Drawdown"
+        value={(() => {
+          const peak = Math.max(...state.history.equity);
+          const dd = peak > 0 ? (peak - equity) / peak : 0;
+          return dd > 0.001 ? '-' + (dd * 100).toFixed(1) + '%' : '0%';
+        })()}
       />
     </div>
   );

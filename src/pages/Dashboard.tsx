@@ -77,21 +77,18 @@ export default function Dashboard() {
     locale,
   }), [state.regime, lastEvents, currentDD, state.macro.inflationAnnual, state.macro.baseRateAnnual, locale]);
 
-  // Chart data: nominal + real equity + CDI
+  // Chart data: nominal + real equity + CDI (using accumulated inflation from history)
   const chartData = useMemo(() => {
-    const inflDaily = state.macro.inflationAnnual / 252;
     return state.history.equity.map((eq, i) => {
-      const inflFactor = Math.pow(1 + inflDaily, i);
-      const eqPeak = Math.max(...state.history.equity.slice(0, i + 1));
+      const inflFactor = state.history.inflationAccumulated?.[i] ?? 1;
       return {
         day: i,
         nominal: Math.round(eq * 100) / 100,
         real: Math.round((eq / inflFactor) * 100) / 100,
         cdi: Math.round((state.history.cdiAccumulated[i] ?? INITIAL_CASH) * 100) / 100,
-        dd: eq < eqPeak ? eq : undefined,
       };
     });
-  }, [state.history.equity, state.history.cdiAccumulated, state.macro.inflationAnnual]);
+  }, [state.history.equity, state.history.cdiAccumulated, state.history.inflationAccumulated]);
 
   return (
     <div className="space-y-3">
