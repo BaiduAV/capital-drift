@@ -32,6 +32,13 @@ export function simulateDay(state: GameState): DayResult {
   // 5. Apply prices
   applyReturnsToPrices(state, returns);
 
+  // 5b. Track price history (cap at 90)
+  for (const [id, assetState] of Object.entries(state.assets)) {
+    if (!assetState.priceHistory) assetState.priceHistory = [];
+    assetState.priceHistory.push(assetState.price);
+    if (assetState.priceHistory.length > 90) assetState.priceHistory.shift();
+  }
+
   // 6. Dividends
   const dividendsPaid = applyDividendsAndDistributions(state);
 
