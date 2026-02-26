@@ -17,6 +17,7 @@ export function createGameState(seed: number): GameState {
       price: def.initialPrice,
       lastReturn: 0,
       haltedUntilDay: null,
+      priceHistory: [def.initialPrice],
     };
   }
 

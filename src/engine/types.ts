@@ -29,6 +29,7 @@ export interface AssetState {
   price: number;
   lastReturn: number;
   haltedUntilDay: number | null;
+  priceHistory: number[]; // last 90 prices
 }
 
 export interface Position {

@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ShoppingCart } from 'lucide-react';
+import AssetDetailModal from '@/components/game/AssetDetailModal';
 import type { AssetClass } from '@/engine/types';
 
 const CLASS_TABS: { key: string; classes: AssetClass[]; labelPt: string; labelEn: string }[] = [
@@ -20,6 +21,7 @@ const CLASS_TABS: { key: string; classes: AssetClass[]; labelPt: string; labelEn
 export default function Market() {
   const { state, locale, t } = useGame();
   const [tab, setTab] = useState('all');
+  const [selectedAsset, setSelectedAsset] = useState<string | null>(null);
   const navigate = useNavigate();
 
   const formatPrice = (v: number) =>
@@ -67,7 +69,11 @@ export default function Market() {
                 {assets.map(({ id, def, assetState, position }) => {
                   const halted = assetState.haltedUntilDay && state.dayIndex < assetState.haltedUntilDay;
                   return (
-                    <TableRow key={id} className={halted ? 'opacity-50' : ''}>
+                    <TableRow
+                      key={id}
+                      className={`${halted ? 'opacity-50' : ''} cursor-pointer hover:bg-muted/50`}
+                      onClick={() => setSelectedAsset(id)}
+                    >
                       <TableCell className="text-xs font-mono font-medium">
                         <span className="text-foreground">{id}</span>
                         <span className="text-muted-foreground ml-2 hidden sm:inline">{t(def.nameKey)}</span>
@@ -75,7 +81,7 @@ export default function Market() {
                       <TableCell className="text-xs font-mono text-right">{formatPrice(assetState.price)}</TableCell>
                       <TableCell className={`text-xs font-mono text-right ${assetState.lastReturn >= 0 ? 'price-up' : 'price-down'}`}>
                         {formatPct(assetState.lastReturn)}
-                        {halted && <span className="ml-1 text-terminal-amber">⏸</span>}
+                        {halted && <span className="ml-1 text-accent">⏸</span>}
                       </TableCell>
                       <TableCell className="text-[10px] text-muted-foreground hidden sm:table-cell">{def.class}</TableCell>
                       <TableCell className="text-[10px] text-muted-foreground hidden md:table-cell">{def.sector}</TableCell>
@@ -87,7 +93,7 @@ export default function Market() {
                           variant="ghost"
                           size="sm"
                           className="h-6 w-6 p-0 text-muted-foreground hover:text-primary"
-                          onClick={() => navigate(`/trade?asset=${id}`)}
+                          onClick={(e) => { e.stopPropagation(); navigate(`/trade?asset=${id}`); }}
                           disabled={!!halted}
                         >
                           <ShoppingCart className="h-3 w-3" />
@@ -101,6 +107,8 @@ export default function Market() {
           </div>
         </CardContent>
       </Card>
+
+      <AssetDetailModal assetId={selectedAsset} onClose={() => setSelectedAsset(null)} />
     </div>
   );
 }

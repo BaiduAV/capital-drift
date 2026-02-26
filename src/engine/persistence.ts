@@ -18,6 +18,10 @@ export function loadGame(): GameState | null {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) return null;
     const state = JSON.parse(raw) as GameState;
+    // Backwards compat: add priceHistory if missing
+    for (const [id, a] of Object.entries(state.assets)) {
+      if (!a.priceHistory) a.priceHistory = [a.price];
+    }
     // Backwards compat: add cdiAccumulated if missing
     if (!state.history.cdiAccumulated) {
       state.history.cdiAccumulated = [state.history.equity[0] ?? 5000];
