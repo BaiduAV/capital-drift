@@ -1,12 +1,14 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import { useGame } from '@/context/GameContext';
 import { INITIAL_CASH } from '@/engine/params';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Play, FastForward, TrendingUp, TrendingDown, AlertTriangle } from 'lucide-react';
+import { Play, FastForward, TrendingUp, TrendingDown, AlertTriangle, Keyboard } from 'lucide-react';
 import { toast } from 'sonner';
 import type { DayResult, PeriodResult } from '@/engine/types';
 import { useNavigate } from 'react-router-dom';
+import { useKeyboardShortcuts } from '@/hooks/useKeyboardShortcuts';
+import { sharpeRatio, volatility, winRate, bestDay, worstDay } from '@/engine/stats';
 
 export default function Dashboard() {
   const { state, locale, equity, advanceDay, fastForward, dayResults, t } = useGame();
@@ -45,18 +47,25 @@ export default function Dashboard() {
     }
   };
 
-  const handleAdvance = () => {
+  const handleAdvance = useCallback(() => {
     const r = advanceDay();
     setLastDay(r);
     setLastPeriod(null);
     showDayNotifications(r);
-  };
+  }, [advanceDay]);
 
-  const handleFF = (days: number) => {
+  const handleFF = useCallback((days: number) => {
     const r = fastForward(days);
     setLastPeriod(r);
     setLastDay(null);
-  };
+  }, [fastForward]);
+
+  // Keyboard shortcuts
+  const shortcuts = useMemo(() => ({
+    'n': () => handleAdvance(),
+    'f': () => handleFF(7),
+  }), [handleAdvance, handleFF]);
+  useKeyboardShortcuts(shortcuts);
 
   const peak = Math.max(...state.history.equity);
   const currentDD = peak > 0 ? (peak - equity) / peak : 0;
@@ -65,6 +74,15 @@ export default function Dashboard() {
   // CDI benchmark comparison
   const cdiValue = state.history.cdiAccumulated[state.history.cdiAccumulated.length - 1] ?? INITIAL_CASH;
   const vsCDI = equity - cdiValue;
+
+  // Advanced stats
+  const stats = useMemo(() => ({
+    sharpe: sharpeRatio(state.history.equity, state.history.cdiAccumulated),
+    vol: volatility(state.history.equity),
+    win: winRate(state.history.equity),
+    best: bestDay(state.history.equity),
+    worst: worstDay(state.history.equity),
+  }), [state.history.equity, state.history.cdiAccumulated]);
 
   return (
     <div className="space-y-4">
@@ -83,17 +101,26 @@ export default function Dashboard() {
       </div>
 
       {/* Stats grid */}
-      <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+      <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3">
         <StatCard label={locale === 'pt-BR' ? 'Patrimônio' : 'Equity'} value={formatCurrency(equity)} />
         <StatCard label={locale === 'pt-BR' ? 'Caixa' : 'Cash'} value={formatCurrency(state.cash)} />
-        <StatCard label="Drawdown" value={formatPct(-currentDD)} negative={currentDD > 0} />
-        <StatCard label={locale === 'pt-BR' ? 'DD Máximo' : 'Max DD'} value={formatPct(-maxDD)} negative={maxDD > 0} />
         <StatCard
           label={locale === 'pt-BR' ? 'vs CDI' : 'vs CDI'}
           value={formatCurrency(vsCDI)}
           negative={vsCDI < 0}
           positive={vsCDI > 0}
         />
+        <StatCard label="Sharpe" value={stats.sharpe.toFixed(2)} positive={stats.sharpe > 0} negative={stats.sharpe < 0} />
+        <StatCard label={locale === 'pt-BR' ? 'Volatilidade' : 'Volatility'} value={formatPct(stats.vol)} />
+        <StatCard label="Win Rate" value={(stats.win * 100).toFixed(0) + '%'} positive={stats.win > 0.5} negative={stats.win < 0.5} />
+      </div>
+
+      {/* Keyboard hint */}
+      <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground font-mono">
+        <Keyboard className="h-3 w-3" />
+        <span>N = {locale === 'pt-BR' ? 'Próximo dia' : 'Next day'}</span>
+        <span className="text-border">|</span>
+        <span>F = {locale === 'pt-BR' ? 'Avançar 7d' : 'Forward 7d'}</span>
       </div>
 
       {/* Day Result */}

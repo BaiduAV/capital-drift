@@ -2,6 +2,7 @@ import { useGame } from '@/context/GameContext';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { INITIAL_CASH } from '@/engine/params';
 import { useMemo } from 'react';
+import { sharpeRatio, volatility, winRate, bestDay, worstDay } from '@/engine/stats';
 import {
   AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer,
   ReferenceLine, CartesianGrid, Line, ComposedChart,
@@ -171,43 +172,36 @@ export default function History() {
             {locale === 'pt-BR' ? 'Estatísticas' : 'Statistics'}
           </CardTitle>
         </CardHeader>
-        <CardContent className="px-4 pb-3 text-xs font-mono space-y-1">
-          <div className="flex justify-between">
-            <span className="text-muted-foreground">{locale === 'pt-BR' ? 'Dias simulados' : 'Days simulated'}</span>
-            <span>{state.dayIndex}</span>
-          </div>
-          <div className="flex justify-between">
-            <span className="text-muted-foreground">{locale === 'pt-BR' ? 'Retorno total' : 'Total return'}</span>
-            <span className={currentEquity >= INITIAL_CASH ? 'price-up' : 'price-down'}>
-              {formatPct((currentEquity - INITIAL_CASH) / INITIAL_CASH)}
-            </span>
-          </div>
-          <div className="flex justify-between">
-            <span className="text-muted-foreground">{locale === 'pt-BR' ? 'Retorno CDI' : 'CDI return'}</span>
-            <span className="text-terminal-cyan">
-              {formatPct((currentCDI - INITIAL_CASH) / INITIAL_CASH)}
-            </span>
-          </div>
-          <div className="flex justify-between">
-            <span className="text-muted-foreground">vs CDI</span>
-            <span className={beatingCDI ? 'price-up' : 'price-down'}>
-              {formatCurrency(currentEquity - currentCDI)}
-            </span>
-          </div>
-          <div className="flex justify-between">
-            <span className="text-muted-foreground">Max DD</span>
-            <span className="price-down">{formatPct(-Math.max(...ddData))}</span>
-          </div>
-          <div className="flex justify-between">
-            <span className="text-muted-foreground">{locale === 'pt-BR' ? 'Pico' : 'Peak'}</span>
-            <span>{formatCurrency(Math.max(...eqData))}</span>
-          </div>
-          <div className="flex justify-between">
-            <span className="text-muted-foreground">Seed</span>
-            <span className="text-muted-foreground">{state.seed}</span>
+        <CardContent className="px-4 pb-3 text-xs font-mono">
+          <div className="grid grid-cols-2 gap-x-6 gap-y-1">
+            <StatRow label={locale === 'pt-BR' ? 'Dias simulados' : 'Days simulated'} value={String(state.dayIndex)} />
+            <StatRow
+              label={locale === 'pt-BR' ? 'Retorno total' : 'Total return'}
+              value={formatPct((currentEquity - INITIAL_CASH) / INITIAL_CASH)}
+              className={currentEquity >= INITIAL_CASH ? 'price-up' : 'price-down'}
+            />
+            <StatRow label={locale === 'pt-BR' ? 'Retorno CDI' : 'CDI return'} value={formatPct((currentCDI - INITIAL_CASH) / INITIAL_CASH)} className="text-terminal-cyan" />
+            <StatRow label="vs CDI" value={formatCurrency(currentEquity - currentCDI)} className={beatingCDI ? 'price-up' : 'price-down'} />
+            <StatRow label="Max DD" value={formatPct(-Math.max(...ddData))} className="price-down" />
+            <StatRow label={locale === 'pt-BR' ? 'Pico' : 'Peak'} value={formatCurrency(Math.max(...eqData))} />
+            <StatRow label="Sharpe" value={sharpeRatio(eqData, cdiData).toFixed(2)} className={sharpeRatio(eqData, cdiData) > 0 ? 'price-up' : 'price-down'} />
+            <StatRow label={locale === 'pt-BR' ? 'Volatilidade' : 'Volatility'} value={formatPct(volatility(eqData))} />
+            <StatRow label="Win Rate" value={(winRate(eqData) * 100).toFixed(1) + '%'} className={winRate(eqData) > 0.5 ? 'price-up' : 'price-down'} />
+            <StatRow label={locale === 'pt-BR' ? 'Melhor dia' : 'Best day'} value={formatPct(bestDay(eqData))} className="price-up" />
+            <StatRow label={locale === 'pt-BR' ? 'Pior dia' : 'Worst day'} value={formatPct(worstDay(eqData))} className="price-down" />
+            <StatRow label="Seed" value={String(state.seed)} className="text-muted-foreground" />
           </div>
         </CardContent>
       </Card>
+    </div>
+  );
+}
+
+function StatRow({ label, value, className }: { label: string; value: string; className?: string }) {
+  return (
+    <div className="flex justify-between">
+      <span className="text-muted-foreground">{label}</span>
+      <span className={className ?? 'text-foreground'}>{value}</span>
     </div>
   );
 }
