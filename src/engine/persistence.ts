@@ -25,13 +25,25 @@ export function loadGame(): GameState | null {
     // Backwards compat: add cdiAccumulated if missing
     if (!state.history.cdiAccumulated) {
       state.history.cdiAccumulated = [state.history.equity[0] ?? 5000];
-      // Backfill CDI for existing days
       for (let i = 1; i < state.history.equity.length; i++) {
         const dailyCDI = state.macro.baseRateAnnual / 252;
         const prev = state.history.cdiAccumulated[i - 1];
         state.history.cdiAccumulated.push(prev * (1 + dailyCDI));
       }
     }
+    // Backwards compat: add inflationAccumulated if missing
+    if (!state.history.inflationAccumulated) {
+      state.history.inflationAccumulated = [1];
+      for (let i = 1; i < state.history.equity.length; i++) {
+        const dailyInfl = state.macro.inflationAnnual / 252;
+        const prev = state.history.inflationAccumulated[i - 1];
+        state.history.inflationAccumulated.push(prev * (1 + dailyInfl));
+      }
+    }
+    // Backwards compat: add new macro fields if missing
+    if (state.macro.fxUSDBRL === undefined) state.macro.fxUSDBRL = 5.0;
+    if (state.macro.activityAnnual === undefined) state.macro.activityAnnual = 0.02;
+    if (state.macro.riskIndex === undefined) state.macro.riskIndex = 0.35;
     return state;
   } catch {
     return null;

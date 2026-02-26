@@ -30,6 +30,45 @@ export const MACRO = {
       CRYPTO_EUPHORIA: 0.0,
     } as Record<RegimeId, number>,
   },
+  fxUSDBRL: {
+    initial: 5.0,
+    min: 3.5,
+    max: 7.5,
+    dailyVol: 0.008,
+    regimeDrift: {
+      CALM: 0.0,
+      BULL: -0.0003,
+      BEAR: 0.0004,
+      CRISIS: 0.0012,
+      CRYPTO_EUPHORIA: -0.0002,
+    } as Record<RegimeId, number>,
+  },
+  activity: {
+    initial: 0.02,
+    min: -0.05,
+    max: 0.08,
+    dailyVol: 0.00015,
+    regimeDrift: {
+      CALM: 0.0,
+      BULL: 0.00008,
+      BEAR: -0.00006,
+      CRISIS: -0.00015,
+      CRYPTO_EUPHORIA: 0.00005,
+    } as Record<RegimeId, number>,
+  },
+  risk: {
+    initial: 0.35,
+    min: 0.05,
+    max: 0.95,
+    dailyVol: 0.005,
+    regimeDrift: {
+      CALM: -0.001,
+      BULL: -0.0015,
+      BEAR: 0.002,
+      CRISIS: 0.004,
+      CRYPTO_EUPHORIA: 0.001,
+    } as Record<RegimeId, number>,
+  },
 };
 
 // ── B. Regimes ──
@@ -166,6 +205,9 @@ export const EVENT_IMPACTS = {
   cryptoHack: { majorShock: [-0.10, -0.03], altShock: [-0.18, -0.06] },
   cryptoEuphoria: { altShock: [0.05, 0.20] },
   cryptoRugPull: { targetShock: [-0.80, -0.40] },
+  fxShock: { fxDelta: [0.03, 0.10], riskDelta: [0.02, 0.06], equityShock: [-0.02, -0.005] },
+  fiscalStress: { riskDelta: [0.04, 0.10], rateDelta: [0.002, 0.008], activityDelta: [-0.005, -0.001], equityShock: [-0.015, -0.005] },
+  commodityBoom: { activityDelta: [0.002, 0.008], fxDelta: [-0.05, -0.01], riskDelta: [-0.03, -0.01], equityShock: [0.005, 0.02] },
 };
 
 // ── H. Credit ──
@@ -179,3 +221,11 @@ export const CREDIT = {
 // ── I. Initial state ──
 export const INITIAL_CASH = 5000;
 export const INITIAL_REGIME: RegimeId = 'CALM';
+
+// ── J. Macro-to-pricing tilt coefficients ──
+export const MACRO_TILT = {
+  equityActivityCoeff: 0.008,   // positive activity boosts equity
+  equityRiskCoeff: 0.006,       // high risk hurts equity
+  bondsLongRateSensitivity: 0.15, // rate change impact on RF_PRE/RF_IPCA
+  bondsLongRiskSensitivity: 0.003, // risk impact on long bonds
+};

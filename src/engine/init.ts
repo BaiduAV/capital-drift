@@ -30,6 +30,9 @@ export function createGameState(seed: number): GameState {
     macro: {
       baseRateAnnual: MACRO.baseRate.initial,
       inflationAnnual: MACRO.inflation.initial,
+      fxUSDBRL: MACRO.fxUSDBRL.initial,
+      activityAnnual: MACRO.activity.initial,
+      riskIndex: MACRO.risk.initial,
     },
     regime: INITIAL_REGIME,
     calendar: {
@@ -37,7 +40,7 @@ export function createGameState(seed: number): GameState {
       nextStockPayDay: DIVIDENDS.stockPeriodDays,
     },
     credit: { watch: {} },
-    history: { equity: [INITIAL_CASH], drawdown: [0], cdiAccumulated: [INITIAL_CASH] },
+    history: { equity: [INITIAL_CASH], drawdown: [0], cdiAccumulated: [INITIAL_CASH], inflationAccumulated: [1] },
     seed,
     rngState: rng.state(),
   };

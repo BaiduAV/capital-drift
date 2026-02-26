@@ -70,6 +70,18 @@ const narratives: Record<string, { pt: string; en: string }> = {
     pt: 'Drawdown severo! Seu patrimônio caiu significativamente do pico.',
     en: 'Severe drawdown! Your equity dropped significantly from peak.',
   },
+  fx_shock_event: {
+    pt: 'Dólar disparou! Aumento do risco cambial pressiona ativos domésticos.',
+    en: 'Dollar surged! FX risk increase pressures domestic assets.',
+  },
+  fiscal_stress_event: {
+    pt: 'Risco fiscal elevado. Juros futuros sobem, bolsa e prefixados sofrem.',
+    en: 'Elevated fiscal risk. Future rates rise, equities and pre-fixed bonds suffer.',
+  },
+  commodity_boom_event: {
+    pt: 'Boom de commodities! Exportadores se beneficiam, real se fortalece.',
+    en: 'Commodity boom! Exporters benefit, real strengthens.',
+  },
 };
 
 export function generateNarrative(input: NarrativeInput): string {
@@ -83,6 +95,9 @@ export function generateNarrative(input: NarrativeInput): string {
     if (lastEvent.type === 'RATE_CUT') return pick('rate_cut_event');
     if (lastEvent.type === 'INFLATION_UP') return pick('inflation_up_event');
     if (lastEvent.type === 'CRYPTO_HACK') return pick('crypto_hack_event');
+    if (lastEvent.type === 'FX_SHOCK') return pick('fx_shock_event');
+    if (lastEvent.type === 'FISCAL_STRESS') return pick('fiscal_stress_event');
+    if (lastEvent.type === 'COMMODITY_BOOM') return pick('commodity_boom_event');
   }
 
   // Severe drawdown overrides

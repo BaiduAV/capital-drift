@@ -51,6 +51,11 @@ export function simulateDay(state: GameState): DayResult {
   const lastCDI = state.history.cdiAccumulated[state.history.cdiAccumulated.length - 1];
   state.history.cdiAccumulated.push(lastCDI * (1 + dailyCDI));
 
+  // 8b. Inflation accumulation
+  const dailyInfl = state.macro.inflationAnnual / 252;
+  const lastInfl = state.history.inflationAccumulated[state.history.inflationAccumulated.length - 1] ?? 1;
+  state.history.inflationAccumulated.push(lastInfl * (1 + dailyInfl));
+
   // 9. History
   const equityAfter = computeEquity(state);
   state.history.equity.push(equityAfter);

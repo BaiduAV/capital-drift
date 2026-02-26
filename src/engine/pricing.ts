@@ -1,8 +1,8 @@
-// ── Price generation with correlated market factors ──
+// ── Price generation with correlated market factors + macro tilt ──
 
 import type { GameState } from './types';
 import type { RNG } from './rng';
-import { DRIFT_VOL, CORR_STRENGTH, CRISIS_CRYPTO_CROSS_LINK } from './params';
+import { DRIFT_VOL, CORR_STRENGTH, CRISIS_CRYPTO_CROSS_LINK, MACRO_TILT } from './params';
 
 export function generateReturns(state: GameState, rng: RNG): Record<string, number> {
   const regime = state.regime;
@@ -11,6 +11,10 @@ export function generateReturns(state: GameState, rng: RNG): Record<string, numb
   // Generate group factors
   const equityFactor = rng.nextGaussian();
   const cryptoFactor = rng.nextGaussian();
+
+  // Macro tilt calculations
+  const macroTiltEquity = MACRO_TILT.equityActivityCoeff * state.macro.activityAnnual
+    - MACRO_TILT.equityRiskCoeff * state.macro.riskIndex;
 
   const returns: Record<string, number> = {};
 
@@ -26,10 +30,17 @@ export function generateReturns(state: GameState, rng: RNG): Record<string, numb
     if (def.corrGroup === 'FIXED_INCOME') {
       // Fixed income: mostly idiosyncratic, very low correlation
       const noise = rng.nextGaussian();
-      returns[assetId] = drift + vol * noise;
+      let ret = drift + vol * noise;
+
+      // Long bonds (PRE/IPCA) are sensitive to rate changes and risk
+      if (def.class === 'RF_PRE' || def.class === 'RF_IPCA') {
+        ret -= MACRO_TILT.bondsLongRiskSensitivity * state.macro.riskIndex;
+      }
+
+      returns[assetId] = ret;
     } else if (def.corrGroup === 'EQUITY') {
       const idioNoise = rng.nextGaussian();
-      returns[assetId] = drift + vol * (
+      returns[assetId] = drift + macroTiltEquity + vol * (
         corrStrength * equityFactor + (1 - corrStrength) * idioNoise
       );
     } else if (def.corrGroup === 'CRYPTO') {
@@ -52,7 +63,6 @@ export function applyReturnsToPrices(state: GameState, returns: Record<string, n
   for (const [assetId, ret] of Object.entries(returns)) {
     const asset = state.assets[assetId];
     if (!asset) continue;
-    // Apply event shocks on top (already added to returns externally)
     asset.lastReturn = ret;
     asset.price = Math.max(0.01, asset.price * (1 + ret)); // never go to 0
   }
