@@ -2,7 +2,7 @@
 
 import type { GameState } from './types';
 import type { RNG } from './rng';
-import { DRIFT_VOL, CORR_STRENGTH, CRISIS_CRYPTO_CROSS_LINK, MACRO_TILT } from './params';
+import { DRIFT_VOL, CORR_STRENGTH, CRISIS_CRYPTO_CROSS_LINK, MACRO_TILT, MACRO } from './params';
 
 export function generateReturns(state: GameState, rng: RNG): Record<string, number> {
   const regime = state.regime;
@@ -39,10 +39,17 @@ export function generateReturns(state: GameState, rng: RNG): Record<string, numb
 
       returns[assetId] = ret;
     } else if (def.corrGroup === 'EQUITY') {
-      const idioNoise = rng.nextGaussian();
-      returns[assetId] = drift + macroTiltEquity + vol * (
-        corrStrength * equityFactor + (1 - corrStrength) * idioNoise
-      );
+      if (assetId === 'USD') {
+        // USD ETF: return tracks fxUSDBRL regime drift + small noise
+        const fxDrift = MACRO.fxUSDBRL.regimeDrift[regime];
+        const fxNoise = rng.nextGaussian() * MACRO.fxUSDBRL.dailyVol * 0.5;
+        returns[assetId] = fxDrift + fxNoise;
+      } else {
+        const idioNoise = rng.nextGaussian();
+        returns[assetId] = drift + macroTiltEquity + vol * (
+          corrStrength * equityFactor + (1 - corrStrength) * idioNoise
+        );
+      }
     } else if (def.corrGroup === 'CRYPTO') {
       const idioNoise = rng.nextGaussian();
       let factor = cryptoFactor;

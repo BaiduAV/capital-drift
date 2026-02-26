@@ -56,6 +56,9 @@ export function buildAssetCatalog(seed: number): Record<string, AssetDefinition>
     { id: 'CRETH', nameKey: 'asset.creth', class: 'CRYPTO_MAJOR', sector: 'NONE', corrGroup: 'CRYPTO', liquidityRule: 'D0', initialPrice: 80 },
     { id: 'CRALTG', nameKey: 'asset.craltg', class: 'CRYPTO_ALT', sector: 'NONE', corrGroup: 'CRYPTO', liquidityRule: 'D0', initialPrice: 10 },
     { id: 'CRALTM', nameKey: 'asset.craltm', class: 'CRYPTO_ALT', sector: 'NONE', corrGroup: 'CRYPTO', liquidityRule: 'D0', initialPrice: 2 },
+
+    // ── FX Hedge (1) ──
+    { id: 'USD', nameKey: 'asset.usd', class: 'ETF', sector: 'NONE', corrGroup: 'EQUITY', liquidityRule: 'D0', initialPrice: 50 },
   ];
 
   // Assign random dividend yields for stocks and FIIs

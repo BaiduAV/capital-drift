@@ -27,6 +27,7 @@ const translations: Record<Locale, Record<string, string>> = {
     // Assets - Crypto
     'asset.crbtc': 'CriptoBTC', 'asset.creth': 'CriptoETH',
     'asset.craltg': 'Alt Growth', 'asset.craltm': 'Alt Meme',
+    'asset.usd': 'ETF Dólar',
     // Events
     'event.rate_hike.title': 'Juros Sobem',
     'event.rate_hike.desc': 'Banco Central eleva taxa base. Renda fixa se beneficia, bolsa pressiona.',
@@ -79,6 +80,7 @@ const translations: Record<Locale, Record<string, string>> = {
     'asset.fiilog': 'REIT Logistics', 'asset.fiihyb': 'REIT Hybrid',
     'asset.crbtc': 'CryptoBTC', 'asset.creth': 'CryptoETH',
     'asset.craltg': 'Alt Growth', 'asset.craltm': 'Alt Meme',
+    'asset.usd': 'Dollar ETF',
     'event.rate_hike.title': 'Rate Hike',
     'event.rate_hike.desc': 'Central bank raises base rate. Fixed income benefits, equities pressured.',
     'event.rate_cut.title': 'Rate Cut',
