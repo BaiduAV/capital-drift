@@ -255,7 +255,7 @@ describe('Engine - Game Init', () => {
     expect(state.regime).toBe('CALM');
     expect(state.macro.baseRateAnnual).toBe(0.11);
     expect(state.macro.inflationAnnual).toBe(0.045);
-    expect(Object.keys(state.assetCatalog).length).toBe(32);
-    expect(Object.keys(state.assets).length).toBe(32);
+    expect(Object.keys(state.assetCatalog).length).toBe(33);
+    expect(Object.keys(state.assets).length).toBe(33);
   });
 });
