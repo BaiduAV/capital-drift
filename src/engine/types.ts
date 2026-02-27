@@ -71,7 +71,18 @@ export interface GameState {
   history: { equity: number[]; drawdown: number[]; cdiAccumulated: number[]; inflationAccumulated: number[] };
   seed: number;
   rngState: number;
+  events: { active: PersistentEvent[] };
 }
+
+export interface PersistentEvent {
+  id: string; // unique instance id
+  card: EventCard;
+  startedAtDay: number;
+  durationDays: number;
+  // Allows fading logic or immediate decay
+}
+
+export type SimulationState = GameState;
 
 export type EventType = 'RATE_HIKE' | 'RATE_CUT' | 'INFLATION_UP' | 'INFLATION_DOWN' | 'SECTOR_BOOM' | 'SECTOR_BUST' | 'CRYPTO_HACK' | 'CRYPTO_EUPHORIA_EVENT' | 'CRYPTO_RUG_PULL' | 'CREDIT_DOWNGRADE' | 'FX_SHOCK' | 'FISCAL_STRESS' | 'COMMODITY_BOOM';
 
@@ -85,14 +96,42 @@ export interface EventCard {
 }
 
 export interface DayResult {
+  state: SimulationState;
+  metrics: {
+    equityBefore: number;
+    equityAfter: number;
+    dividendsPaid: number;
+  };
+  warnings: string[];
+  trace: {
+    previousRegime: RegimeId;
+    currentRegime: RegimeId;
+    eventsApplied: string[]; // event type + magnitude info
+    marketSummary: { topGainers: string[]; topLosers: string[] };
+    phases: string[];
+  };
+
+  // Legacy fields for partial compatibility with simulatePeriod
+  dayIndex: number; // same as state.dayIndex
+  regime: RegimeId; // same as trace.currentRegime
+  previousRegime: RegimeId; // same as trace.previousRegime
+  events: EventCard[]; // newly generated events this day
+  equityBefore: number; // same as metrics.equityBefore
+  equityAfter: number; // same as metrics.equityAfter
+  dividendsPaid: number; // same as metrics.dividendsPaid
+}
+
+import type { RNG } from './rng';
+
+export interface DayContext {
   dayIndex: number;
-  regime: RegimeId;
-  previousRegime: RegimeId;
-  events: EventCard[];
-  marketSummary: { topGainers: string[]; topLosers: string[] };
-  equityBefore: number;
-  equityAfter: number;
-  dividendsPaid: number;
+  dt: number;
+  rng: {
+    market: RNG;
+    macro: RNG;
+    events: RNG;
+    agents: RNG;
+  };
 }
 
 export interface PeriodResult {

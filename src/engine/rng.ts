@@ -4,6 +4,17 @@ export interface RNG {
   next(): number;        // [0, 1)
   nextGaussian(): number; // Normal(0,1) via Box-Muller
   state(): number;
+  fork(namespace: string): RNG; // Spawn a child RNG deterministically
+}
+
+// Simple deterministic hash for strings (MurmurHash3 32-bit simplified)
+function hashString(str: string): number {
+  let h = 0x811c9dc5;
+  for (let i = 0; i < str.length; i++) {
+    h ^= str.charCodeAt(i);
+    h = Math.imul(h, 0x01000193);
+  }
+  return h;
 }
 
 export function createRNG(seed: number): RNG {
@@ -36,9 +47,16 @@ export function createRNG(seed: number): RNG {
     return u * mul;
   }
 
+  function fork(namespace: string): RNG {
+    // Combine current state with namespace hash to seed the child
+    const childSeed = (s ^ hashString(namespace)) >>> 0;
+    return createRNG(childSeed);
+  }
+
   return {
     next,
     nextGaussian,
     state: () => s,
+    fork,
   };
 }

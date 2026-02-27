@@ -1,6 +1,6 @@
 // ── Event generation and application ──
 
-import type { GameState, EventCard, EventType } from './types';
+import type { GameState, SimulationState, EventCard, EventType, PersistentEvent, DayContext } from './types';
 import type { RNG } from './rng';
 import { EVENT_BASE_PROB, DOUBLE_EVENT_PROB, EVENT_IMPACTS } from './params';
 
@@ -187,51 +187,83 @@ function generateSingleEvent(state: GameState, rng: RNG): EventCard | null {
   };
 }
 
-export function maybeGenerateEvents(state: GameState, rng: RNG): EventCard[] {
+export function maybeGenerateEvents(state: GameState, rng: RNG): PersistentEvent[] {
   const prob = EVENT_BASE_PROB[state.regime];
   if (rng.next() >= prob) return [];
 
-  const events: EventCard[] = [];
+  const events: PersistentEvent[] = [];
   const first = generateSingleEvent(state, rng);
-  if (first) events.push(first);
+  if (first) {
+    events.push({
+      id: `evt_${state.dayIndex}_1`,
+      card: first,
+      startedAtDay: state.dayIndex,
+      durationDays: 1, // Default duration 1 day for now
+    });
+  }
 
   if (rng.next() < DOUBLE_EVENT_PROB) {
     const second = generateSingleEvent(state, rng);
-    if (second) events.push(second);
+    if (second) {
+      events.push({
+        id: `evt_${state.dayIndex}_2`,
+        card: second,
+        startedAtDay: state.dayIndex,
+        durationDays: 1,
+      });
+    }
   }
 
   return events;
 }
 
-export function applyEventMacro(state: GameState, events: EventCard[]): void {
+export function rollEvents(state: SimulationState, ctx: DayContext): { active: PersistentEvent[], generated: PersistentEvent[] } {
+  // 1. Decay/remove expired events
+  const active = (state.events?.active || []).filter(e => {
+    return (ctx.dayIndex - e.startedAtDay) < e.durationDays;
+  });
+
+  // 2. Generate new events
+  const generated = maybeGenerateEvents(state, ctx.rng.events);
+
+  return {
+    active: [...active, ...generated],
+    generated
+  }
+}
+
+export function applyEventMacro(state: GameState, events: PersistentEvent[]): void {
   for (const ev of events) {
-    if (ev.macroImpact?.baseRateDelta) {
+    const impact = ev.card.macroImpact;
+    if (!impact) continue;
+
+    if (impact.baseRateDelta) {
       state.macro.baseRateAnnual = Math.max(0.02, Math.min(0.20,
-        state.macro.baseRateAnnual + ev.macroImpact.baseRateDelta));
+        state.macro.baseRateAnnual + impact.baseRateDelta));
     }
-    if (ev.macroImpact?.inflationDelta) {
+    if (impact.inflationDelta) {
       state.macro.inflationAnnual = Math.max(0.00, Math.min(0.12,
-        state.macro.inflationAnnual + ev.macroImpact.inflationDelta));
+        state.macro.inflationAnnual + impact.inflationDelta));
     }
-    if (ev.macroImpact?.fxDelta) {
+    if (impact.fxDelta) {
       state.macro.fxUSDBRL = Math.max(3.5, Math.min(7.5,
-        state.macro.fxUSDBRL * (1 + ev.macroImpact.fxDelta)));
+        state.macro.fxUSDBRL * (1 + impact.fxDelta)));
     }
-    if (ev.macroImpact?.activityDelta) {
+    if (impact.activityDelta) {
       state.macro.activityAnnual = Math.max(-0.05, Math.min(0.08,
-        state.macro.activityAnnual + ev.macroImpact.activityDelta));
+        state.macro.activityAnnual + impact.activityDelta));
     }
-    if (ev.macroImpact?.riskDelta) {
+    if (impact.riskDelta) {
       state.macro.riskIndex = Math.max(0.05, Math.min(0.95,
-        state.macro.riskIndex + ev.macroImpact.riskDelta));
+        state.macro.riskIndex + impact.riskDelta));
     }
   }
 }
 
-export function mergeEventImpacts(returns: Record<string, number>, events: EventCard[]): Record<string, number> {
+export function mergeEventImpacts(returns: Record<string, number>, events: PersistentEvent[]): Record<string, number> {
   const merged = { ...returns };
   for (const ev of events) {
-    for (const [assetId, shock] of Object.entries(ev.impact)) {
+    for (const [assetId, shock] of Object.entries(ev.card.impact)) {
       merged[assetId] = (merged[assetId] ?? 0) + shock;
     }
   }

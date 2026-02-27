@@ -19,9 +19,11 @@ export function simulatePeriod(state: GameState, days: number): PeriodResult {
   for (let i = 0; i < days; i++) {
     const result = simulateDay(state);
     allEvents.push(...result.events);
-    const eq = result.equityAfter;
+    const eq = result.metrics.equityAfter;
     if (eq < minEquity) minEquity = eq;
     if (eq > maxEquity) maxEquity = eq;
+    // Mutate state for the next simple loop in period simulation
+    Object.assign(state, result.state);
   }
 
   const endEquity = computeEquity(state);
