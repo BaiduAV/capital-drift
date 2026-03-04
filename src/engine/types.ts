@@ -6,7 +6,20 @@ export type AssetClass = 'RF_POS' | 'RF_PRE' | 'RF_IPCA' | 'DEBENTURE' | 'STOCK'
 
 export type CorrGroup = 'EQUITY' | 'CRYPTO' | 'FIXED_INCOME';
 
-export type Sector = 'BANK' | 'ENERGY' | 'RETAIL' | 'TECH' | 'TOTAL_MARKET' | 'DIVIDENDS' | 'SMALL_CAPS' | 'BRICK' | 'PAPER' | 'LOGISTICS' | 'HYBRID' | 'NONE';
+export type Sector =
+  | "ENERGIA" | "BANCOS" | "VAREJO" | "AGRO"
+  | "TECH" | "MINERACAO" | "SAUDE"
+  | "INDUSTRIA" | "UTILITIES" | "IMOB"
+  | "TELECOM" | "LOGISTICA"
+  | "TOTAL_MARKET" | "DIVIDENDS" | "SMALL_CAPS" | "BRICK"
+  | "PAPER" | "HYBRID" | "NONE";
+
+export type SectorBubbleState = {
+  sentiment: number;
+  bubble: number;
+  stress: number;
+  ipoHeat: number;
+};
 
 export type CreditRating = 'AA' | 'BBB';
 
@@ -30,6 +43,7 @@ export interface AssetState {
   lastReturn: number;
   haltedUntilDay: number | null;
   priceHistory: number[]; // last 90 prices
+  isBankrupt?: boolean;
 }
 
 export interface Position {
@@ -72,6 +86,10 @@ export interface GameState {
   seed: number;
   rngState: number;
   events: { active: PersistentEvent[] };
+  market: {
+    sectors: Partial<Record<Sector, SectorBubbleState>>;
+    newListingsCount: Partial<Record<Sector, number>>;
+  };
 }
 
 export interface PersistentEvent {
@@ -84,7 +102,7 @@ export interface PersistentEvent {
 
 export type SimulationState = GameState;
 
-export type EventType = 'RATE_HIKE' | 'RATE_CUT' | 'INFLATION_UP' | 'INFLATION_DOWN' | 'SECTOR_BOOM' | 'SECTOR_BUST' | 'CRYPTO_HACK' | 'CRYPTO_EUPHORIA_EVENT' | 'CRYPTO_RUG_PULL' | 'CREDIT_DOWNGRADE' | 'FX_SHOCK' | 'FISCAL_STRESS' | 'COMMODITY_BOOM';
+export type EventType = 'RATE_HIKE' | 'RATE_CUT' | 'INFLATION_UP' | 'INFLATION_DOWN' | 'SECTOR_BOOM' | 'SECTOR_BUST' | 'CRYPTO_HACK' | 'CRYPTO_EUPHORIA_EVENT' | 'CRYPTO_RUG_PULL' | 'CREDIT_DOWNGRADE' | 'FX_SHOCK' | 'FISCAL_STRESS' | 'COMMODITY_BOOM' | 'SECTOR_CRASH';
 
 export interface EventCard {
   type: EventType;
@@ -131,6 +149,7 @@ export interface DayContext {
     macro: RNG;
     events: RNG;
     agents: RNG;
+    names: RNG;
   };
 }
 

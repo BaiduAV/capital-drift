@@ -26,12 +26,12 @@ function MacroItem({ label, value, trend }: { label: string; value: string; tren
   }, [value]);
 
   return (
-    <div className="flex items-center gap-1.5 px-2 py-1.5 rounded bg-secondary/50 border border-border transition-colors duration-300">
-      <span className="text-[10px] text-muted-foreground uppercase tracking-wider whitespace-nowrap">{label}</span>
-      <span key={key} className="text-xs font-mono font-semibold text-foreground ml-auto animate-value-flash">
+    <div className="flex items-center gap-1 px-1.5 py-1 rounded bg-secondary/50 border border-border transition-colors duration-300 min-w-0 overflow-hidden">
+      <span className="text-[9px] text-muted-foreground uppercase tracking-wider whitespace-nowrap shrink-0">{label}</span>
+      <span key={key} className="text-[11px] font-mono font-semibold text-foreground ml-auto whitespace-nowrap animate-value-flash">
         {value}
       </span>
-      {trend}
+      {trend && <span className="shrink-0">{trend}</span>}
     </div>
   );
 }
@@ -69,7 +69,7 @@ export default function MacroPanel() {
   const formatPct = (v: number) => (v * 100).toFixed(2) + '%';
 
   return (
-    <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-8 gap-1.5">
+    <div className="grid grid-cols-2 sm:grid-cols-4 gap-1 overflow-hidden">
       <MacroItem
         label="SELIC"
         value={formatPct(macro.baseRateAnnual)}
@@ -96,13 +96,12 @@ export default function MacroPanel() {
         trend={<TrendArrow current={macro.riskIndex} previous={prevMacro?.riskIndex} />}
       />
       <div
-        className={`flex items-center gap-1.5 px-2 py-1.5 rounded border border-border bg-secondary/50 transition-all duration-500 ${
-          regimeTransition ? 'scale-105' : ''
-        } ${regime === 'CRISIS' || regime === 'BULL' || regime === 'CRYPTO_EUPHORIA' ? 'animate-regime-glow' : ''}`}
+        className={`flex items-center gap-1 px-1.5 py-1 rounded border border-border bg-secondary/50 transition-all duration-500 ${regimeTransition ? 'scale-105' : ''
+          } ${regime === 'CRISIS' || regime === 'BULL' || regime === 'CRYPTO_EUPHORIA' ? 'animate-regime-glow' : ''}`}
         style={{ '--regime-glow-color': regimeGlowColors[regime] } as React.CSSProperties}
       >
-        <span className="text-[10px] text-muted-foreground uppercase tracking-wider">Regime</span>
-        <span className={`regime-badge ml-auto regime-${regime} transition-all duration-500 ${regimeTransition ? 'animate-scale-in' : ''}`}>
+        <span className="text-[9px] text-muted-foreground uppercase tracking-wider">Regime</span>
+        <span className={`regime-badge ml-auto text-[10px] regime-${regime} transition-all duration-500 ${regimeTransition ? 'animate-scale-in' : ''}`}>
           {regimeLabels[locale]?.[regime] ?? regime}
         </span>
       </div>
