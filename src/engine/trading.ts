@@ -4,6 +4,9 @@ import type { GameState, TradeQuote } from './types';
 import { COSTS } from './params';
 
 export function quoteBuy(state: GameState, assetId: string, quantity: number): TradeQuote {
+  if (quantity <= 0) {
+    return { assetId, quantity, unitPrice: 0, totalCost: 0, fees: 0, spread: 0, canExecute: false, reason: 'trade.invalid_quantity' };
+  }
   const def = state.assetCatalog[assetId];
   const asset = state.assets[assetId];
   if (!def || !asset) {
@@ -38,6 +41,9 @@ export function quoteBuy(state: GameState, assetId: string, quantity: number): T
 }
 
 export function quoteSell(state: GameState, assetId: string, quantity: number): TradeQuote {
+  if (quantity <= 0) {
+    return { assetId, quantity, unitPrice: 0, totalCost: 0, fees: 0, spread: 0, canExecute: false, reason: 'trade.invalid_quantity' };
+  }
   const def = state.assetCatalog[assetId];
   const asset = state.assets[assetId];
   if (!def || !asset) {

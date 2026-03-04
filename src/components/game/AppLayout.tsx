@@ -16,7 +16,9 @@ import {
   X,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { KPIChip } from '@/components/ui/KPIChip';
 import { cn } from '@/lib/utils';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 
 const navItems = [
   { path: '/', icon: LayoutDashboard, labelEn: 'Dashboard', labelPt: 'Painel' },
@@ -98,14 +100,26 @@ export default function AppLayout() {
               PATRIMÔNIO
             </span>
           )}
-          <Button
-            variant="ghost"
-            size="icon"
-            className="ml-auto h-7 w-7 text-muted-foreground hover:text-foreground"
-            onClick={() => setCollapsed(!collapsed)}
-          >
-            {collapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
-          </Button>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="ml-auto h-7 w-7 text-muted-foreground hover:text-foreground"
+                onClick={() => setCollapsed(!collapsed)}
+                aria-label={collapsed
+                  ? (locale === 'pt-BR' ? 'Expandir menu' : 'Expand menu')
+                  : (locale === 'pt-BR' ? 'Recolher menu' : 'Collapse menu')}
+              >
+                {collapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent side="right">
+              {collapsed
+                ? (locale === 'pt-BR' ? 'Expandir menu' : 'Expand menu')
+                : (locale === 'pt-BR' ? 'Recolher menu' : 'Collapse menu')}
+            </TooltipContent>
+          </Tooltip>
         </div>
         {sidebarContent}
       </aside>
@@ -132,6 +146,7 @@ export default function AppLayout() {
             size="icon"
             className="h-7 w-7 text-muted-foreground hover:text-foreground"
             onClick={() => setMobileOpen(false)}
+            aria-label={locale === 'pt-BR' ? 'Fechar menu' : 'Close menu'}
           >
             <X className="h-4 w-4" />
           </Button>
@@ -150,6 +165,7 @@ export default function AppLayout() {
               size="icon"
               className="h-8 w-8 md:hidden text-muted-foreground hover:text-foreground shrink-0"
               onClick={() => setMobileOpen(true)}
+              aria-label={locale === 'pt-BR' ? 'Abrir menu' : 'Open menu'}
             >
               <Menu className="h-5 w-5" />
             </Button>
@@ -161,23 +177,27 @@ export default function AppLayout() {
             </span>
           </div>
 
-          {/* Right: macro stats — hide less important ones on small screens */}
-          <div className="flex items-center gap-3 sm:gap-6 text-xs font-mono shrink-0">
-            <div className="hidden sm:block">
-              <span className="text-muted-foreground">{locale === 'pt-BR' ? 'SELIC' : 'RATE'}: </span>
-              <span className="text-terminal-cyan">{(state.macro.baseRateAnnual * 100).toFixed(2)}%</span>
-            </div>
-            <div className="hidden sm:block">
-              <span className="text-muted-foreground">IPCA: </span>
-              <span className="text-terminal-amber">{(state.macro.inflationAnnual * 100).toFixed(2)}%</span>
-            </div>
-            <div>
-              <span className="hidden xs:inline text-muted-foreground">{locale === 'pt-BR' ? 'PAT' : 'EQ'}: </span>
-              <span className="text-foreground terminal-glow">{formatCurrency(equity)}</span>
-            </div>
-            <span className={totalReturn >= 0 ? 'price-up' : 'price-down'}>
-              {formatPct(totalReturn)}
-            </span>
+          {/* Right: Premium macro stats */}
+          <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+            <KPIChip
+              className="hidden sm:inline-flex"
+              label={locale === 'pt-BR' ? 'SELIC' : 'RATE'}
+              value={`${(state.macro.baseRateAnnual * 100).toFixed(2)}%`}
+            />
+            <KPIChip
+              className="hidden sm:inline-flex"
+              label="IPCA"
+              value={`${(state.macro.inflationAnnual * 100).toFixed(2)}%`}
+            />
+            <KPIChip
+              label={locale === 'pt-BR' ? 'PAT' : 'EQ'}
+              value={formatCurrency(equity)}
+            />
+            <KPIChip
+              label={locale === 'pt-BR' ? 'RET' : 'RET'}
+              value={formatPct(totalReturn)}
+              trend={totalReturn > 0 ? 'up' : totalReturn < 0 ? 'down' : 'neutral'}
+            />
           </div>
         </header>
 

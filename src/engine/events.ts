@@ -36,6 +36,20 @@ function generateSingleEvent(state: GameState, rng: RNG): EventCard | null {
     ['COMMODITY_BOOM', regime === 'BULL' ? 3 : regime === 'CRYPTO_EUPHORIA' ? 2 : 0.5],
   ];
 
+  // Dynamically check for high bubble + stress to trigger SECTOR_CRASH
+  if (state.market?.sectors) {
+    let hasExtremeBubble = false;
+    for (const [sector, bs] of Object.entries(state.market.sectors)) {
+      if (bs.bubble > 1.2 && bs.stress > 0.8) {
+        hasExtremeBubble = true;
+        break;
+      }
+    }
+    if (hasExtremeBubble) {
+      weights.push(['SECTOR_CRASH' as EventType, 10.0]); // Very high weight if extreme conditions are met
+    }
+  }
+
   const totalWeight = weights.reduce((s, [, w]) => s + w, 0);
   let roll = rng.next() * totalWeight;
   let picked: EventType = 'RATE_HIKE';
@@ -75,7 +89,7 @@ function generateSingleEvent(state: GameState, rng: RNG): EventCard | null {
       const delta = randRange(rng, EVENT_IMPACTS.inflationUp.inflDelta as [number, number]);
       macroImpact = { inflationDelta: delta };
       for (const [id, def] of Object.entries(state.assetCatalog)) {
-        if (def.sector === 'RETAIL') impact[id] = -0.01 * rng.next();
+        if (def.sector === 'ENERGIA') impact[id] = -0.01 * rng.next();
       }
       magnitude = Math.abs(delta);
       break;
@@ -166,15 +180,23 @@ function generateSingleEvent(state: GameState, rng: RNG): EventCard | null {
       magnitude = actD;
       break;
     }
+    case 'SECTOR_CRASH' as any: {
+      const { assets } = pickSector(state, rng);
+      const shock = -(0.10 + rng.next() * 0.15); // Severe immediate shock
+      for (const id of assets) impact[id] = shock;
+      magnitude = Math.abs(shock);
+      break;
+    }
   }
 
-  const typeToKey: Record<EventType, string> = {
+  const typeToKey: Record<EventType | 'SECTOR_CRASH', string> = {
     RATE_HIKE: 'rate_hike', RATE_CUT: 'rate_cut',
     INFLATION_UP: 'inflation_up', INFLATION_DOWN: 'inflation_down',
     SECTOR_BOOM: 'sector_boom', SECTOR_BUST: 'sector_bust',
     CRYPTO_HACK: 'crypto_hack', CRYPTO_EUPHORIA_EVENT: 'crypto_euphoria',
     CRYPTO_RUG_PULL: 'crypto_rug_pull', CREDIT_DOWNGRADE: 'credit_downgrade',
     FX_SHOCK: 'fx_shock', FISCAL_STRESS: 'fiscal_stress', COMMODITY_BOOM: 'commodity_boom',
+    SECTOR_CRASH: 'sector_crash',
   };
 
   return {
