@@ -5,9 +5,23 @@ import type { GameState } from './types';
 const STORAGE_KEY = 'patrimonio_save';
 const LOCALE_KEY = 'patrimonio_locale';
 
+// Simple deterministic hash for strings (FNV-1a 32-bit simplified)
+function generateChecksum(str: string): number {
+  let h = 0x811c9dc5;
+  for (let i = 0; i < str.length; i++) {
+    h ^= str.charCodeAt(i);
+    h = Math.imul(h, 0x01000193);
+  }
+  return h >>> 0;
+}
+
+const SECURE_SALT = 'patrimonio_secure_salt_v1';
+
 export function saveGame(state: GameState): void {
   try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    const dataStr = JSON.stringify(state);
+    const hash = generateChecksum(dataStr + SECURE_SALT);
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({ hash, data: dataStr }));
   } catch (e) {
     console.warn('Failed to save game:', e);
   }
@@ -17,7 +31,22 @@ export function loadGame(): GameState | null {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) return null;
-    const state = JSON.parse(raw) as GameState;
+
+    const parsed = JSON.parse(raw);
+    let state: GameState;
+
+    if (parsed && typeof parsed.hash === 'number' && typeof parsed.data === 'string') {
+      const expectedHash = generateChecksum(parsed.data + SECURE_SALT);
+      if (parsed.hash !== expectedHash) {
+        console.warn('Save file checksum validation failed! Possible tampering detected.');
+        return null;
+      }
+      state = JSON.parse(parsed.data) as GameState;
+    } else {
+      // Legacy unhashed save
+      state = parsed as GameState;
+    }
+
     // Backwards compat: add priceHistory if missing
     for (const [id, a] of Object.entries(state.assets)) {
       if (!a.priceHistory) a.priceHistory = [a.price];

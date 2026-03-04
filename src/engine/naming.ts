@@ -45,7 +45,7 @@ export function generateAssetIdentity(rng: RNG, sector: Sector, listIndex: numbe
 
     // To differentiate identical tickers if they get generated
     const idSuffix = listIndex > 0 ? `${listIndex}` : '';
-    let ticker = `${paddedTicker}${tickerNum}`;
+    const ticker = `${paddedTicker}${tickerNum}`;
 
     // This is a naive generated name. A real app would have localized parts.
     const nameKey = `asset.${ticker.toLowerCase()}`;
