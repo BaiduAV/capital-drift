@@ -105,8 +105,7 @@ export default function AppLayout() {
             size="icon"
             className="ml-auto h-7 w-7 text-muted-foreground hover:text-foreground"
             onClick={() => setCollapsed(!collapsed)}
-            aria-label={collapsed ? (locale === 'pt-BR' ? 'Expandir menu' : 'Expand menu') : (locale === 'pt-BR' ? 'Recolher menu' : 'Collapse menu')}
-            title={collapsed ? (locale === 'pt-BR' ? 'Expandir menu' : 'Expand menu') : (locale === 'pt-BR' ? 'Recolher menu' : 'Collapse menu')}
+            aria-label={collapsed ? (locale === 'pt-BR' ? 'Expandir Menu' : 'Expand Sidebar') : (locale === 'pt-BR' ? 'Recolher Menu' : 'Collapse Sidebar')}
           >
             {collapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
           </Button>
@@ -136,8 +135,7 @@ export default function AppLayout() {
             size="icon"
             className="h-7 w-7 text-muted-foreground hover:text-foreground"
             onClick={() => setMobileOpen(false)}
-            aria-label={locale === 'pt-BR' ? 'Fechar menu' : 'Close menu'}
-            title={locale === 'pt-BR' ? 'Fechar menu' : 'Close menu'}
+            aria-label={locale === 'pt-BR' ? 'Fechar Menu' : 'Close Menu'}
           >
             <X className="h-4 w-4" />
           </Button>
@@ -156,8 +154,7 @@ export default function AppLayout() {
               size="icon"
               className="h-8 w-8 md:hidden text-muted-foreground hover:text-foreground shrink-0"
               onClick={() => setMobileOpen(true)}
-              aria-label={locale === 'pt-BR' ? 'Abrir menu' : 'Open menu'}
-              title={locale === 'pt-BR' ? 'Abrir menu' : 'Open menu'}
+              aria-label={locale === 'pt-BR' ? 'Abrir Menu' : 'Open Menu'}
             >
               <Menu className="h-5 w-5" />
             </Button>
