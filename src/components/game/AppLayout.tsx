@@ -100,26 +100,15 @@ export default function AppLayout() {
               PATRIMÔNIO
             </span>
           )}
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="ml-auto h-7 w-7 text-muted-foreground hover:text-foreground"
-                onClick={() => setCollapsed(!collapsed)}
-                aria-label={collapsed
-                  ? (locale === 'pt-BR' ? 'Expandir menu' : 'Expand menu')
-                  : (locale === 'pt-BR' ? 'Recolher menu' : 'Collapse menu')}
-              >
-                {collapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent side="right">
-              {collapsed
-                ? (locale === 'pt-BR' ? 'Expandir menu' : 'Expand menu')
-                : (locale === 'pt-BR' ? 'Recolher menu' : 'Collapse menu')}
-            </TooltipContent>
-          </Tooltip>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="ml-auto h-7 w-7 text-muted-foreground hover:text-foreground"
+            onClick={() => setCollapsed(!collapsed)}
+            aria-label={collapsed ? (locale === 'pt-BR' ? 'Expandir menu' : 'Expand sidebar') : (locale === 'pt-BR' ? 'Recolher menu' : 'Collapse sidebar')}
+          >
+            {collapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
+          </Button>
         </div>
         {sidebarContent}
       </aside>

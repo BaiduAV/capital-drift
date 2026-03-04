@@ -155,7 +155,7 @@ export default function Market() {
                           className="h-6 w-6 p-0 text-muted-foreground hover:text-primary"
                           onClick={(e) => { e.stopPropagation(); navigate(`/trade?asset=${id}`); }}
                           disabled={!!halted}
-                          aria-label={locale === 'pt-BR' ? `Negociar ${id}` : `Trade ${id}`}
+                          aria-label={locale === 'pt-BR' ? `Comprar ${id}` : `Buy ${id}`}
                         >
                           <ShoppingCart className="h-3 w-3" />
                         </Button>
