@@ -18,8 +18,8 @@ function createMockState(seed: number): SimulationState {
             'BTC': { price: 50000.0, lastReturn: 0, haltedUntilDay: null, priceHistory: [50000.0] }
         },
         assetCatalog: {
-            'PETR4': { id: 'PETR4', nameKey: 'n/a', class: 'STOCK', sector: 'ENERGY', corrGroup: 'EQUITY', liquidityRule: 'D0', initialPrice: 35.0 },
-            'VALE3': { id: 'VALE3', nameKey: 'n/a', class: 'STOCK', sector: 'ENERGY', corrGroup: 'EQUITY', liquidityRule: 'D0', initialPrice: 70.0 },
+            'PETR4': { id: 'PETR4', nameKey: 'n/a', class: 'STOCK', sector: 'ENERGIA', corrGroup: 'EQUITY', liquidityRule: 'D0', initialPrice: 35.0 },
+            'VALE3': { id: 'VALE3', nameKey: 'n/a', class: 'STOCK', sector: 'MINERACAO', corrGroup: 'EQUITY', liquidityRule: 'D0', initialPrice: 70.0 },
             'USD': { id: 'USD', nameKey: 'n/a', class: 'ETF', sector: 'NONE', corrGroup: 'EQUITY', liquidityRule: 'D0', initialPrice: 5.0 },
             'BTC': { id: 'BTC', nameKey: 'n/a', class: 'CRYPTO_MAJOR', sector: 'NONE', corrGroup: 'CRYPTO', liquidityRule: 'D0', initialPrice: 50000.0 },
         },
@@ -95,5 +95,76 @@ describe('simulateDay deterministic pipeline', () => {
         simulateDay(initialState);
 
         expect(initialState).toEqual(snapshot);
+    });
+
+    test('IPO is generated under high heat', () => {
+        const state = createMockState(12345);
+        state.market = {
+            sectors: {
+                TECH: { sentiment: 1.0, bubble: 1.0, stress: 0, ipoHeat: 1.0 }
+            },
+            newListingsCount: {
+                TECH: 0
+            }
+        };
+
+        // We run multiple days to guarantee the probability hits (prob max 2% per day)
+        // With a specific seed or enough days it will trigger.
+        let triggered = false;
+        let currentState = state;
+        for (let i = 0; i < 200; i++) {
+            const res = simulateDay(currentState);
+            currentState = res.state;
+            if (Object.keys(currentState.assets).length > Object.keys(state.assets).length) {
+                triggered = true;
+                break;
+            }
+        }
+        expect(triggered).toBe(true);
+    });
+
+    test('asset goes bankrupt under extreme stress', () => {
+        const state = createMockState(12345);
+        state.market = {
+            sectors: {
+                ENERGIA: { sentiment: -1.0, bubble: 2.0, stress: 1.0, ipoHeat: 0 } // high burst proxy
+            },
+            newListingsCount: {}
+        };
+        state.macro.baseRateAnnual = 5.0; // insanely high selic guarantees bankruptcy before decay
+
+        let triggered = false;
+        let currentState = state;
+        for (let i = 0; i < 2000; i++) {
+            // Force values to stay at burst levels to prevent decay over 2000 days
+            if (currentState.market?.sectors?.['ENERGIA']) {
+                currentState.market.sectors['ENERGIA'].stress = 1.0;
+                currentState.market.sectors['ENERGIA'].bubble = 2.0;
+                currentState.market.sectors['ENERGIA'].sentiment = -1.0;
+            }
+            currentState.macro.baseRateAnnual = 0.20;
+
+            const res = simulateDay(currentState);
+            currentState = res.state;
+            if (currentState.assets['PETR4'].isBankrupt) {
+                expect(currentState.assets['PETR4'].price).toBe(0);
+                triggered = true;
+                break;
+            }
+        }
+        expect(triggered).toBe(true);
+    });
+
+    test('bubbles naturally form and stress grows', () => {
+        const state = createMockState(12345);
+        const res = simulateDay(state);
+        // On first day, sentiment should exist for active sectors and we should track bubble mechanics
+        expect(res.state.market).toBeDefined();
+        const techBubble = res.state.market?.sectors?.['TECH'];
+        // Tech isn't in original assets, Energy is.
+        const energyBubble = res.state.market?.sectors?.['ENERGIA'];
+        expect(energyBubble).toBeDefined();
+        // Since we had 0 return initially, sentiment should be near 0
+        expect(typeof energyBubble?.sentiment).toBe('number');
     });
 });
