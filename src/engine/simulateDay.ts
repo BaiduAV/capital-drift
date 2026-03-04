@@ -4,6 +4,9 @@ import type { SimulationState, DayResult, DayContext, PersistentEvent } from './
 import { createRNG } from './rng';
 import { maybeSwitchRegime } from './regimes';
 import { updateMacro } from './macro';
+import { updateSectorBubble } from './bubbles';
+import { generateAssetIdentity } from './naming';
+import { maybeBankruptAsset } from './bankruptcy';
 import { generateReturns, applyReturnsToPrices } from './pricing';
 import { rollEvents, applyEventMacro, mergeEventImpacts } from './events';
 import { processCreditWatchAndDefaults } from './credit';
@@ -24,6 +27,7 @@ function buildDayContext(state: SimulationState, opts?: SimulateDayOptions): Day
       macro: baseRng.fork('macro'),
       events: baseRng.fork('events'),
       agents: baseRng.fork('agents'),
+      names: baseRng.fork('names'),
     }
   };
 }
@@ -32,6 +36,34 @@ function phaseExpectations(state: SimulationState, ctx: DayContext): SimulationS
   const next = structuredClone(state);
   // 1. Regime transition (forward-looking expectations)
   next.regime = maybeSwitchRegime(next, ctx.rng.macro);
+
+  // 1b. Sector bubbles and sentiments
+  if (!next.market) {
+    next.market = { sectors: {}, newListingsCount: {} };
+  }
+
+  // Calculate average recent return for each sector
+  const sectorReturns: Record<string, { sum: number, count: number }> = {};
+  for (const [id, a] of Object.entries(next.assets)) {
+    const def = next.assetCatalog[id];
+    if (!def || !def.sector) continue;
+    if (!sectorReturns[def.sector]) sectorReturns[def.sector] = { sum: 0, count: 0 };
+    sectorReturns[def.sector].sum += a.lastReturn;
+    sectorReturns[def.sector].count += 1;
+  }
+
+  const sectors = Object.keys(sectorReturns) as import('./types').Sector[];
+  for (const sector of sectors) {
+    const sr = sectorReturns[sector];
+    const avgReturn = sr.count > 0 ? sr.sum / sr.count : 0;
+
+    // Bubble update
+    next.market.sectors[sector] = updateSectorBubble(
+      next.market.sectors[sector],
+      { sectorReturn: avgReturn, macro: next.macro }
+    );
+  }
+
   return next;
 }
 
@@ -60,6 +92,50 @@ function phaseShocks(state: SimulationState, ctx: DayContext): { next: Simulatio
 
   // Apply macro impacts from all active events
   applyEventMacro(next, next.events.active);
+
+  // 4b. Dynamic IPOs (Heat > 0.6)
+  if (next.market?.sectors) {
+    const sectors = Object.keys(next.market.sectors) as import('./types').Sector[];
+    for (const sector of sectors) {
+      const heat = next.market.sectors[sector]?.ipoHeat || 0;
+      // Probability of an IPO scales with heat above 0.6
+      if (heat > 0.6) {
+        const prob = (heat - 0.6) * 0.05; // Max 2% per day at 1.0 heat
+        if (ctx.rng.market.next() < prob) {
+          const count = next.market.newListingsCount[sector] || 0;
+          const { ticker, nameKey } = generateAssetIdentity(ctx.rng.names, sector, count);
+
+          next.market.newListingsCount[sector] = count + 1;
+
+          const initialPrice = 10 + 20 * ctx.rng.market.next(); // 10 to 30
+          next.assets[ticker] = { price: initialPrice, lastReturn: 0, haltedUntilDay: null, priceHistory: [initialPrice] };
+          next.assetCatalog[ticker] = {
+            id: ticker,
+            nameKey,
+            class: 'STOCK',
+            sector,
+            corrGroup: 'EQUITY',
+            liquidityRule: 'D0',
+            initialPrice
+          };
+
+          // Generate a trace event for the IPO
+          allGenerated.push({
+            id: `ipo_${next.dayIndex}_${ticker}`,
+            card: {
+              type: 'SECTOR_BOOM', // Reuse just for UI listing or could be custom IPO type
+              titleKey: 'event.ipo.title',
+              descriptionKey: 'event.ipo.desc',
+              impact: {},
+              magnitude: 0
+            },
+            startedAtDay: next.dayIndex,
+            durationDays: 1
+          });
+        }
+      }
+    }
+  }
 
   return { next, generatedEvents: allGenerated };
 }
@@ -122,6 +198,11 @@ function phaseAccountingAndMetrics(
   baseRng.next(); // advance the base seed for the next day
   next.rngState = baseRng.state();
   next.dayIndex++;
+
+  // 11b. Apply bankruptcies
+  for (const [id, a] of Object.entries(next.assets)) {
+    maybeBankruptAsset(id, a, next, ctx.rng.market);
+  }
 
   // Invariants checking
   const errors = checkInvariants(next);

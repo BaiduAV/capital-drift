@@ -3,6 +3,7 @@
 import type { GameState } from './types';
 import type { RNG } from './rng';
 import { DRIFT_VOL, CORR_STRENGTH, CRISIS_CRYPTO_CROSS_LINK, MACRO_TILT, MACRO } from './params';
+import { computeSectorReturn } from './correlation';
 
 export function generateReturns(state: GameState, rng: RNG): Record<string, number> {
   const regime = state.regime;
@@ -12,13 +13,26 @@ export function generateReturns(state: GameState, rng: RNG): Record<string, numb
   const equityFactor = rng.nextGaussian();
   const cryptoFactor = rng.nextGaussian();
 
-  // Macro tilt calculations
-  const macroTiltEquity = MACRO_TILT.equityActivityCoeff * state.macro.activityAnnual
-    - MACRO_TILT.equityRiskCoeff * state.macro.riskIndex;
+  // New Macro Delta format for betas
+  // For simplicity since we don't have the T-1 macro state here cleanly without passing it,
+  // we proxy the "delta" as the drift + current level deviation. We can just use the current levels 
+  // scaled reasonably for the formulas, or rely on macro.riskIndex directly.
+  const macroDelta = {
+    selic: (state.macro.baseRateAnnual - 0.10), // relative to 10%
+    fx: (state.macro.fxUSDBRL - 5.0) / 5.0, // relative to 5.0
+    riskOn: 1.0 - state.macro.riskIndex,
+    commodity: state.macro.activityAnnual * 2.0 // proxy
+  };
 
   const returns: Record<string, number> = {};
 
   for (const [assetId, def] of Object.entries(state.assetCatalog)) {
+    const isBankrupt = state.assets[assetId]?.isBankrupt;
+    if (isBankrupt) {
+      returns[assetId] = 0;
+      continue;
+    }
+
     const dv = DRIFT_VOL[def.class]?.[regime];
     if (!dv) {
       returns[assetId] = 0;
@@ -40,15 +54,20 @@ export function generateReturns(state: GameState, rng: RNG): Record<string, numb
       returns[assetId] = ret;
     } else if (def.corrGroup === 'EQUITY') {
       if (assetId === 'USD') {
-        // USD ETF: return tracks fxUSDBRL regime drift + small noise
         const fxDrift = MACRO.fxUSDBRL.regimeDrift[regime];
         const fxNoise = rng.nextGaussian() * MACRO.fxUSDBRL.dailyVol * 0.5;
         returns[assetId] = fxDrift + fxNoise;
       } else {
-        const idioNoise = rng.nextGaussian();
-        returns[assetId] = drift + macroTiltEquity + vol * (
-          corrStrength * equityFactor + (1 - corrStrength) * idioNoise
-        );
+        const sectorBubble = state.market?.sectors?.[def.sector];
+
+        const shocks = {
+          marketShock: equityFactor * vol,
+          sectorShock: rng.nextGaussian() * vol, // Sector specific noise
+          idioShock: rng.nextGaussian() * vol
+        };
+
+        const secReturn = computeSectorReturn(def.sector, macroDelta, shocks, sectorBubble);
+        returns[assetId] = drift + secReturn;
       }
     } else if (def.corrGroup === 'CRYPTO') {
       const idioNoise = rng.nextGaussian();
