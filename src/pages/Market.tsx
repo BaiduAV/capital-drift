@@ -110,40 +110,61 @@ export default function Market() {
         </div>
       )}
 
-      {/* Screener: Lista detalhada */}
-      {viewTab === 'screener' && (
-        <SectionCard
-          title={locale === 'pt-BR' ? 'Screener de Ativos' : 'Asset Screener'}
-          noPadding
-          action={
-            <div className="hidden sm:flex items-center gap-1">
-              {CLASS_TABS.map(ct => (
-                <Button
-                  key={ct.key}
-                  variant={classFilter === ct.key ? 'default' : 'ghost'}
-                  size="sm"
-                  className="h-7 text-xs font-mono"
-                  onClick={() => setClassFilter(ct.key)}
-                >
-                  {locale === 'pt-BR' ? ct.labelPt : ct.labelEn}
-                </Button>
-              ))}
-            </div>
-          }
-        >
-          {/* Mobile filter */}
-          <div className="p-2 sm:hidden flex overflow-x-auto gap-1 border-b border-border/50 scrollbar-terminal">
-            {CLASS_TABS.map(ct => (
-              <Button
-                key={ct.key}
-                variant={classFilter === ct.key ? 'default' : 'secondary'}
-                size="sm"
-                className="h-7 text-xs font-mono shrink-0"
-                onClick={() => setClassFilter(ct.key)}
-              >
-                {locale === 'pt-BR' ? ct.labelPt : ct.labelEn}
-              </Button>
-            ))}
+      <Card className="terminal-card">
+        <CardContent className="p-0">
+          <div className="overflow-x-auto">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="text-xs">{locale === 'pt-BR' ? 'Ativo' : 'Asset'}</TableHead>
+                  <TableHead className="text-xs text-right">{locale === 'pt-BR' ? 'Preço' : 'Price'}</TableHead>
+                  <TableHead className="text-xs text-right">{locale === 'pt-BR' ? 'Variação' : 'Change'}</TableHead>
+                  <TableHead className="text-xs hidden sm:table-cell">{locale === 'pt-BR' ? 'Classe' : 'Class'}</TableHead>
+                  <TableHead className="text-xs hidden md:table-cell">{locale === 'pt-BR' ? 'Setor' : 'Sector'}</TableHead>
+                  <TableHead className="text-xs text-right">{locale === 'pt-BR' ? 'Posição' : 'Position'}</TableHead>
+                  <TableHead className="text-xs text-center w-16"></TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {assets.map(({ id, def, assetState, position }) => {
+                  const halted = assetState.haltedUntilDay && state.dayIndex < assetState.haltedUntilDay;
+                  return (
+                    <TableRow
+                      key={id}
+                      className={`${halted ? 'opacity-50' : ''} cursor-pointer hover:bg-muted/50`}
+                      onClick={() => setSelectedAsset(id)}
+                    >
+                      <TableCell className="text-xs font-mono font-medium">
+                        <span className="text-foreground">{id}</span>
+                        <span className="text-muted-foreground ml-2 hidden sm:inline">{t(def.nameKey)}</span>
+                      </TableCell>
+                      <TableCell className="text-xs font-mono text-right">{formatPrice(assetState.price)}</TableCell>
+                      <TableCell className={`text-xs font-mono text-right ${assetState.lastReturn >= 0 ? 'price-up' : 'price-down'}`}>
+                        {formatPct(assetState.lastReturn)}
+                        {halted && <span className="ml-1 text-accent">⏸</span>}
+                      </TableCell>
+                      <TableCell className="text-[10px] text-muted-foreground hidden sm:table-cell">{def.class}</TableCell>
+                      <TableCell className="text-[10px] text-muted-foreground hidden md:table-cell">{def.sector}</TableCell>
+                      <TableCell className="text-xs font-mono text-right">
+                        {position ? position.quantity : '—'}
+                      </TableCell>
+                      <TableCell className="text-center">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-6 w-6 p-0 text-muted-foreground hover:text-primary"
+                          onClick={(e) => { e.stopPropagation(); navigate(`/trade?asset=${id}`); }}
+                          disabled={!!halted}
+                          aria-label={locale === 'pt-BR' ? `Negociar ${id}` : `Trade ${id}`}
+                        >
+                          <ShoppingCart className="h-3 w-3" />
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
+              </TableBody>
+            </Table>
           </div>
 
           <DataTable
