@@ -61,6 +61,7 @@ const translations: Record<Locale, Record<string, string>> = {
     // Misc
     'missed.drawdown': 'Drawdown significativo ocorreu durante o avanço rápido.',
     'trade.halted': 'Ativo suspenso para negociação.',
+    'trade.invalid_quantity': 'Quantidade inválida.',
     'trade.insufficient_cash': 'Caixa insuficiente.',
     'trade.no_position': 'Posição insuficiente.',
     'credit.watch': 'Sinais de stress no crédito de {asset}.',
@@ -111,6 +112,7 @@ const translations: Record<Locale, Record<string, string>> = {
     'regime.CRISIS': 'Crisis', 'regime.CRYPTO_EUPHORIA': 'Crypto Euphoria',
     'missed.drawdown': 'Significant drawdown occurred during fast-forward.',
     'trade.halted': 'Asset halted for trading.',
+    'trade.invalid_quantity': 'Invalid quantity.',
     'trade.insufficient_cash': 'Insufficient cash.',
     'trade.no_position': 'Insufficient position.',
     'credit.watch': 'Credit stress signals for {asset}.',
