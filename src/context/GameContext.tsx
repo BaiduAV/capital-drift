@@ -55,7 +55,8 @@ export function GameProvider({ children }: { children: ReactNode }) {
     // Save macro before simulation for trend arrows
     setPrevMacro({ ...stateCopy.macro });
     const result = simulateDay(stateCopy);
-    setState(stateCopy);
+    // simulateDay returns new state in result.state (does NOT mutate input)
+    setState(result.state as GameState);
     setDayResults(prev => [...prev.slice(-99), result]);
     return result;
   }, [state]);
@@ -64,6 +65,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
     const stateCopy = structuredClone(state);
     setPrevMacro({ ...stateCopy.macro });
     const result = simulatePeriod(stateCopy, days);
+    // simulatePeriod mutates stateCopy via Object.assign in its loop
     setState(stateCopy);
     return result;
   }, [state]);

@@ -15,6 +15,13 @@ import NewsFeed from '@/components/game/NewsFeed';
 import PortfolioHealth from '@/components/game/PortfolioHealth';
 import QuickActions from '@/components/game/QuickActions';
 
+// New Design System imports
+import { PageHeader } from '@/components/ui/PageHeader';
+import { StatCard } from '@/components/ui/StatCard';
+import { SectionCard } from '@/components/ui/SectionCard';
+import { DataTable } from '@/components/ui/DataTable';
+import { KPIChip } from '@/components/ui/KPIChip';
+
 export default function Dashboard() {
   const { state, locale, equity, advanceDay, fastForward, dayResults, t } = useGame();
   const [lastDay, setLastDay] = useState<DayResult | null>(null);
@@ -90,75 +97,143 @@ export default function Dashboard() {
     });
   }, [state.history.equity, state.history.cdiAccumulated, state.history.inflationAccumulated]);
 
+  // Top positions for snapshot table
+  const topPositions = useMemo(() => {
+    return Object.entries(state.portfolio)
+      .map(([id, pos]) => {
+        const asset = state.assets[id];
+        const costBasis = pos.quantity * pos.avgPrice;
+        const marketValue = pos.quantity * asset.price;
+        const pnl = marketValue - costBasis;
+        return { id, quantity: pos.quantity, avgPrice: pos.avgPrice, price: asset.price, pnl, marketValue };
+      })
+      .sort((a, b) => b.marketValue - a.marketValue)
+      .slice(0, 3);
+  }, [state.portfolio, state.assets]);
+
   return (
-    <div className="space-y-3">
-      {/* T1: MacroPanel */}
-      <MacroPanel />
-
-      {/* T5: Narrative */}
-      <div className="px-1 py-1.5 text-xs font-mono text-muted-foreground italic border-l-2 border-primary/30 pl-3">
-        {narrative}
-      </div>
-
-      {/* T3: Chart + T2: NewsFeed */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-        <Card className="terminal-card md:col-span-2">
-          <CardHeader className="py-2 px-3">
-            <div className="flex items-center justify-between">
-              <CardTitle className="text-xs font-sans text-muted-foreground">
-                {locale === 'pt-BR' ? 'Patrimônio' : 'Equity'}
-              </CardTitle>
-              {currentDD > 0.001 && (
-                <span className="text-[10px] font-mono text-[hsl(var(--terminal-red))]">
-                  Drawdown: {(currentDD * 100).toFixed(1)}%
-                </span>
-              )}
-            </div>
-          </CardHeader>
-          <CardContent className="px-2 pb-2">
-            <ResponsiveContainer width="100%" height={200}>
-              <ComposedChart data={chartData}>
-                <XAxis dataKey="day" tick={{ fontSize: 9 }} stroke="hsl(var(--muted-foreground))" />
-                <YAxis tick={{ fontSize: 9 }} stroke="hsl(var(--muted-foreground))" domain={['auto', 'auto']} />
-                <Tooltip
-                  contentStyle={{ background: 'hsl(220 18% 10%)', border: '1px solid hsl(220 15% 18%)', fontSize: 11, fontFamily: 'JetBrains Mono' }}
-                  labelStyle={{ color: 'hsl(140 60% 70%)' }}
-                />
-                <Area dataKey="nominal" stroke="hsl(140, 70%, 50%)" fill="hsl(140, 70%, 50%)" fillOpacity={0.08} strokeWidth={1.5} name={locale === 'pt-BR' ? 'Nominal' : 'Nominal'} dot={false} />
-                <Line dataKey="real" stroke="hsl(185, 70%, 50%)" strokeWidth={1} strokeDasharray="4 2" name={locale === 'pt-BR' ? 'Real' : 'Real'} dot={false} />
-                <Line dataKey="cdi" stroke="hsl(220, 10%, 50%)" strokeWidth={1} strokeDasharray="2 2" name="CDI" dot={false} />
-                {peak > 0 && <ReferenceLine y={peak} stroke="hsl(35, 90%, 55%)" strokeDasharray="3 3" strokeWidth={0.5} />}
-              </ComposedChart>
-            </ResponsiveContainer>
-          </CardContent>
-        </Card>
-        <NewsFeed />
-      </div>
-
-      {/* Action Bar */}
-      <div className="flex items-center gap-2 flex-wrap">
-        <Button onClick={handleAdvance} size="sm" className="gap-1.5 font-mono text-xs">
-          <Play className="h-3.5 w-3.5" />
-          {locale === 'pt-BR' ? 'Avançar Dia' : 'Next Day'}
-        </Button>
-        {[7, 30, 90].map(d => (
-          <Button key={d} onClick={() => handleFF(d)} variant="secondary" size="sm" className="gap-1.5 font-mono text-xs">
-            <FastForward className="h-3.5 w-3.5" />
-            {d}d
+    <div className="space-y-4">
+      <PageHeader
+        title={locale === 'pt-BR' ? 'Mission Control' : 'Mission Control'}
+        subtitle={narrative}
+      >
+        <div className="flex items-center gap-2">
+          <div className="hidden sm:flex items-center gap-1.5 text-[10px] text-muted-foreground font-mono mr-2">
+            <Keyboard className="h-3 w-3" />
+            <span>N={locale === 'pt-BR' ? 'Próximo' : 'Next'}</span>
+            <span className="text-border">|</span>
+            <span>F=7d</span>
+          </div>
+          <Button onClick={handleAdvance} size="sm" className="gap-1.5 font-mono text-xs shadow-md">
+            <Play className="h-3.5 w-3.5" />
+            {locale === 'pt-BR' ? 'Avançar Dia' : 'Next Day'}
           </Button>
-        ))}
-        <div className="ml-auto flex items-center gap-1.5 text-[10px] text-muted-foreground font-mono">
-          <Keyboard className="h-3 w-3" />
-          <span>N = {locale === 'pt-BR' ? 'Próximo' : 'Next'}</span>
-          <span className="text-border">|</span>
-          <span>F = 7d</span>
+          <Button onClick={() => handleFF(7)} variant="secondary" size="sm" className="gap-1.5 font-mono text-xs shadow-md hidden sm:flex">
+            <FastForward className="h-3.5 w-3.5" />
+            7d
+          </Button>
+        </div>
+      </PageHeader>
+
+      {/* Row 1: Top KPIs */}
+      <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-3">
+        <StatCard
+          label={locale === 'pt-BR' ? 'Patrimônio' : 'Equity'}
+          value={formatCurrency(equity)}
+        />
+        <StatCard
+          label={locale === 'pt-BR' ? 'Retorno Total' : 'Total Return'}
+          value={formatPct((equity - INITIAL_CASH) / INITIAL_CASH)}
+          trend={equity >= INITIAL_CASH ? 'up' : 'down'}
+        />
+        <StatCard
+          label="Drawdown"
+          value={formatPct(-currentDD)}
+          trend={currentDD > 0.1 ? 'down' : 'neutral'}
+        />
+        <StatCard
+          label={locale === 'pt-BR' ? 'Caixa livre' : 'Free Cash'}
+          value={formatPct(equity > 0 ? state.cash / equity : 0)}
+          sub={formatCurrency(state.cash)}
+        />
+        <div className="hidden lg:block">
+          <StatCard
+            label={locale === 'pt-BR' ? 'Regime Atual' : 'Current Regime'}
+            value={
+              <span className={`text-[hsl(var(--terminal-${state.regime === 'BULL' || state.regime === 'CRYPTO_EUPHORIA' ? 'green' : state.regime === 'BEAR' || state.regime === 'CRISIS' ? 'red' : 'cyan'}))]`}>
+                {t(`regime.${state.regime}`)}
+              </span>
+            }
+          />
         </div>
       </div>
 
-      {/* T4 + T6: PortfolioHealth + QuickActions */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-        <PortfolioHealth />
-        <QuickActions />
+      {/* Row 2: Main Chart + Right column */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
+        {/* Left: Chart */}
+        <SectionCard
+          title={locale === 'pt-BR' ? 'Performance do Patrimônio' : 'Equity Performance'}
+          className="lg:col-span-2 h-[340px]"
+          contentClassName="p-2 sm:p-4"
+          action={
+            <div className="flex gap-2">
+              <KPIChip label="CDI" value={formatCurrency(state.history.cdiAccumulated[state.history.cdiAccumulated.length - 1] ?? INITIAL_CASH)} />
+            </div>
+          }
+        >
+          <ResponsiveContainer width="100%" height="100%">
+            <ComposedChart data={chartData}>
+              <XAxis dataKey="day" tick={{ fontSize: 9 }} stroke="hsl(var(--muted-foreground))" />
+              <YAxis tick={{ fontSize: 9 }} stroke="hsl(var(--muted-foreground))" domain={['auto', 'auto']} />
+              <Tooltip
+                contentStyle={{ background: 'hsl(220 18% 10%)', border: '1px solid hsl(220 15% 18%)', fontSize: 11, fontFamily: 'JetBrains Mono' }}
+                labelStyle={{ color: 'hsl(140 60% 70%)' }}
+              />
+              <Area dataKey="nominal" stroke="hsl(140, 70%, 50%)" fill="hsl(140, 70%, 50%)" fillOpacity={0.08} strokeWidth={1.5} name={locale === 'pt-BR' ? 'Nominal' : 'Nominal'} dot={false} />
+              <Line dataKey="real" stroke="hsl(185, 70%, 50%)" strokeWidth={1} strokeDasharray="4 2" name={locale === 'pt-BR' ? 'Real' : 'Real'} dot={false} />
+              <Line dataKey="cdi" stroke="hsl(220, 10%, 50%)" strokeWidth={1} strokeDasharray="2 2" name="CDI" dot={false} />
+              {/* @ts-ignore - Recharts ReferenceLine TS issue */}
+              {peak > 0 && <ReferenceLine y={peak} stroke="hsl(35, 90%, 55%)" strokeDasharray="3 3" strokeWidth={0.5} />}
+            </ComposedChart>
+          </ResponsiveContainer>
+        </SectionCard>
+
+        {/* Right Stack */}
+        <div className="flex flex-col gap-3 lg:h-[340px]">
+          <div className="shrink-0">
+            <MacroPanel />
+          </div>
+          <SectionCard title={locale === 'pt-BR' ? 'Feed de Notícias' : 'News Feed'} className="flex-1 min-h-0 overflow-hidden" noPadding>
+            <NewsFeed />
+          </SectionCard>
+        </div>
+      </div>
+
+      {/* Row 3: Portfolio Snapshot */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
+        <SectionCard title={locale === 'pt-BR' ? 'Top Posições' : 'Top Positions'} className="lg:col-span-2" noPadding>
+          <DataTable
+            data={topPositions}
+            keyExtractor={(item) => item.id}
+            onRowClick={(item) => navigate(`/trade?asset=${item.id}`)}
+            emptyMessage={locale === 'pt-BR' ? 'Nenhuma posição na carteira.' : 'No positions in portfolio.'}
+            emptyAction={<Button size="sm" onClick={() => navigate('/market')}>{locale === 'pt-BR' ? 'Ir para Mercado' : 'Go to Market'}</Button>}
+            columns={[
+              { key: 'id', header: locale === 'pt-BR' ? 'Ativo' : 'Asset', render: (item) => <span className="font-semibold">{item.id}</span> },
+              { key: 'qty', header: 'Qty', align: 'right', render: (item) => item.quantity },
+              { key: 'price', header: locale === 'pt-BR' ? 'Preço' : 'Price', align: 'right', render: (item) => formatCurrency(item.price) },
+              {
+                key: 'pnl', header: 'PnL', align: 'right', render: (item) => (
+                  <span className={item.pnl >= 0 ? 'price-up' : 'price-down'}>{formatCurrency(item.pnl)}</span>
+                )
+              }
+            ]}
+          />
+        </SectionCard>
+        <div className="flex flex-col gap-3">
+          <QuickActions />
+          <PortfolioHealth />
+        </div>
       </div>
 
       {/* Day Result */}
@@ -222,24 +297,6 @@ function DayResultCard({ day, locale, formatPct, navigate, t }: {
             ))}
           </div>
         )}
-        <div className="flex gap-6 flex-wrap">
-          <div>
-            <TrendingUp className="h-3 w-3 inline mr-1 text-[hsl(var(--terminal-green))]" />
-            {day.marketSummary.topGainers.map(id => (
-              <span key={id} className="mr-2 text-[hsl(var(--terminal-green))] cursor-pointer hover:underline" onClick={() => navigate(`/trade?asset=${id}`)}>
-                {id}
-              </span>
-            ))}
-          </div>
-          <div>
-            <TrendingDown className="h-3 w-3 inline mr-1 text-[hsl(var(--terminal-red))]" />
-            {day.marketSummary.topLosers.map(id => (
-              <span key={id} className="mr-2 text-[hsl(var(--terminal-red))] cursor-pointer hover:underline" onClick={() => navigate(`/trade?asset=${id}`)}>
-                {id}
-              </span>
-            ))}
-          </div>
-        </div>
       </CardContent>
     </Card>
   );
