@@ -223,6 +223,7 @@ function phaseAccountingAndMetrics(
       equityBefore,
       equityAfter,
       dividendsPaid,
+      dividendDetails,
     },
     warnings,
     trace: {
