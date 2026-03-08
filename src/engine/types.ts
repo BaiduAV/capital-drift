@@ -2,9 +2,9 @@
 
 export type RegimeId = 'CALM' | 'BULL' | 'BEAR' | 'CRISIS' | 'CRYPTO_EUPHORIA';
 
-export type AssetClass = 'RF_POS' | 'RF_PRE' | 'RF_IPCA' | 'DEBENTURE' | 'STOCK' | 'ETF' | 'FII' | 'CRYPTO_MAJOR' | 'CRYPTO_ALT';
+export type AssetClass = 'RF_POS' | 'RF_PRE' | 'RF_IPCA' | 'DEBENTURE' | 'STOCK' | 'ETF' | 'FII' | 'CRYPTO_MAJOR' | 'CRYPTO_ALT' | 'FX';
 
-export type CorrGroup = 'EQUITY' | 'CRYPTO' | 'FIXED_INCOME';
+export type CorrGroup = 'EQUITY' | 'CRYPTO' | 'FIXED_INCOME' | 'FX';
 
 export type Sector =
   | "ENERGIA" | "BANCOS" | "VAREJO" | "AGRO"
