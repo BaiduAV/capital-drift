@@ -213,8 +213,8 @@ export default function AppLayout() {
               <Menu className="h-5 w-5" />
             </Button>
             {(() => { const RegimeIcon = REGIME_ICON[state.regime]; return (
-              <span className={`regime-badge regime-${state.regime} shrink-0 inline-flex items-center gap-1`}>
-                <RegimeIcon className="h-3.5 w-3.5" />
+              <span key={state.regime} className={`regime-badge regime-${state.regime} shrink-0 inline-flex items-center gap-1 animate-scale-in`}>
+                <RegimeIcon className="h-3.5 w-3.5 animate-[spin_0.5s_ease-out]" />
                 {t(`regime.${state.regime}`)}
               </span>
             ); })()}
