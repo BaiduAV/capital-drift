@@ -1,4 +1,4 @@
-// ── Asset Catalog: 32 assets ──
+// ── Asset Catalog: 33 assets ──
 
 import type { AssetDefinition } from './types';
 import { DIVIDENDS } from './params';
@@ -22,43 +22,43 @@ export function buildAssetCatalog(seed: number): Record<string, AssetDefinition>
     { id: 'DEBBBB', nameKey: 'asset.debbbb', class: 'DEBENTURE', sector: 'NONE', corrGroup: 'FIXED_INCOME', liquidityRule: 'D7', creditRating: 'BBB', initialPrice: 100 },
 
     // ── Stocks (12) ──
-    ...(['BANK1', 'BANK2', 'BANK3'] as const).map((id, i) => ({
+    ...(['ITUB3', 'BBDC4', 'SANB3'] as const).map((id, i) => ({
       id, nameKey: `asset.${id.toLowerCase()}`, class: 'STOCK' as const, sector: 'BANCOS' as const, corrGroup: 'EQUITY' as const, liquidityRule: 'D0' as const,
       dividendYieldAnnual: 0, dividendPeriodDays: DIVIDENDS.stockPeriodDays, initialPrice: 25 + i * 5,
     })),
-    ...(['ENER1', 'ENER2', 'ENER3'] as const).map((id, i) => ({
+    ...(['ELET3', 'ENGI4', 'CPFE3'] as const).map((id, i) => ({
       id, nameKey: `asset.${id.toLowerCase()}`, class: 'STOCK' as const, sector: 'ENERGIA' as const, corrGroup: 'EQUITY' as const, liquidityRule: 'D0' as const,
       dividendYieldAnnual: 0, dividendPeriodDays: DIVIDENDS.stockPeriodDays, initialPrice: 20 + i * 4,
     })),
-    ...(['RET1', 'RET2', 'RET3'] as const).map((id, i) => ({
+    ...(['MGLU3', 'LREN3', 'AMER3'] as const).map((id, i) => ({
       id, nameKey: `asset.${id.toLowerCase()}`, class: 'STOCK' as const, sector: 'VAREJO' as const, corrGroup: 'EQUITY' as const, liquidityRule: 'D0' as const,
       dividendYieldAnnual: 0, dividendPeriodDays: DIVIDENDS.stockPeriodDays, initialPrice: 15 + i * 3,
     })),
-    ...(['TECH1', 'TECH2', 'TECH3'] as const).map((id, i) => ({
+    ...(['TOTS3', 'LWSA3', 'CASH3'] as const).map((id, i) => ({
       id, nameKey: `asset.${id.toLowerCase()}`, class: 'STOCK' as const, sector: 'TECH' as const, corrGroup: 'EQUITY' as const, liquidityRule: 'D0' as const,
       dividendYieldAnnual: 0, dividendPeriodDays: DIVIDENDS.stockPeriodDays, initialPrice: 30 + i * 10,
     })),
 
     // ── ETFs (4) ──
-    { id: 'ETFTOT', nameKey: 'asset.etftot', class: 'ETF', sector: 'TOTAL_MARKET', corrGroup: 'EQUITY', liquidityRule: 'D0', initialPrice: 50 },
-    { id: 'ETFDIV', nameKey: 'asset.etfdiv', class: 'ETF', sector: 'DIVIDENDS', corrGroup: 'EQUITY', liquidityRule: 'D0', initialPrice: 45 },
-    { id: 'ETFTEC', nameKey: 'asset.etftec', class: 'ETF', sector: 'TECH', corrGroup: 'EQUITY', liquidityRule: 'D0', initialPrice: 55 },
-    { id: 'ETFSML', nameKey: 'asset.etfsml', class: 'ETF', sector: 'SMALL_CAPS', corrGroup: 'EQUITY', liquidityRule: 'D0', initialPrice: 35 },
+    { id: 'BOVA11', nameKey: 'asset.bova11', class: 'ETF', sector: 'TOTAL_MARKET', corrGroup: 'EQUITY', liquidityRule: 'D0', initialPrice: 50 },
+    { id: 'DIVO11', nameKey: 'asset.divo11', class: 'ETF', sector: 'DIVIDENDS', corrGroup: 'EQUITY', liquidityRule: 'D0', initialPrice: 45 },
+    { id: 'TECK11', nameKey: 'asset.teck11', class: 'ETF', sector: 'TECH', corrGroup: 'EQUITY', liquidityRule: 'D0', initialPrice: 55 },
+    { id: 'SMAL11', nameKey: 'asset.smal11', class: 'ETF', sector: 'SMALL_CAPS', corrGroup: 'EQUITY', liquidityRule: 'D0', initialPrice: 35 },
 
     // ── FIIs (4) ──
-    { id: 'FIITIJ', nameKey: 'asset.fiitij', class: 'FII', sector: 'BRICK', corrGroup: 'EQUITY', liquidityRule: 'D0', dividendYieldAnnual: 0, dividendPeriodDays: DIVIDENDS.fiiPeriodDays, initialPrice: 80 },
-    { id: 'FIIPAP', nameKey: 'asset.fiipap', class: 'FII', sector: 'PAPER', corrGroup: 'EQUITY', liquidityRule: 'D0', dividendYieldAnnual: 0, dividendPeriodDays: DIVIDENDS.fiiPeriodDays, initialPrice: 90 },
-    { id: 'FIILOG', nameKey: 'asset.fiilog', class: 'FII', sector: 'LOGISTICA', corrGroup: 'EQUITY', liquidityRule: 'D0', dividendYieldAnnual: 0, dividendPeriodDays: DIVIDENDS.fiiPeriodDays, initialPrice: 75 },
-    { id: 'FIIHYB', nameKey: 'asset.fiihyb', class: 'FII', sector: 'HYBRID', corrGroup: 'EQUITY', liquidityRule: 'D0', dividendYieldAnnual: 0, dividendPeriodDays: DIVIDENDS.fiiPeriodDays, initialPrice: 85 },
+    { id: 'HGLG11', nameKey: 'asset.hglg11', class: 'FII', sector: 'BRICK', corrGroup: 'EQUITY', liquidityRule: 'D0', dividendYieldAnnual: 0, dividendPeriodDays: DIVIDENDS.fiiPeriodDays, initialPrice: 80 },
+    { id: 'KNCR11', nameKey: 'asset.kncr11', class: 'FII', sector: 'PAPER', corrGroup: 'EQUITY', liquidityRule: 'D0', dividendYieldAnnual: 0, dividendPeriodDays: DIVIDENDS.fiiPeriodDays, initialPrice: 90 },
+    { id: 'XPLG11', nameKey: 'asset.xplg11', class: 'FII', sector: 'LOGISTICA', corrGroup: 'EQUITY', liquidityRule: 'D0', dividendYieldAnnual: 0, dividendPeriodDays: DIVIDENDS.fiiPeriodDays, initialPrice: 75 },
+    { id: 'MXRF11', nameKey: 'asset.mxrf11', class: 'FII', sector: 'HYBRID', corrGroup: 'EQUITY', liquidityRule: 'D0', dividendYieldAnnual: 0, dividendPeriodDays: DIVIDENDS.fiiPeriodDays, initialPrice: 85 },
 
     // ── Crypto (4) ──
-    { id: 'CRBTC', nameKey: 'asset.crbtc', class: 'CRYPTO_MAJOR', sector: 'NONE', corrGroup: 'CRYPTO', liquidityRule: 'D0', initialPrice: 150 },
-    { id: 'CRETH', nameKey: 'asset.creth', class: 'CRYPTO_MAJOR', sector: 'NONE', corrGroup: 'CRYPTO', liquidityRule: 'D0', initialPrice: 80 },
-    { id: 'CRALTG', nameKey: 'asset.craltg', class: 'CRYPTO_ALT', sector: 'NONE', corrGroup: 'CRYPTO', liquidityRule: 'D0', initialPrice: 10 },
-    { id: 'CRALTM', nameKey: 'asset.craltm', class: 'CRYPTO_ALT', sector: 'NONE', corrGroup: 'CRYPTO', liquidityRule: 'D0', initialPrice: 2 },
+    { id: 'BTC', nameKey: 'asset.btc', class: 'CRYPTO_MAJOR', sector: 'NONE', corrGroup: 'CRYPTO', liquidityRule: 'D0', initialPrice: 150 },
+    { id: 'ETH', nameKey: 'asset.eth', class: 'CRYPTO_MAJOR', sector: 'NONE', corrGroup: 'CRYPTO', liquidityRule: 'D0', initialPrice: 80 },
+    { id: 'SOL', nameKey: 'asset.sol', class: 'CRYPTO_ALT', sector: 'NONE', corrGroup: 'CRYPTO', liquidityRule: 'D0', initialPrice: 10 },
+    { id: 'DOGE', nameKey: 'asset.doge', class: 'CRYPTO_ALT', sector: 'NONE', corrGroup: 'CRYPTO', liquidityRule: 'D0', initialPrice: 2 },
 
     // ── FX Hedge (1) ──
-    { id: 'USD', nameKey: 'asset.usd', class: 'ETF', sector: 'NONE', corrGroup: 'EQUITY', liquidityRule: 'D0', initialPrice: 50 },
+    { id: 'IVVB11', nameKey: 'asset.ivvb11', class: 'ETF', sector: 'NONE', corrGroup: 'EQUITY', liquidityRule: 'D0', initialPrice: 50 },
   ];
 
   // Assign random dividend yields for stocks and FIIs
