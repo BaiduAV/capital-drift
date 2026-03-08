@@ -126,7 +126,7 @@ const translations: Record<Locale, Record<string, string>> = {
     // Asset Classes
     'class.RF_POS': 'Post-fixed', 'class.RF_PRE': 'Pre-fixed', 'class.RF_IPCA': 'Inflation-linked',
     'class.DEBENTURE': 'Debenture', 'class.STOCK': 'Stock', 'class.ETF': 'ETF',
-    'class.FII': 'REIT', 'class.CRYPTO_MAJOR': 'Crypto Major', 'class.CRYPTO_ALT': 'Crypto Alt',
+    'class.FII': 'REIT', 'class.CRYPTO_MAJOR': 'Crypto Major', 'class.CRYPTO_ALT': 'Crypto Alt', 'class.FX': 'Forex',
     // Regimes
     'regime.CALM': 'Calm', 'regime.BULL': 'Bull', 'regime.BEAR': 'Bear',
     'regime.CRISIS': 'Crisis', 'regime.CRYPTO_EUPHORIA': 'Crypto Euphoria',
