@@ -5,7 +5,7 @@
 @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap');
 
 @layer base {
-  :root {
+  :root, .dark {
     --background: 220 20% 7%;
     --foreground: 140 60% 70%;
 
@@ -54,6 +54,55 @@
     --sidebar-accent-foreground: 140 60% 70%;
     --sidebar-border: 220 15% 15%;
     --sidebar-ring: 140 70% 50%;
+  }
+
+  .light {
+    --background: 220 15% 96%;
+    --foreground: 220 20% 15%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 220 20% 15%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 220 20% 15%;
+
+    --primary: 140 60% 35%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 220 10% 90%;
+    --secondary-foreground: 220 15% 35%;
+
+    --muted: 220 10% 92%;
+    --muted-foreground: 220 10% 45%;
+
+    --accent: 35 85% 50%;
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 98%;
+
+    --border: 220 10% 85%;
+    --input: 220 10% 85%;
+    --ring: 140 60% 35%;
+
+    /* Terminal-specific tokens (light-adjusted) */
+    --terminal-green: 140 60% 32%;
+    --terminal-red: 0 72% 48%;
+    --terminal-amber: 35 85% 42%;
+    --terminal-cyan: 185 60% 35%;
+    --terminal-blue: 210 60% 45%;
+    --terminal-dim: 220 10% 55%;
+    --terminal-bright: 140 70% 30%;
+    --terminal-glow: 0 0% 0% / 0;
+
+    --sidebar-background: 220 12% 93%;
+    --sidebar-foreground: 220 15% 35%;
+    --sidebar-primary: 140 60% 35%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 220 10% 88%;
+    --sidebar-accent-foreground: 220 20% 15%;
+    --sidebar-border: 220 10% 85%;
+    --sidebar-ring: 140 60% 35%;
   }
 }
 
