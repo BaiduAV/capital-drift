@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { useGame } from '@/context/GameContext';
 import { ResponsiveContainer, AreaChart, Area, XAxis, YAxis, Tooltip, CartesianGrid } from 'recharts';
 import type { AssetDefinition, AssetState, Position } from '@/engine/types';
+import { assetName } from '@/engine/i18n';
 
 interface Props {
   assetId: string | null;
