@@ -138,6 +138,21 @@ const translations: Record<Locale, Record<string, string>> = {
     'event.sector_crash.desc': 'Bubble bursts and sector suffers severe collapse.',
     'event.ipo.title': 'IPO: {company}',
     'event.ipo.desc': '{company} ({ticker}) listed on the exchange in {sector} sector.',
+    // Sectors
+    'sector.BANCOS': 'Banks', 'sector.ENERGIA': 'Energy', 'sector.VAREJO': 'Retail',
+    'sector.AGRO': 'Agriculture', 'sector.TECH': 'Technology', 'sector.MINERACAO': 'Mining',
+    'sector.SAUDE': 'Healthcare', 'sector.INDUSTRIA': 'Industry', 'sector.UTILITIES': 'Utilities',
+    'sector.IMOB': 'Real Estate', 'sector.TELECOM': 'Telecom', 'sector.LOGISTICA': 'Logistics',
+    'sector.TOTAL_MARKET': 'Total Market', 'sector.DIVIDENDS': 'Dividends',
+    'sector.SMALL_CAPS': 'Small Caps', 'sector.BRICK': 'Brick', 'sector.PAPER': 'Paper',
+    'sector.HYBRID': 'Hybrid', 'sector.NONE': 'N/A',
+    // CorrGroups
+    'group.EQUITY': 'Equities', 'group.CRYPTO': 'Crypto', 'group.FIXED_INCOME': 'Fixed Income',
+    // Asset Classes
+    'class.RF_POS': 'Post-fixed', 'class.RF_PRE': 'Pre-fixed', 'class.RF_IPCA': 'Inflation-linked',
+    'class.DEBENTURE': 'Debenture', 'class.STOCK': 'Stock', 'class.ETF': 'ETF',
+    'class.FII': 'REIT', 'class.CRYPTO_MAJOR': 'Crypto Major', 'class.CRYPTO_ALT': 'Crypto Alt',
+    // Regimes
     'regime.CALM': 'Calm', 'regime.BULL': 'Bull', 'regime.BEAR': 'Bear',
     'regime.CRISIS': 'Crisis', 'regime.CRYPTO_EUPHORIA': 'Crypto Euphoria',
     'missed.drawdown': 'Significant drawdown occurred during fast-forward.',
