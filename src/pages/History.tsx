@@ -12,7 +12,7 @@ import { SectionCard } from '@/components/ui/SectionCard';
 import { StatCard } from '@/components/ui/StatCard';
 import { KPIChip } from '@/components/ui/KPIChip';
 
-type HistoryTab = 'performance' | 'events' | 'stats';
+type HistoryTab = 'performance' | 'macro' | 'events' | 'stats';
 
 export default function History() {
   const { state, locale, dayResults, t } = useGame();
