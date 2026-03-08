@@ -9,6 +9,7 @@ const eventMeta: Record<EventType, { icon: string; colorClass: string }> = {
   INFLATION_DOWN:         { icon: '❄️', colorClass: 'text-terminal-green' },
   SECTOR_BOOM:            { icon: '🚀', colorClass: 'text-terminal-green' },
   SECTOR_BUST:            { icon: '📉', colorClass: 'text-terminal-red' },
+  SECTOR_CRASH:           { icon: '💥', colorClass: 'text-terminal-red' },
   CRYPTO_HACK:            { icon: '🔓', colorClass: 'text-terminal-red' },
   CRYPTO_EUPHORIA_EVENT:  { icon: '🎉', colorClass: 'text-terminal-amber' },
   CRYPTO_RUG_PULL:        { icon: '💀', colorClass: 'text-terminal-red' },
