@@ -226,6 +226,7 @@ function generateSingleEvent(state: GameState, rng: RNG): EventCard | null {
     impact,
     macroImpact,
     magnitude,
+    vars,
   };
 }
 
