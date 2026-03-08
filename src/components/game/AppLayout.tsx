@@ -14,11 +14,13 @@ import {
   ChevronRight,
   Menu,
   X,
+  HelpCircle,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { KPIChip } from '@/components/ui/KPIChip';
 import { cn } from '@/lib/utils';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import OnboardingTutorial, { openTutorial } from '@/components/game/OnboardingTutorial';
 
 const navItems = [
   { path: '/', icon: LayoutDashboard, labelEn: 'Dashboard', labelPt: 'Painel' },
