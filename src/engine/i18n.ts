@@ -119,6 +119,12 @@ const translations: Record<Locale, Record<string, string>> = {
     'event.sector_crash.desc': 'Bubble bursts and sector suffers severe collapse.',
     'event.ipo.title': 'IPO: {company}',
     'event.ipo.desc': '{company} ({ticker}) listed on the exchange in {sector} sector.',
+    'event.ipo.announced.title': 'IPO Announced: {company}',
+    'event.ipo.announced.desc': '{company} ({ticker}) announces IPO in {sector} sector. Indicative price: R$ {price}.',
+    'event.ipo.bookbuilding.title': 'Bookbuilding: {company}',
+    'event.ipo.bookbuilding.desc': 'Reservation open for {company} ({ticker}). Demand: {demand}%.',
+    'event.ipo.listed.title': '🔔 Listed: {company}',
+    'event.ipo.listed.desc': '{company} ({ticker}) debuts with {pop}% pop.',
     // Sectors
     'sector.BANCOS': 'Banks', 'sector.ENERGIA': 'Energy', 'sector.VAREJO': 'Retail',
     'sector.AGRO': 'Agriculture', 'sector.TECH': 'Technology', 'sector.MINERACAO': 'Mining',

@@ -39,7 +39,13 @@ export function generateReturns(state: GameState, rng: RNG): Record<string, numb
       continue;
     }
 
-    const { drift, vol } = dv;
+    let { drift, vol } = dv;
+
+    // IPO volatility multiplier for recently listed assets
+    const assetState = state.assets[assetId];
+    if (assetState?.ipoVolatilityUntilDay && state.dayIndex < assetState.ipoVolatilityUntilDay) {
+      vol *= IPO.volatilityMultiplier;
+    }
 
     if (def.corrGroup === 'FIXED_INCOME') {
       // Fixed income: mostly idiosyncratic, very low correlation
