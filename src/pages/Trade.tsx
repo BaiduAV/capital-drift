@@ -4,7 +4,7 @@ import { useGame } from '@/context/GameContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
-import { Search, ShoppingCart, TrendingUp, TrendingDown, Maximize2 } from 'lucide-react';
+import { Search, ShoppingCart, TrendingUp, TrendingDown } from 'lucide-react';
 import type { TradeQuote } from '@/engine/types';
 import { assetName } from '@/engine/i18n';
 
