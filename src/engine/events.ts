@@ -198,10 +198,11 @@ function generateSingleEvent(state: GameState, rng: RNG): EventCard | null {
       break;
     }
     case 'SECTOR_CRASH' as any: {
-      const { assets } = pickSector(state, rng);
-      const shock = -(0.10 + rng.next() * 0.15); // Severe immediate shock
+      const { sector, assets } = pickSector(state, rng);
+      const shock = -(0.10 + rng.next() * 0.15);
       for (const id of assets) impact[id] = shock;
       magnitude = Math.abs(shock);
+      vars = { sector };
       break;
     }
   }
