@@ -31,7 +31,11 @@ export default function Dashboard() {
   const navigate = useNavigate();
 
   const formatCurrency = (v: number) =>
-    new Intl.NumberFormat(locale, { style: 'currency', currency: 'BRL', minimumFractionDigits: 2 }).format(v);
+    new Intl.NumberFormat(locale, { style: 'currency', currency: 'BRL', minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(v);
+  const formatCurrencyCompact = (v: number) =>
+    Math.abs(v) >= 1_000_000
+      ? new Intl.NumberFormat(locale, { style: 'currency', currency: 'BRL', notation: 'compact', maximumFractionDigits: 2 }).format(v)
+      : formatCurrency(v);
   const formatPct = (v: number) => (v >= 0 ? '+' : '') + (v * 100).toFixed(2) + '%';
 
   const showDayNotifications = (r: DayResult) => {
@@ -121,7 +125,7 @@ export default function Dashboard() {
         title={locale === 'pt-BR' ? 'Mission Control' : 'Mission Control'}
         subtitle={narrative}
       >
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
           <div className="hidden sm:flex items-center gap-1.5 text-[10px] text-muted-foreground font-mono mr-2">
             <Keyboard className="h-3 w-3" />
             <span>N={locale === 'pt-BR' ? 'Próximo' : 'Next'}</span>
@@ -147,7 +151,7 @@ export default function Dashboard() {
       <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-3">
         <StatCard
           label={locale === 'pt-BR' ? 'Patrimônio' : 'Equity'}
-          value={formatCurrency(equity)}
+          value={formatCurrencyCompact(equity)}
         />
         <StatCard
           label={locale === 'pt-BR' ? 'Retorno Total' : 'Total Return'}
@@ -162,7 +166,7 @@ export default function Dashboard() {
         <StatCard
           label={locale === 'pt-BR' ? 'Caixa livre' : 'Free Cash'}
           value={formatPct(equity > 0 ? state.cash / equity : 0)}
-          sub={formatCurrency(state.cash)}
+          sub={formatCurrencyCompact(state.cash)}
         />
         <div className="hidden lg:block">
           <StatCard
