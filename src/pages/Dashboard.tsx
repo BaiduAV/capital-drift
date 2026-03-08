@@ -41,6 +41,7 @@ export default function Dashboard() {
 
   const showDayNotifications = (r: DayResult) => {
     if (r.previousRegime !== r.regime) {
+      playRegimeSound(r.regime);
       toast.warning(`⚡ Regime: ${t(`regime.${r.previousRegime}`)} → ${t(`regime.${r.regime}`)}`, { duration: 5000 });
     }
     if (r.dividendsPaid > 0 && r.metrics.dividendDetails.length > 0) {
