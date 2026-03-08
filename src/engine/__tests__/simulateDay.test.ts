@@ -39,7 +39,8 @@ function createMockState(seed: number): SimulationState {
         history: { equity: [13500], drawdown: [0], cdiAccumulated: [1], inflationAccumulated: [1] },
         seed,
         rngState: rng.state(),
-        events: { active: [] }
+        events: { active: [] },
+        market: { sectors: {}, newListingsCount: {} },
     };
 }
 
