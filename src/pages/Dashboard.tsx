@@ -10,6 +10,7 @@ import { useNavigate } from 'react-router-dom';
 import { useKeyboardShortcuts } from '@/hooks/useKeyboardShortcuts';
 import { generateNarrative } from '@/utils/generateNarrative';
 import { ComposedChart, Area, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, ReferenceLine } from 'recharts';
+import { playRegimeSound } from '@/engine/audio';
 import MacroPanel from '@/components/game/MacroPanel';
 import SocialFeed from '@/components/game/SocialFeed';
 import PortfolioHealth from '@/components/game/PortfolioHealth';
