@@ -15,6 +15,7 @@ import {
   Menu,
   X,
   HelpCircle,
+  Trophy,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { KPIChip } from '@/components/ui/KPIChip';
@@ -28,6 +29,7 @@ const navItems = [
   { path: '/portfolio', icon: Briefcase, labelEn: 'Portfolio', labelPt: 'Carteira' },
   { path: '/trade', icon: ArrowLeftRight, labelEn: 'Trade', labelPt: 'Negociar' },
   { path: '/history', icon: Clock, labelEn: 'History', labelPt: 'Histórico' },
+  { path: '/achievements', icon: Trophy, labelEn: 'Achievements', labelPt: 'Conquistas' },
 ];
 
 export default function AppLayout() {

@@ -44,6 +44,7 @@ export function loadGame(): GameState | null {
     if (state.macro.fxUSDBRL === undefined) state.macro.fxUSDBRL = 5.0;
     if (state.macro.activityAnnual === undefined) state.macro.activityAnnual = 0.02;
     if (state.macro.riskIndex === undefined) state.macro.riskIndex = 0.35;
+    if (!state.achievements) state.achievements = {};
     return state;
   } catch {
     return null;

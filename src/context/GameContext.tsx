@@ -2,11 +2,13 @@ import React, { createContext, useContext, useState, useCallback, useEffect, typ
 import type { GameState, DayResult, PeriodResult, TradeQuote, MacroState } from '@/engine/types';
 import { createGameState } from '@/engine/init';
 import { simulateDay } from '@/engine/simulateDay';
+import { checkAchievements, ACHIEVEMENT_DEFS, type AchievementId } from '@/engine/achievements';
 
 import { quoteBuy, quoteSell, executeBuy, executeSell } from '@/engine/trading';
 import { computeEquity } from '@/engine/invariants';
 import { saveGame, loadGame, deleteSave, saveLocale, loadLocale } from '@/engine/persistence';
 import { setLocale, getLocale, t, assetName } from '@/engine/i18n';
+import { toast } from 'sonner';
 
 interface GameContextType {
   state: GameState;
@@ -54,12 +56,19 @@ export function GameProvider({ children }: { children: ReactNode }) {
 
   const advanceDay = useCallback(() => {
     const stateCopy = structuredClone(state);
-    // Save macro before simulation for trend arrows
     setPrevMacro({ ...stateCopy.macro });
     const result = simulateDay(stateCopy);
-    // simulateDay returns new state in result.state (does NOT mutate input)
-    setState(result.state as GameState);
+    const newState = result.state as GameState;
+    const newAch = checkAchievements(newState, result, stateCopy);
+    for (const id of newAch) {
+      newState.achievements = { ...newState.achievements, [id]: { unlockedAtDay: newState.dayIndex } };
+    }
+    setState(newState);
     setDayResults(prev => [...prev.slice(-99), result]);
+    for (const id of newAch) {
+      const def = ACHIEVEMENT_DEFS.find(d => d.id === id);
+      if (def) toast.success(`${def.icon} ${t(def.titleKey)}`, { description: t(def.descKey) });
+    }
     return result;
   }, [state]);
 
@@ -69,12 +78,23 @@ export function GameProvider({ children }: { children: ReactNode }) {
     // Run day-by-day so we can collect DayResults for the NewsFeed
     const collectedResults: DayResult[] = [];
     let current = stateCopy;
+    const allNewAch = new Set<AchievementId>();
     for (let i = 0; i < days; i++) {
+      const prev = current;
       const result = simulateDay(current);
-      collectedResults.push(result);
       current = result.state as GameState;
+      const newAch = checkAchievements(current, result, prev);
+      for (const id of newAch) {
+        current.achievements = { ...current.achievements, [id]: { unlockedAtDay: current.dayIndex } };
+        allNewAch.add(id);
+      }
+      collectedResults.push(result);
     }
     setState(current);
+    for (const id of allNewAch) {
+      const def = ACHIEVEMENT_DEFS.find(d => d.id === id);
+      if (def) toast.success(`${def.icon} ${t(def.titleKey)}`, { description: t(def.descKey) });
+    }
     setDayResults(prev => [...prev, ...collectedResults].slice(-100));
     // Build PeriodResult from collected results
     const startEquity = computeEquity(stateCopy);
@@ -115,21 +135,29 @@ export function GameProvider({ children }: { children: ReactNode }) {
     return quoteSell(state, assetId, qty);
   }, [state]);
 
+  const unlockTradeAchievement = useCallback((s: GameState) => {
+    if (!s.achievements?.['first_trade']) {
+      s.achievements = { ...s.achievements, first_trade: { unlockedAtDay: s.dayIndex } };
+      const def = ACHIEVEMENT_DEFS.find(d => d.id === 'first_trade');
+      if (def) toast.success(`${def.icon} ${t(def.titleKey)}`, { description: t(def.descKey) });
+    }
+  }, []);
+
   const buy = useCallback((assetId: string, qty: number) => {
     const stateCopy = structuredClone(state);
     const quote = quoteBuy(stateCopy, assetId, qty);
     const success = executeBuy(stateCopy, quote);
-    if (success) setState(stateCopy);
+    if (success) { unlockTradeAchievement(stateCopy); setState(stateCopy); }
     return { success, quote };
-  }, [state]);
+  }, [state, unlockTradeAchievement]);
 
   const sell = useCallback((assetId: string, qty: number) => {
     const stateCopy = structuredClone(state);
     const quote = quoteSell(stateCopy, assetId, qty);
     const success = executeSell(stateCopy, quote);
-    if (success) setState(stateCopy);
+    if (success) { unlockTradeAchievement(stateCopy); setState(stateCopy); }
     return { success, quote };
-  }, [state]);
+  }, [state, unlockTradeAchievement]);
 
   const batchTrades = useCallback((fn: (ops: { buy: (id: string, qty: number) => boolean; sell: (id: string, qty: number) => boolean; getState: () => GameState }) => void) => {
     const stateCopy = structuredClone(state);

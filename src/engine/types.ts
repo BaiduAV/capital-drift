@@ -94,6 +94,7 @@ export interface GameState {
     newListingsCount: Partial<Record<Sector, number>>;
   };
   ipoPipeline: IPOPipelineEntry[];
+  achievements: Record<string, { unlockedAtDay: number }>;
 }
 
 export interface IPOPipelineEntry {
