@@ -715,7 +715,7 @@ function pickTemplate(templates: string[], dayIndex: number, salt: number, vars?
   let text = templates[(dayIndex + salt) % templates.length];
   if (vars) {
     for (const [key, value] of Object.entries(vars)) {
-      text = text.replaceAll(`{${key}}`, value);
+      text = text.split(`{${key}}`).join(value);
     }
   }
   return text;
