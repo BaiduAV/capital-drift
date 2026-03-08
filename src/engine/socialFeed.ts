@@ -410,6 +410,305 @@ const TEMPLATES_PT: Record<EventType, TemplateSet> = {
   },
 };
 
+const TEMPLATES_EN: Record<EventType, TemplateSet> = {
+  RATE_HIKE: {
+    media: [
+      '🔴 BREAKING: Central Bank raises interest rates. Markets react with caution.',
+      '🔴 URGENT: Monetary policy committee announces another rate hike.',
+      '🔴 Rates up again. Fixed income gains traction among investors.',
+    ],
+    reactions: {
+      analistamacro: [
+        'Decision was expected by the market. With inflation pressured, there was no alternative. Fixed income remains the safe haven.',
+        'Rate hike in line with expectations. The tightening cycle should continue in coming quarters.',
+      ],
+      thiagofinancas: [
+        'Stay calm, folks! High rates = opportunity for long-term thinkers. Quality stocks get cheap. 📉➡️📈',
+        'Rates up again? Time to build positions in great companies. The market always comes back! 💪',
+      ],
+      naborges: [
+        'Rates rising? Time to review your portfolio. CDs and money market funds become more attractive now.',
+        'If you have an emergency fund, it\'s time to take advantage of higher fixed income yields.',
+      ],
+    },
+    sentiment: 'bearish',
+  },
+  RATE_CUT: {
+    media: [
+      '🟢 BREAKING: Central Bank cuts interest rates. Stock market rallies.',
+      '🟢 URGENT: Rate cut announced. Markets celebrate the decision.',
+      '🟢 Easing cycle begins. Expectations of capital rotation into equities.',
+    ],
+    reactions: {
+      analistamacro: [
+        'Cut was in line with expectations. This should boost the equity market in coming months.',
+        'Start of monetary easing. Watch cyclical sectors that tend to benefit.',
+      ],
+      thiagofinancas: [
+        'RATES FALLING! 🎉 Time to look at stocks with love. Good companies, fair prices, fat dividends!',
+        'The moment is NOW for equities. Don\'t wait for the bottom, it may have already passed! 🚀',
+      ],
+      naborges: [
+        'Rate cuts are good, but be careful: don\'t exit fixed income all at once. Diversification is key.',
+        'With lower rates, fixed income yields less. Good time to study REITs and dividend stocks.',
+      ],
+    },
+    sentiment: 'bullish',
+  },
+  INFLATION_UP: {
+    media: [
+      '🔥 Inflation accelerates, worrying the market. Cost of living pressures households.',
+      '🔥 CPI rises above expectations. Analysts revise projections upward.',
+      '🔥 Inflation on the rise: food and fuel lead the increases.',
+    ],
+    reactions: {
+      analistamacro: [
+        'Inflation above expectations pressures the Central Bank to keep rates high longer. Challenging outlook.',
+        'Worrying inflation data. Inflation-linked bonds become more attractive in this scenario.',
+      ],
+      naborges: [
+        'High inflation eats your idle money. NEVER leave it in savings. Inflation-linked bonds are the minimum!',
+        'Prices rising again... Time to protect your wealth with inflation-indexed assets.',
+      ],
+    },
+    sentiment: 'bearish',
+  },
+  INFLATION_DOWN: {
+    media: [
+      '❄️ Inflation decelerates, easing pressure on the Central Bank.',
+      '❄️ CPI comes in below expectations. Markets celebrate positive data.',
+      '❄️ Cooling inflation opens room for rate cuts.',
+    ],
+    reactions: {
+      analistamacro: [
+        'Falling inflation is the ideal scenario for rate cuts. Market should price this in quickly.',
+        'Positive inflation data. Yield curve should flatten, benefiting fixed-rate bonds.',
+      ],
+      thiagofinancas: [
+        'Inflation falling! The tide is turning, folks. Position now and reap the rewards later! 🌊',
+      ],
+    },
+    sentiment: 'bullish',
+  },
+  SECTOR_BOOM: {
+    media: [
+      '🚀 Sector rallying: stocks in the segment surge in today\'s session.',
+      '🚀 Sector rally: analysts point to solid fundamentals behind the rise.',
+      '🚀 Sector boom! Companies hit all-time highs.',
+    ],
+    reactions: {
+      thiagofinancas: [
+        'Look at this sector flying! 🚀 Those who built positions months ago are smiling now. Patience pays!',
+        'Strong rally! But be careful not to buy at the top. If you\'re in, hold. If you\'re out, study first.',
+      ],
+      luizbarsi: [
+        'Cyclical sectors have these rallies. The key is being positioned before, not during the euphoria.',
+        'Impressive rally. But remember: what goes up fast can come down fast. Focus on fundamentals.',
+      ],
+    },
+    sentiment: 'bullish',
+  },
+  SECTOR_BUST: {
+    media: [
+      '📉 Sector declining: stocks fall sharply as outlook deteriorates.',
+      '📉 Selling pressure hits sector. Investors seek protection.',
+      '📉 Sharp sector decline: analysts recommend caution.',
+    ],
+    reactions: {
+      thiagofinancas: [
+        'It dropped? OPPORTUNITY! The best companies survive crises and come out stronger. 💎',
+        'Everyone scared? That\'s when I start paying attention. Others\' fear = our discount.',
+      ],
+      luizbarsi: [
+        'Drops like this are normal in the market. Those with good assets and patience don\'t need to worry.',
+        'Good companies at cheap prices. This is when real wealth is built.',
+      ],
+    },
+    sentiment: 'bearish',
+  },
+  SECTOR_CRASH: {
+    media: [
+      '💥 CRASH: Sector collapses in historic session. Circuit breaker triggered.',
+      '💥 ALERT: Abrupt sector decline triggers market panic.',
+      '💥 Sector crash: billions in market cap evaporate in hours.',
+    ],
+    reactions: {
+      thiagofinancas: [
+        '😱 Tough day. But remember: those who sold during the 2008 crisis regretted it. HOLD! 💪',
+      ],
+      luizbarsi: [
+        'Crashes happen. They separate investors from speculators. Stay calm and stick to your strategy.',
+      ],
+      analistamacro: [
+        'Crash with record volume. Possible contagion to other sectors. Stay vigilant.',
+      ],
+    },
+    sentiment: 'bearish',
+  },
+  CRYPTO_HACK: {
+    media: [
+      '⚠️ BREAKING: Exchange suffers hacker attack. Cryptocurrencies in steep decline.',
+      '⚠️ Billion-dollar hack shakes crypto market. Investors rush to withdraw.',
+      '⚠️ Crypto security questioned: new attack raises custody concerns.',
+    ],
+    reactions: {
+      felipecripto: [
+        'Another hack... that\'s why I always say: NOT YOUR KEYS, NOT YOUR COINS. Cold wallet holders stay safe. 💎🙌',
+        'Bad for the market short-term, but Bitcoin remains decentralized and secure. This will pass. 🔒',
+      ],
+    },
+    sentiment: 'bearish',
+  },
+  CRYPTO_EUPHORIA_EVENT: {
+    media: [
+      '🎉 Crypto market in ecstasy: Bitcoin and altcoins surge with record volume.',
+      '🎉 Crypto euphoria: total market cap reaches new all-time highs.',
+      '🎉 Crypto rally: influencers and institutions drive new wave of buying.',
+    ],
+    reactions: {
+      felipecripto: [
+        'TO THE MOON! 🌕🚀 Those who bought when everyone was scared are laughing now! HODL folks!',
+        'I TOLD YOU! 🔥 Those who\'ve been with me since the bear market know. This is just the beginning! LFG! 🚀🚀🚀',
+      ],
+    },
+    sentiment: 'bullish',
+  },
+  CRYPTO_RUG_PULL: {
+    media: [
+      '💀 ALERT: Crypto project collapses in suspected rug pull. Investors lose everything.',
+      '💀 Crypto scam: token crashes 99% after developers vanish.',
+      '💀 Rug pull confirmed: crypto community demands regulation.',
+    ],
+    reactions: {
+      felipecripto: [
+        'Sad but predictable. DYOR, folks! Never put everything in one token. Diversify! 🧠',
+        'Another rug pull... That\'s why I only recommend BTC and ETH for beginners. The rest is a casino. 🎰',
+      ],
+    },
+    sentiment: 'bearish',
+  },
+  CREDIT_DOWNGRADE: {
+    media: [
+      '⚠️ Rating agency downgrades credit issuer. Corporate bonds under pressure.',
+      '⚠️ Credit downgrade: risk spreads widen for corporate debt.',
+      '⚠️ Rating downgrade triggers sell-off in private credit instruments.',
+    ],
+    reactions: {
+      naborges: [
+        'Credit downgrade is a red flag. Review your corporate bonds and smaller bank CDs!',
+        'This is why I always say: don\'t chase high yields without examining the risk. Quality first!',
+      ],
+      analistamacro: [
+        'Downgrade was a matter of time given the fundamentals. Watch your credit exposure.',
+      ],
+    },
+    sentiment: 'bearish',
+  },
+  FX_SHOCK: {
+    media: [
+      '💵 URGENT: Dollar surges, pressuring emerging markets.',
+      '💵 FX shock: Local currency suffers sharp devaluation.',
+      '💵 Dollar jumps amid foreign capital flight. Central Bank may intervene.',
+    ],
+    reactions: {
+      analistamacro: [
+        'FX shock reflects deterioration of external accounts. Inflationary pressure ahead.',
+        'Sharp currency move. Expect Central Bank intervention via swaps in coming days.',
+      ],
+      luizbarsi: [
+        'Rising dollar favors exporters. Those holding commodity stocks can celebrate.',
+      ],
+    },
+    sentiment: 'bearish',
+  },
+  FISCAL_STRESS: {
+    media: [
+      '🏛️ Fiscal risk escalates: market demands higher premium on long-term bonds.',
+      '🏛️ URGENT: Government signals difficulty meeting fiscal targets.',
+      '🏛️ Fiscal stress: sovereign CDS rises as investors reduce exposure.',
+    ],
+    reactions: {
+      analistamacro: [
+        'Fiscal risk is the biggest ghost in emerging markets. Yield curve steepening sharply.',
+        'Fiscal deterioration. This contaminates FX, rates, and equities. Risk-off scenario.',
+      ],
+      naborges: [
+        'When the government overspends, investors pay via inflation. Protect yourself with inflation-linked bonds!',
+      ],
+    },
+    sentiment: 'bearish',
+  },
+  COMMODITY_BOOM: {
+    media: [
+      '🛢️ Commodities rally: iron ore and oil boost stock market.',
+      '🛢️ Commodity boom: exporter nations benefit from the surge.',
+      '🛢️ Commodity prices surge. Related stocks skyrocket.',
+    ],
+    reactions: {
+      luizbarsi: [
+        'Commodity cycles favor resource-rich economies. Position yourselves!',
+        'Commodities up = fat dividends from major producers. I\'m already positioned.',
+      ],
+      thiagofinancas: [
+        'Commodity boom! 🛢️ Resource exporters benefit directly. Time to look at mining and agriculture! 📈',
+      ],
+    },
+    sentiment: 'bullish',
+  },
+  IPO_ANNOUNCED: {
+    media: [
+      '📋 NEW IPO: Company announces intention to go public.',
+      '📋 Market heats up: another company prepares IPO for the coming weeks.',
+    ],
+    reactions: {
+      thiagofinancas: [
+        'New IPO incoming! 👀 I\'ll analyze the fundamentals and share my take soon.',
+      ],
+    },
+    corporate: [
+      'We are pleased to announce our intention to list. A new chapter begins. #IPO',
+    ],
+    sentiment: 'neutral',
+  },
+  IPO_BOOKBUILDING: {
+    media: [
+      '📊 Bookbuilding open: investors can reserve shares for the IPO.',
+      '📊 Strong demand in bookbuilding: IPO may price above indicative range.',
+    ],
+    reactions: {
+      thiagofinancas: [
+        'Reservations open! Am I joining this IPO? Depends on valuation. Analyzing now... 🔍',
+      ],
+    },
+    corporate: [
+      'Reservation period is open. We trust in investor interest. Details in the prospectus.',
+    ],
+    sentiment: 'neutral',
+  },
+  IPO_LISTED: {
+    media: [
+      '🔔 IPO completed! Shares debut on the exchange with strong activity.',
+      '🔔 Listing done: new asset available for trading.',
+    ],
+    reactions: {
+      thiagofinancas: [
+        'Listed! 🎉 Now let\'s follow the first earnings and see if the thesis holds.',
+      ],
+      luizbarsi: [
+        'IPOs are always a bet. I prefer to wait for the first earnings report before entering.',
+      ],
+    },
+    corporate: [
+      'Today marks the beginning of a new chapter. Thank you for your trust, investors. #IPO',
+    ],
+    sentiment: 'bullish',
+  },
+};
+
+function getTemplates(locale: string): Record<EventType, TemplateSet> {
+  return locale === 'pt-BR' ? TEMPLATES_PT : TEMPLATES_EN;
+}
+
 // ── Helpers ──
 
 function pickTemplate(templates: string[], dayIndex: number, salt: number): string {
@@ -450,16 +749,18 @@ export function generateSocialPosts(
   dayResults: DayResult[],
   state: GameState,
   maxPosts: number = 20,
+  locale: string = 'pt-BR',
 ): SocialPost[] {
   const posts: SocialPost[] = [];
   let postId = 0;
+  const allTemplates = getTemplates(locale);
 
   for (let i = dayResults.length - 1; i >= 0 && posts.length < maxPosts; i--) {
     const dr = dayResults[i];
     for (const event of dr.events) {
       if (posts.length >= maxPosts) break;
 
-      const templates = TEMPLATES_PT[event.type];
+      const templates = allTemplates[event.type];
       if (!templates) continue;
 
       const channel = findMediaChannel(event.type);
@@ -481,7 +782,6 @@ export function generateSocialPosts(
 
       // 2. Influencer reactions
       const relevantInfluencers = findInfluencers(event.type);
-      // Pick 1-2 influencers
       const picked = relevantInfluencers.slice(0, dr.dayIndex % 2 === 0 ? 2 : 1);
       for (const inf of picked) {
         const infTemplates = templates.reactions[inf.handle];
@@ -506,7 +806,6 @@ export function generateSocialPosts(
       // 3. Corporate post (for IPOs and sector events)
       if (templates.corporate && templates.corporate.length > 0) {
         if (posts.length < maxPosts) {
-          // Try to find a relevant company
           const sectorAssets = Object.values(state.assetCatalog).filter(
             a => event.vars?.sector ? a.sector === event.vars.sector : (a.class === 'STOCK' || a.class === 'FII')
           );
