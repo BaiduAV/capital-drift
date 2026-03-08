@@ -115,4 +115,19 @@
     background: hsl(var(--border));
     border-radius: 3px;
   }
+
+  @keyframes trade-flash-green {
+    0% { background-color: hsl(var(--terminal-green) / 0.25); }
+    100% { background-color: transparent; }
+  }
+  @keyframes trade-flash-red {
+    0% { background-color: hsl(var(--terminal-red) / 0.25); }
+    100% { background-color: transparent; }
+  }
+  .trade-flash-buy {
+    animation: trade-flash-green 1.2s ease-out;
+  }
+  .trade-flash-sell {
+    animation: trade-flash-red 1.2s ease-out;
+  }
 }
