@@ -110,6 +110,7 @@ export default function Market() {
         </div>
       )}
 
+      {viewTab === 'screener' && (
       <Card className="terminal-card">
         <CardContent className="p-0">
           <div className="overflow-x-auto">
@@ -234,7 +235,8 @@ export default function Market() {
               }
             ]}
           />
-        </SectionCard>
+        </CardContent>
+      </Card>
       )}
 
       <AssetDetailModal assetId={selectedAsset} onClose={() => setSelectedAsset(null)} />
