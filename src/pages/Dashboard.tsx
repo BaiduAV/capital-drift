@@ -37,13 +37,15 @@ export default function Dashboard() {
     if (r.previousRegime !== r.regime) {
       toast.warning(`⚡ Regime: ${t(`regime.${r.previousRegime}`)} → ${t(`regime.${r.regime}`)}`, { duration: 5000 });
     }
-    if (r.dividendsPaid > 0) {
-      toast.success(
-        locale === 'pt-BR'
-          ? `💰 Dividendos recebidos: ${formatCurrency(r.dividendsPaid)}`
-          : `💰 Dividends received: ${formatCurrency(r.dividendsPaid)}`,
-        { duration: 4000 }
-      );
+    if (r.dividendsPaid > 0 && r.metrics.dividendDetails.length > 0) {
+      for (const d of r.metrics.dividendDetails) {
+        toast.success(
+          locale === 'pt-BR'
+            ? `💰 ${d.assetId}: +${formatCurrency(d.amount)} (${d.quantity} cotas)`
+            : `💰 ${d.assetId}: +${formatCurrency(d.amount)} (${d.quantity} shares)`,
+          { duration: 4000 }
+        );
+      }
     }
     for (const ev of r.events) {
       if (ev.type === 'CREDIT_DOWNGRADE') {
