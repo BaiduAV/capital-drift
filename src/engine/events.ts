@@ -204,7 +204,7 @@ function generateSingleEvent(state: GameState, rng: RNG): EventCard | null {
     }
   }
 
-  const typeToKey: Record<EventType | 'SECTOR_CRASH', string> = {
+  const typeToKey: Record<EventType, string> = {
     RATE_HIKE: 'rate_hike', RATE_CUT: 'rate_cut',
     INFLATION_UP: 'inflation_up', INFLATION_DOWN: 'inflation_down',
     SECTOR_BOOM: 'sector_boom', SECTOR_BUST: 'sector_bust',
@@ -212,6 +212,7 @@ function generateSingleEvent(state: GameState, rng: RNG): EventCard | null {
     CRYPTO_RUG_PULL: 'crypto_rug_pull', CREDIT_DOWNGRADE: 'credit_downgrade',
     FX_SHOCK: 'fx_shock', FISCAL_STRESS: 'fiscal_stress', COMMODITY_BOOM: 'commodity_boom',
     SECTOR_CRASH: 'sector_crash',
+    IPO_ANNOUNCED: 'ipo.announced', IPO_BOOKBUILDING: 'ipo.bookbuilding', IPO_LISTED: 'ipo.listed',
   };
 
   return {
