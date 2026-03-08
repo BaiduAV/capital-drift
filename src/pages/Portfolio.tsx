@@ -3,8 +3,10 @@ import { useGame } from '@/context/GameContext';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
 import { Button } from '@/components/ui/button';
-import { AlertTriangle, ShieldAlert } from 'lucide-react';
+import { AlertTriangle, ShieldAlert, Lightbulb } from 'lucide-react';
 import AssetDetailModal from '@/components/game/AssetDetailModal';
+import RebalancePanel from '@/components/game/RebalancePanel';
+import { generateRecommendations } from '@/engine/recommendations';
 import { INITIAL_CASH } from '@/engine/params';
 
 // Design System
@@ -140,21 +142,14 @@ export default function Portfolio() {
             </div>
           </SectionCard>
 
-          <SectionCard
-            title={locale === 'pt-BR' ? 'Riscos e Alertas' : 'Risks & Alerts'}
-            action={
-              <Button size="sm" variant="outline" className="h-7 text-xs font-mono" onClick={() => alert(locale === 'pt-BR' ? 'Sugestão de rebalanceamento virá em breve!' : 'Rebalance suggestions coming soon!')}>
-                Rebalance
-              </Button>
-            }
-          >
+          <SectionCard title={locale === 'pt-BR' ? 'Riscos e Alertas' : 'Risks & Alerts'}>
             <div className="space-y-2">
               <div className="flex justify-between text-xs font-mono mb-3">
-                <span className="text-muted-foreground">Fixed Income</span>
+                <span className="text-muted-foreground">{locale === 'pt-BR' ? 'Renda Fixa' : 'Fixed Income'}</span>
                 <span>{(rfExposure / equity * 100 || 0).toFixed(1)}%</span>
               </div>
               <div className="flex justify-between text-xs font-mono mb-3">
-                <span className="text-muted-foreground">Equity</span>
+                <span className="text-muted-foreground">{locale === 'pt-BR' ? 'Renda Variável' : 'Equity'}</span>
                 <span>{(eqExposure / equity * 100 || 0).toFixed(1)}%</span>
               </div>
               <div className="flex justify-between text-xs font-mono mb-4">
@@ -170,7 +165,7 @@ export default function Portfolio() {
               ) : (
                 <div className="space-y-1">
                   {riskHints.map((hint, i) => (
-                    <div key={i} className="text-xs text-terminal-amber font-mono flex items-start gap-1">
+                    <div key={i} className="text-xs text-[hsl(var(--terminal-amber))] font-mono flex items-start gap-1">
                       <span>{hint}</span>
                     </div>
                   ))}
@@ -178,6 +173,8 @@ export default function Portfolio() {
               )}
             </div>
           </SectionCard>
+
+          <RebalancePanel />
         </div>
 
         {/* Right Col: Positions Table */}
