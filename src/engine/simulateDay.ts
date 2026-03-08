@@ -1,6 +1,6 @@
 // ── Day simulation orchestrator (Deterministic Pipeline) ──
 
-import type { SimulationState, DayResult, DayContext, PersistentEvent } from './types';
+import type { SimulationState, DayResult, DayContext, PersistentEvent, IPOPipelineEntry } from './types';
 import { createRNG } from './rng';
 import { maybeSwitchRegime } from './regimes';
 import { updateMacro } from './macro';
@@ -8,6 +8,11 @@ import { updateSectorBubble } from './bubbles';
 import { generateAssetIdentity, generateFIIIdentity } from './naming';
 import { maybeBankruptAsset } from './bankruptcy';
 import { generateReturns, applyReturnsToPrices } from './pricing';
+import { rollEvents, applyEventMacro, mergeEventImpacts } from './events';
+import { processCreditWatchAndDefaults } from './credit';
+import { applyDividendsAndDistributions } from './dividends';
+import { checkInvariants, computeEquity } from './invariants';
+import { IPO } from './params';
 import { rollEvents, applyEventMacro, mergeEventImpacts } from './events';
 import { processCreditWatchAndDefaults } from './credit';
 import { applyDividendsAndDistributions } from './dividends';
