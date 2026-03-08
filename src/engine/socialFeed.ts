@@ -492,55 +492,55 @@ const TEMPLATES_EN: Record<EventType, TemplateSet> = {
   },
   SECTOR_BOOM: {
     media: [
-      '🚀 Sector rallying: stocks in the segment surge in today\'s session.',
-      '🚀 Sector rally: analysts point to solid fundamentals behind the rise.',
-      '🚀 Sector boom! Companies hit all-time highs.',
+      '🚀 {sector} rallying: stocks in the segment surge in today\'s session.',
+      '🚀 {sector} rally: analysts point to solid fundamentals behind the rise.',
+      '🚀 {sector} boom! Companies hit all-time highs.',
     ],
     reactions: {
       thiagofinancas: [
-        'Look at this sector flying! 🚀 Those who built positions months ago are smiling now. Patience pays!',
-        'Strong rally! But be careful not to buy at the top. If you\'re in, hold. If you\'re out, study first.',
+        'Look at {sector} flying! 🚀 Those who built positions months ago are smiling now. Patience pays!',
+        'Strong rally in {sector}! But be careful not to buy at the top. If you\'re in, hold. If you\'re out, study first.',
       ],
       luizbarsi: [
+        '{sector} rally is impressive. But remember: what goes up fast can come down fast. Focus on fundamentals.',
         'Cyclical sectors have these rallies. The key is being positioned before, not during the euphoria.',
-        'Impressive rally. But remember: what goes up fast can come down fast. Focus on fundamentals.',
       ],
     },
     sentiment: 'bullish',
   },
   SECTOR_BUST: {
     media: [
-      '📉 Sector declining: stocks fall sharply as outlook deteriorates.',
-      '📉 Selling pressure hits sector. Investors seek protection.',
-      '📉 Sharp sector decline: analysts recommend caution.',
+      '📉 {sector} declining: stocks fall sharply as outlook deteriorates.',
+      '📉 Selling pressure hits {sector}. Investors seek protection.',
+      '📉 Sharp decline in {sector}: analysts recommend caution.',
     ],
     reactions: {
       thiagofinancas: [
-        'It dropped? OPPORTUNITY! The best companies survive crises and come out stronger. 💎',
-        'Everyone scared? That\'s when I start paying attention. Others\' fear = our discount.',
+        '{sector} dropped? OPPORTUNITY! The best companies survive crises and come out stronger. 💎',
+        'Everyone scared of {sector}? That\'s when I start paying attention. Others\' fear = our discount.',
       ],
       luizbarsi: [
-        'Drops like this are normal in the market. Those with good assets and patience don\'t need to worry.',
-        'Good companies at cheap prices. This is when real wealth is built.',
+        'Drops in {sector} are normal in the market. Those with good assets and patience don\'t need to worry.',
+        'Good {sector} companies at cheap prices. This is when real wealth is built.',
       ],
     },
     sentiment: 'bearish',
   },
   SECTOR_CRASH: {
     media: [
-      '💥 CRASH: Sector collapses in historic session. Circuit breaker triggered.',
-      '💥 ALERT: Abrupt sector decline triggers market panic.',
-      '💥 Sector crash: billions in market cap evaporate in hours.',
+      '💥 {sector} CRASH: sector collapses in historic session. Circuit breaker triggered.',
+      '💥 ALERT: Abrupt decline in {sector} triggers market panic.',
+      '💥 {sector} crash: billions in market cap evaporate in hours.',
     ],
     reactions: {
       thiagofinancas: [
-        '😱 Tough day. But remember: those who sold during the 2008 crisis regretted it. HOLD! 💪',
+        '😱 Tough day for {sector}. But remember: those who sold during the 2008 crisis regretted it. HOLD! 💪',
       ],
       luizbarsi: [
-        'Crashes happen. They separate investors from speculators. Stay calm and stick to your strategy.',
+        'Crashes in {sector} happen. They separate investors from speculators. Stay calm and stick to your strategy.',
       ],
       analistamacro: [
-        'Crash with record volume. Possible contagion to other sectors. Stay vigilant.',
+        '{sector} crash with record volume. Possible contagion to other sectors. Stay vigilant.',
       ],
     },
     sentiment: 'bearish',
