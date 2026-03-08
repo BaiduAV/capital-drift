@@ -135,13 +135,21 @@ export function GameProvider({ children }: { children: ReactNode }) {
     return quoteSell(state, assetId, qty);
   }, [state]);
 
+  const unlockTradeAchievement = useCallback((s: GameState) => {
+    if (!s.achievements?.['first_trade']) {
+      s.achievements = { ...s.achievements, first_trade: { unlockedAtDay: s.dayIndex } };
+      const def = ACHIEVEMENT_DEFS.find(d => d.id === 'first_trade');
+      if (def) toast.success(`${def.icon} ${t(def.titleKey)}`, { description: t(def.descKey) });
+    }
+  }, []);
+
   const buy = useCallback((assetId: string, qty: number) => {
     const stateCopy = structuredClone(state);
     const quote = quoteBuy(stateCopy, assetId, qty);
     const success = executeBuy(stateCopy, quote);
-    if (success) setState(stateCopy);
+    if (success) { unlockTradeAchievement(stateCopy); setState(stateCopy); }
     return { success, quote };
-  }, [state]);
+  }, [state, unlockTradeAchievement]);
 
   const sell = useCallback((assetId: string, qty: number) => {
     const stateCopy = structuredClone(state);
