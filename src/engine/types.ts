@@ -45,6 +45,7 @@ export interface AssetState {
   haltedUntilDay: number | null;
   priceHistory: number[]; // last 90 prices
   isBankrupt?: boolean;
+  nextDividendDay?: number; // per-asset dividend schedule
 }
 
 export interface Position {

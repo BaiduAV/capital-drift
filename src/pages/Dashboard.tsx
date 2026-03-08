@@ -14,6 +14,7 @@ import MacroPanel from '@/components/game/MacroPanel';
 import NewsFeed from '@/components/game/NewsFeed';
 import PortfolioHealth from '@/components/game/PortfolioHealth';
 import QuickActions from '@/components/game/QuickActions';
+import DividendCalendar from '@/components/game/DividendCalendar';
 
 // New Design System imports
 import { PageHeader } from '@/components/ui/PageHeader';
@@ -232,6 +233,7 @@ export default function Dashboard() {
         </SectionCard>
         <div className="flex flex-col gap-3">
           <QuickActions />
+          <DividendCalendar />
           <PortfolioHealth />
         </div>
       </div>
