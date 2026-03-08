@@ -170,7 +170,7 @@ export default function Market() {
                   key: 'class',
                   header: locale === 'pt-BR' ? 'Classe' : 'Class',
                   className: 'hidden md:table-cell',
-                  render: (a) => <span className="text-[10px] text-muted-foreground">{a.def.class}</span>
+                  render: (a) => <span className="text-[10px] text-muted-foreground">{t(`class.${a.def.class}`)}</span>
                 },
                 {
                   key: 'sector',
