@@ -46,7 +46,7 @@ export default function Dashboard() {
     }
     for (const ev of r.events) {
       if (ev.type === 'CREDIT_DOWNGRADE') {
-        toast.error(`⚠️ ${t(ev.titleKey)}: ${t(ev.descriptionKey)}`, { duration: 5000 });
+        toast.error(`⚠️ ${t(ev.titleKey, ev.vars)}: ${t(ev.descriptionKey, ev.vars)}`, { duration: 5000 });
       }
     }
   };
