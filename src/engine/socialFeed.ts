@@ -197,55 +197,55 @@ const TEMPLATES_PT: Record<EventType, TemplateSet> = {
   },
   SECTOR_BOOM: {
     media: [
-      '🚀 Setor em alta: ações do segmento disparam na sessão de hoje.',
-      '🚀 Rally setorial: analistas apontam fundamentos sólidos para a alta.',
-      '🚀 Boom no setor! Empresas registram máximas históricas.',
+      '🚀 {sector} em alta: ações do segmento disparam na sessão de hoje.',
+      '🚀 Rally em {sector}: analistas apontam fundamentos sólidos para a alta.',
+      '🚀 Boom em {sector}! Empresas do setor registram máximas históricas.',
     ],
     reactions: {
       thiagofinancas: [
-        'Olha esse setor voando! 🚀 Quem montou posição meses atrás tá sorrindo agora. Paciência paga!',
-        'Rally forte! Mas cuidado pra não entrar no topo. Quem tá dentro, segura. Quem tá fora, estuda antes.',
+        'Olha {sector} voando! 🚀 Quem montou posição meses atrás tá sorrindo agora. Paciência paga!',
+        'Rally forte em {sector}! Mas cuidado pra não entrar no topo. Quem tá dentro, segura. Quem tá fora, estuda antes.',
       ],
       luizbarsi: [
+        '{sector} em alta expressiva. Mas lembrem: o que sobe rápido, pode cair rápido. Foquem em fundamentos.',
         'Setores cíclicos têm dessas altas. O importante é estar posicionado antes, não durante a euforia.',
-        'Alta expressiva. Mas lembrem: o que sobe rápido, pode cair rápido. Foquem em fundamentos.',
       ],
     },
     sentiment: 'bullish',
   },
   SECTOR_BUST: {
     media: [
-      '📉 Setor em queda: ações recuam forte com deterioração do cenário.',
-      '📉 Pressão vendedora atinge setor. Investidores buscam proteção.',
-      '📉 Queda setorial acentuada: analistas recomendam cautela.',
+      '📉 {sector} em queda: ações recuam forte com deterioração do cenário.',
+      '📉 Pressão vendedora atinge {sector}. Investidores buscam proteção.',
+      '📉 Queda acentuada em {sector}: analistas recomendam cautela.',
     ],
     reactions: {
       thiagofinancas: [
-        'Caiu? OPORTUNIDADE! As melhores empresas sobrevivem às crises e saem mais fortes. 💎',
-        'Todo mundo com medo? É quando eu começo a ficar de olho. Medo dos outros = desconto pra gente.',
+        '{sector} caiu? OPORTUNIDADE! As melhores empresas sobrevivem às crises e saem mais fortes. 💎',
+        'Todo mundo com medo de {sector}? É quando eu começo a ficar de olho. Medo dos outros = desconto pra gente.',
       ],
       luizbarsi: [
-        'Quedas assim são normais no mercado. Quem tem bons ativos e paciência, não precisa se preocupar.',
-        'Boas empresas baratas. É nessas horas que se constrói patrimônio de verdade.',
+        'Quedas em {sector} são normais no mercado. Quem tem bons ativos e paciência, não precisa se preocupar.',
+        'Boas empresas de {sector} baratas. É nessas horas que se constrói patrimônio de verdade.',
       ],
     },
     sentiment: 'bearish',
   },
   SECTOR_CRASH: {
     media: [
-      '💥 CRASH: Setor desaba em pregão histórico. Circuit breaker acionado.',
-      '💥 ALERTA: Queda abrupta em setor provoca pânico no mercado.',
-      '💥 Crash setorial: bilhões em valor de mercado evaporam em horas.',
+      '💥 CRASH em {sector}: setor desaba em pregão histórico. Circuit breaker acionado.',
+      '💥 ALERTA: Queda abrupta em {sector} provoca pânico no mercado.',
+      '💥 Crash em {sector}: bilhões em valor de mercado evaporam em horas.',
     ],
     reactions: {
       thiagofinancas: [
-        '😱 Dia difícil. Mas lembrem: quem vendeu na crise de 2008 se arrependeu. HOLD! 💪',
+        '😱 Dia difícil pra {sector}. Mas lembrem: quem vendeu na crise de 2008 se arrependeu. HOLD! 💪',
       ],
       luizbarsi: [
-        'Crashes acontecem. Eles separam quem investe de quem especula. Mantenham a calma e a estratégia.',
+        'Crashes em {sector} acontecem. Eles separam quem investe de quem especula. Mantenham a calma.',
       ],
       analistamacro: [
-        'Crash com volume recorde. Possível contágio para outros setores. Atenção redobrada.',
+        'Crash em {sector} com volume recorde. Possível contágio para outros setores. Atenção redobrada.',
       ],
     },
     sentiment: 'bearish',
@@ -492,55 +492,55 @@ const TEMPLATES_EN: Record<EventType, TemplateSet> = {
   },
   SECTOR_BOOM: {
     media: [
-      '🚀 Sector rallying: stocks in the segment surge in today\'s session.',
-      '🚀 Sector rally: analysts point to solid fundamentals behind the rise.',
-      '🚀 Sector boom! Companies hit all-time highs.',
+      '🚀 {sector} rallying: stocks in the segment surge in today\'s session.',
+      '🚀 {sector} rally: analysts point to solid fundamentals behind the rise.',
+      '🚀 {sector} boom! Companies hit all-time highs.',
     ],
     reactions: {
       thiagofinancas: [
-        'Look at this sector flying! 🚀 Those who built positions months ago are smiling now. Patience pays!',
-        'Strong rally! But be careful not to buy at the top. If you\'re in, hold. If you\'re out, study first.',
+        'Look at {sector} flying! 🚀 Those who built positions months ago are smiling now. Patience pays!',
+        'Strong rally in {sector}! But be careful not to buy at the top. If you\'re in, hold. If you\'re out, study first.',
       ],
       luizbarsi: [
+        '{sector} rally is impressive. But remember: what goes up fast can come down fast. Focus on fundamentals.',
         'Cyclical sectors have these rallies. The key is being positioned before, not during the euphoria.',
-        'Impressive rally. But remember: what goes up fast can come down fast. Focus on fundamentals.',
       ],
     },
     sentiment: 'bullish',
   },
   SECTOR_BUST: {
     media: [
-      '📉 Sector declining: stocks fall sharply as outlook deteriorates.',
-      '📉 Selling pressure hits sector. Investors seek protection.',
-      '📉 Sharp sector decline: analysts recommend caution.',
+      '📉 {sector} declining: stocks fall sharply as outlook deteriorates.',
+      '📉 Selling pressure hits {sector}. Investors seek protection.',
+      '📉 Sharp decline in {sector}: analysts recommend caution.',
     ],
     reactions: {
       thiagofinancas: [
-        'It dropped? OPPORTUNITY! The best companies survive crises and come out stronger. 💎',
-        'Everyone scared? That\'s when I start paying attention. Others\' fear = our discount.',
+        '{sector} dropped? OPPORTUNITY! The best companies survive crises and come out stronger. 💎',
+        'Everyone scared of {sector}? That\'s when I start paying attention. Others\' fear = our discount.',
       ],
       luizbarsi: [
-        'Drops like this are normal in the market. Those with good assets and patience don\'t need to worry.',
-        'Good companies at cheap prices. This is when real wealth is built.',
+        'Drops in {sector} are normal in the market. Those with good assets and patience don\'t need to worry.',
+        'Good {sector} companies at cheap prices. This is when real wealth is built.',
       ],
     },
     sentiment: 'bearish',
   },
   SECTOR_CRASH: {
     media: [
-      '💥 CRASH: Sector collapses in historic session. Circuit breaker triggered.',
-      '💥 ALERT: Abrupt sector decline triggers market panic.',
-      '💥 Sector crash: billions in market cap evaporate in hours.',
+      '💥 {sector} CRASH: sector collapses in historic session. Circuit breaker triggered.',
+      '💥 ALERT: Abrupt decline in {sector} triggers market panic.',
+      '💥 {sector} crash: billions in market cap evaporate in hours.',
     ],
     reactions: {
       thiagofinancas: [
-        '😱 Tough day. But remember: those who sold during the 2008 crisis regretted it. HOLD! 💪',
+        '😱 Tough day for {sector}. But remember: those who sold during the 2008 crisis regretted it. HOLD! 💪',
       ],
       luizbarsi: [
-        'Crashes happen. They separate investors from speculators. Stay calm and stick to your strategy.',
+        'Crashes in {sector} happen. They separate investors from speculators. Stay calm and stick to your strategy.',
       ],
       analistamacro: [
-        'Crash with record volume. Possible contagion to other sectors. Stay vigilant.',
+        '{sector} crash with record volume. Possible contagion to other sectors. Stay vigilant.',
       ],
     },
     sentiment: 'bearish',
@@ -711,8 +711,14 @@ function getTemplates(locale: string): Record<EventType, TemplateSet> {
 
 // ── Helpers ──
 
-function pickTemplate(templates: string[], dayIndex: number, salt: number): string {
-  return templates[(dayIndex + salt) % templates.length];
+function pickTemplate(templates: string[], dayIndex: number, salt: number, vars?: Record<string, string>): string {
+  let text = templates[(dayIndex + salt) % templates.length];
+  if (vars) {
+    for (const [key, value] of Object.entries(vars)) {
+      text = text.split(`{${key}}`).join(value);
+    }
+  }
+  return text;
 }
 
 function findMediaChannel(eventType: EventType): MediaChannel {
@@ -764,6 +770,14 @@ export function generateSocialPosts(
       const templates = allTemplates[event.type];
       if (!templates) continue;
 
+      // Build interpolation vars — translate sector name if present
+      const postVars: Record<string, string> = {};
+      if (event.vars?.sector) {
+        postVars.sector = t ? t(`sector.${event.vars.sector}`) : event.vars.sector;
+        // If t() returned the raw key, fallback to the sector id
+        if (postVars.sector.startsWith('sector.')) postVars.sector = event.vars.sector;
+      }
+
       const channel = findMediaChannel(event.type);
 
       // 1. Media post
@@ -774,7 +788,7 @@ export function generateSocialPosts(
         displayName: channel.displayName,
         avatarEmoji: channel.avatarEmoji,
         verified: true,
-        text: pickTemplate(templates.media, dr.dayIndex, postId),
+        text: pickTemplate(templates.media, dr.dayIndex, postId, postVars),
         dayIndex: dr.dayIndex,
         sentiment: templates.sentiment,
         engagement: computeEngagement(event.magnitude, dr.dayIndex, 0),
@@ -796,7 +810,7 @@ export function generateSocialPosts(
           displayName: inf.displayName,
           avatarEmoji: inf.avatarEmoji,
           verified: false,
-          text: pickTemplate(infTemplates, dr.dayIndex, postId),
+          text: pickTemplate(infTemplates, dr.dayIndex, postId, postVars),
           dayIndex: dr.dayIndex,
           sentiment: sentimentFromTone(inf.tone, templates.sentiment),
           engagement: computeEngagement(event.magnitude * 0.6, dr.dayIndex, inf.handle.length),
@@ -828,7 +842,7 @@ export function generateSocialPosts(
               displayName: resolvedName,
               avatarEmoji: '🏢',
               verified: true,
-              text: pickTemplate(templates.corporate, dr.dayIndex, postId),
+              text: pickTemplate(templates.corporate, dr.dayIndex, postId, postVars),
               dayIndex: dr.dayIndex,
               sentiment: 'neutral',
               engagement: computeEngagement(event.magnitude * 0.4, dr.dayIndex, 99),

@@ -70,6 +70,7 @@ function generateSingleEvent(state: GameState, rng: RNG): EventCard | null {
   const impact: Record<string, number> = {};
   let macroImpact: EventCard['macroImpact'];
   let magnitude = 0;
+  let vars: Record<string, string> | undefined;
 
   switch (picked) {
     case 'RATE_HIKE': {
@@ -110,17 +111,19 @@ function generateSingleEvent(state: GameState, rng: RNG): EventCard | null {
       break;
     }
     case 'SECTOR_BOOM': {
-      const { assets } = pickSector(state, rng);
+      const { sector, assets } = pickSector(state, rng);
       const shock = 0.005 + rng.next() * 0.02;
       for (const id of assets) impact[id] = shock;
       magnitude = shock;
+      vars = { sector };
       break;
     }
     case 'SECTOR_BUST': {
-      const { assets } = pickSector(state, rng);
+      const { sector, assets } = pickSector(state, rng);
       const shock = -(0.005 + rng.next() * 0.02);
       for (const id of assets) impact[id] = shock;
       magnitude = Math.abs(shock);
+      vars = { sector };
       break;
     }
     case 'CRYPTO_HACK': {
@@ -196,10 +199,11 @@ function generateSingleEvent(state: GameState, rng: RNG): EventCard | null {
       break;
     }
     case 'SECTOR_CRASH' as any: {
-      const { assets } = pickSector(state, rng);
-      const shock = -(0.10 + rng.next() * 0.15); // Severe immediate shock
+      const { sector, assets } = pickSector(state, rng);
+      const shock = -(0.10 + rng.next() * 0.15);
       for (const id of assets) impact[id] = shock;
       magnitude = Math.abs(shock);
+      vars = { sector };
       break;
     }
   }
@@ -222,6 +226,7 @@ function generateSingleEvent(state: GameState, rng: RNG): EventCard | null {
     impact,
     macroImpact,
     magnitude,
+    vars,
   };
 }
 
