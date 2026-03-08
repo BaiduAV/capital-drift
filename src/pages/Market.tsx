@@ -7,6 +7,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { ShoppingCart } from 'lucide-react';
 import AssetDetailModal from '@/components/game/AssetDetailModal';
 import type { AssetClass } from '@/engine/types';
+import { assetName } from '@/engine/i18n';
 
 import { PageHeader } from '@/components/ui/PageHeader';
 import { SectionCard } from '@/components/ui/SectionCard';
