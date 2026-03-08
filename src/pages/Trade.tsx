@@ -63,6 +63,14 @@ export default function Trade() {
     [state.assetCatalog, state.assets, state.portfolio, searchQuery]
   );
 
+  // IPOs in bookbuilding
+  const bookbuildingIPOs = useMemo(() =>
+    (state.ipoPipeline ?? []).filter(e => e.status === 'bookbuilding'),
+    [state.ipoPipeline]
+  );
+
+  const [ipoReserveQty, setIpoReserveQty] = useState<Record<string, string>>({});
+
   const handleExecute = () => {
     if (!assetId || qty <= 0) return;
     const result = side === 'buy' ? buy(assetId, qty) : sell(assetId, qty);
