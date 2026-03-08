@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Outlet, useLocation } from 'react-router-dom';
 import { NavLink } from '@/components/NavLink';
 import { useGame } from '@/context/GameContext';
@@ -16,12 +16,15 @@ import {
   X,
   HelpCircle,
   Trophy,
+  Sun,
+  Moon,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { KPIChip } from '@/components/ui/KPIChip';
 import { cn } from '@/lib/utils';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import OnboardingTutorial, { openTutorial } from '@/components/game/OnboardingTutorial';
+import { loadTheme, saveTheme, type AppTheme } from '@/engine/persistence';
 
 const navItems = [
   { path: '/', icon: LayoutDashboard, labelEn: 'Dashboard', labelPt: 'Painel' },
@@ -36,7 +39,20 @@ export default function AppLayout() {
   const { state, locale, equity, switchLocale, newGame, t } = useGame();
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [theme, setTheme] = useState<AppTheme>(loadTheme);
   const location = useLocation();
+
+  // Apply theme class to document
+  useEffect(() => {
+    document.documentElement.classList.remove('dark', 'light');
+    document.documentElement.classList.add(theme);
+  }, [theme]);
+
+  const toggleTheme = useCallback(() => {
+    const next: AppTheme = theme === 'dark' ? 'light' : 'dark';
+    setTheme(next);
+    saveTheme(next);
+  }, [theme]);
 
   // Close mobile menu on navigation
   useEffect(() => {
@@ -88,6 +104,15 @@ export default function AppLayout() {
         >
           <Globe className="h-3.5 w-3.5" />
           {(!collapsed || mobileOpen) && <span>{locale === 'pt-BR' ? 'EN' : 'PT'}</span>}
+        </Button>
+        <Button
+          variant="ghost"
+          size="sm"
+          className="w-full justify-start gap-2 text-xs text-muted-foreground hover:text-foreground"
+          onClick={toggleTheme}
+        >
+          {theme === 'dark' ? <Sun className="h-3.5 w-3.5" /> : <Moon className="h-3.5 w-3.5" />}
+          {(!collapsed || mobileOpen) && <span>{theme === 'dark' ? (locale === 'pt-BR' ? 'Tema Claro' : 'Light Mode') : (locale === 'pt-BR' ? 'Tema Escuro' : 'Dark Mode')}</span>}
         </Button>
         <Button
           variant="ghost"

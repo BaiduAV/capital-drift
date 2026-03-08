@@ -66,3 +66,15 @@ export function saveLocale(locale: 'pt-BR' | 'en'): void {
 export function loadLocale(): 'pt-BR' | 'en' {
   return (localStorage.getItem(LOCALE_KEY) as 'pt-BR' | 'en') || 'pt-BR';
 }
+
+const THEME_KEY = 'patrimonio_theme';
+
+export type AppTheme = 'dark' | 'light';
+
+export function saveTheme(theme: AppTheme): void {
+  localStorage.setItem(THEME_KEY, theme);
+}
+
+export function loadTheme(): AppTheme {
+  return (localStorage.getItem(THEME_KEY) as AppTheme) || 'dark';
+}
