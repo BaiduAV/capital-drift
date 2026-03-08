@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Outlet, useLocation } from 'react-router-dom';
 import { NavLink } from '@/components/NavLink';
 import { useGame } from '@/context/GameContext';
@@ -16,12 +16,15 @@ import {
   X,
   HelpCircle,
   Trophy,
+  Sun,
+  Moon,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { KPIChip } from '@/components/ui/KPIChip';
 import { cn } from '@/lib/utils';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import OnboardingTutorial, { openTutorial } from '@/components/game/OnboardingTutorial';
+import { loadTheme, saveTheme, type AppTheme } from '@/engine/persistence';
 
 const navItems = [
   { path: '/', icon: LayoutDashboard, labelEn: 'Dashboard', labelPt: 'Painel' },
