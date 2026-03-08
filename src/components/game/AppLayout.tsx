@@ -6,6 +6,7 @@ import {
   LayoutDashboard,
   TrendingUp,
   TrendingDown,
+  Briefcase,
   ArrowLeftRight,
   Clock,
   Globe,
