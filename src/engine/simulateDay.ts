@@ -176,7 +176,7 @@ function phaseAccountingAndMetrics(
   const equityBefore = computeEquity(prevState);
 
   // 9. Dividends
-  const dividendsPaid = applyDividendsAndDistributions(next);
+  const { totalPaid: dividendsPaid, payments: dividendDetails } = applyDividendsAndDistributions(next);
 
   // 10. CDI & Inflation accumulation
   const dailyCDI = next.macro.baseRateAnnual / 252;
