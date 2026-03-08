@@ -842,7 +842,7 @@ export function generateSocialPosts(
               displayName: resolvedName,
               avatarEmoji: '🏢',
               verified: true,
-              text: pickTemplate(templates.corporate, dr.dayIndex, postId),
+              text: pickTemplate(templates.corporate, dr.dayIndex, postId, postVars),
               dayIndex: dr.dayIndex,
               sentiment: 'neutral',
               engagement: computeEngagement(event.magnitude * 0.4, dr.dayIndex, 99),
