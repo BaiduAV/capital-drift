@@ -65,9 +65,44 @@ export function GameProvider({ children }: { children: ReactNode }) {
   const fastForward = useCallback((days: number) => {
     const stateCopy = structuredClone(state);
     setPrevMacro({ ...stateCopy.macro });
-    const result = simulatePeriod(stateCopy, days);
-    // simulatePeriod mutates stateCopy via Object.assign in its loop
-    setState(stateCopy);
+    // Run day-by-day so we can collect DayResults for the NewsFeed
+    const collectedResults: DayResult[] = [];
+    let current = stateCopy;
+    for (let i = 0; i < days; i++) {
+      const result = simulateDay(current);
+      collectedResults.push(result);
+      current = result.state as GameState;
+    }
+    setState(current);
+    setDayResults(prev => [...prev, ...collectedResults].slice(-100));
+    // Build PeriodResult from collected results
+    const startEquity = computeEquity(stateCopy);
+    const endEquity = computeEquity(current);
+    const allEvents = collectedResults.flatMap(r => r.events);
+    let minEq = startEquity, maxEq = startEquity;
+    for (const r of collectedResults) {
+      if (r.metrics.equityAfter < minEq) minEq = r.metrics.equityAfter;
+      if (r.metrics.equityAfter > maxEq) maxEq = r.metrics.equityAfter;
+    }
+    const assetStartPrices: Record<string, number> = {};
+    for (const [id, a] of Object.entries(stateCopy.assets)) assetStartPrices[id] = a.price;
+    const movers = Object.entries(current.assets).map(([id, a]) => ({
+      asset: id,
+      return: (a.price - (assetStartPrices[id] ?? a.price)) / (assetStartPrices[id] || 1),
+    })).sort((a, b) => Math.abs(b.return) - Math.abs(a.return)).slice(0, 6);
+    const rankedEvents = [...allEvents].sort((a, b) => b.magnitude - a.magnitude).slice(0, 6);
+    const missedOpportunities: string[] = [];
+    const maxDrawdown = maxEq > 0 ? (maxEq - minEq) / maxEq : 0;
+    if (maxDrawdown > 0.10) missedOpportunities.push('missed.drawdown');
+    const result: PeriodResult = {
+      startDay: stateCopy.dayIndex,
+      endDay: current.dayIndex,
+      totalReturn: (endEquity - startEquity) / startEquity,
+      maxDrawdown,
+      events: rankedEvents,
+      topMovers: movers,
+      missedOpportunities,
+    };
     return result;
   }, [state]);
 
