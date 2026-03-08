@@ -42,6 +42,7 @@ function createMockState(seed: number): SimulationState {
         events: { active: [] },
         market: { sectors: {}, newListingsCount: {} },
         ipoPipeline: [],
+        achievements: {},
     };
 }
 
