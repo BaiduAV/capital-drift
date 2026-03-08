@@ -112,7 +112,7 @@ function PostCard({
 const DEFAULT_INTERACTION: PostInteractions = { liked: false, reposted: false };
 
 export default function SocialFeed() {
-  const { dayResults, state, locale } = useGame();
+  const { dayResults, state, locale, t } = useGame();
   const [interactions, setInteractions] = useState<Record<string, PostInteractions>>({});
 
   const posts = useMemo(
