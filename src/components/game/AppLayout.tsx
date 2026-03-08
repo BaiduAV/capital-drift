@@ -1,8 +1,11 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { Outlet, useLocation } from 'react-router-dom';
 import { NavLink } from '@/components/NavLink';
 import { useGame } from '@/context/GameContext';
 import { toast } from 'sonner';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import {
   LayoutDashboard,
   TrendingUp,
@@ -55,6 +58,8 @@ export default function AppLayout() {
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [theme, setTheme] = useState<AppTheme>(loadTheme);
+  const [newGameOpen, setNewGameOpen] = useState(false);
+  const [seedInput, setSeedInput] = useState('');
   const location = useLocation();
 
   // Apply theme class to document
@@ -133,7 +138,7 @@ export default function AppLayout() {
           variant="ghost"
           size="sm"
           className="w-full justify-start gap-2 text-xs text-muted-foreground hover:text-destructive"
-          onClick={() => { if (confirm(locale === 'pt-BR' ? 'Iniciar novo jogo?' : 'Start new game?')) newGame(); }}
+          onClick={() => { setSeedInput(''); setNewGameOpen(true); }}
         >
           <RotateCcw className="h-3.5 w-3.5" />
           {(!collapsed || mobileOpen) && <span>{locale === 'pt-BR' ? 'Novo Jogo' : 'New Game'}</span>}
@@ -141,6 +146,18 @@ export default function AppLayout() {
       </div>
     </>
   );
+
+  const handleNewGame = () => {
+    const trimmed = seedInput.trim();
+    const seed = trimmed.length > 0 ? parseInt(trimmed, 10) : undefined;
+    if (trimmed.length > 0 && (isNaN(seed!) || seed! < 0)) {
+      toast.error(locale === 'pt-BR' ? 'Seed inválida. Use um número inteiro positivo.' : 'Invalid seed. Use a positive integer.');
+      return;
+    }
+    newGame(seed);
+    setNewGameOpen(false);
+    toast.success(locale === 'pt-BR' ? 'Novo jogo iniciado!' : 'New game started!');
+  };
 
   return (
     <div className="flex min-h-screen w-full bg-background">
@@ -272,6 +289,52 @@ export default function AppLayout() {
       </div>
 
       <OnboardingTutorial />
+
+      {/* New Game Dialog */}
+      <Dialog open={newGameOpen} onOpenChange={setNewGameOpen}>
+        <DialogContent className="sm:max-w-sm">
+          <DialogHeader>
+            <DialogTitle className="font-sans">
+              {locale === 'pt-BR' ? 'Novo Jogo' : 'New Game'}
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3 py-2">
+            <p className="text-sm text-muted-foreground">
+              {locale === 'pt-BR'
+                ? 'Seu progresso atual será perdido. Opcionalmente, insira uma seed para reproduzir uma partida específica.'
+                : 'Your current progress will be lost. Optionally enter a seed to reproduce a specific game.'}
+            </p>
+            <div className="space-y-1.5">
+              <Label htmlFor="seed-input" className="text-xs font-mono">
+                Seed ({locale === 'pt-BR' ? 'opcional' : 'optional'})
+              </Label>
+              <Input
+                id="seed-input"
+                type="number"
+                min="0"
+                placeholder={locale === 'pt-BR' ? 'Ex: 42' : 'e.g. 42'}
+                value={seedInput}
+                onChange={(e) => setSeedInput(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && handleNewGame()}
+                className="font-mono text-sm"
+              />
+              <p className="text-[10px] text-muted-foreground/70">
+                {locale === 'pt-BR'
+                  ? 'Deixe vazio para uma seed aleatória. Mesma seed = mesmos eventos e preços.'
+                  : 'Leave empty for a random seed. Same seed = same events and prices.'}
+              </p>
+            </div>
+          </div>
+          <DialogFooter className="gap-2 sm:gap-0">
+            <Button variant="ghost" size="sm" onClick={() => setNewGameOpen(false)}>
+              {locale === 'pt-BR' ? 'Cancelar' : 'Cancel'}
+            </Button>
+            <Button size="sm" variant="destructive" onClick={handleNewGame}>
+              {locale === 'pt-BR' ? 'Iniciar' : 'Start'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
