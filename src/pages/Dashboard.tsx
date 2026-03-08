@@ -304,7 +304,7 @@ function DayResultCard({ day, locale, formatPct, navigate, t }: {
 
 function PeriodResultCard({ period, locale, formatPct, navigate, t }: {
   period: PeriodResult; locale: string; formatPct: (v: number) => string;
-  navigate: (path: string) => void; t: (key: string) => string;
+  navigate: (path: string) => void; t: (key: string, vars?: Record<string, string | number>) => string;
 }) {
   return (
     <Card className="terminal-card animate-fade-in">
