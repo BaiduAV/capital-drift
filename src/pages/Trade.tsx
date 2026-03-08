@@ -128,6 +128,68 @@ export default function Trade() {
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-4">
         {/* Left: Asset Selector */}
         <div className="lg:col-span-3 space-y-3">
+          {/* IPO Bookbuilding Section */}
+          {bookbuildingIPOs.length > 0 && (
+            <SectionCard title={locale === 'pt-BR' ? '📋 IPOs em Bookbuilding' : '📋 IPOs in Bookbuilding'}>
+              <div className="space-y-3">
+                {bookbuildingIPOs.map((ipo) => {
+                  const rqty = parseInt(ipoReserveQty[ipo.ticker] || '0') || 0;
+                  const maxQty = Math.floor(state.cash / ipo.offerPrice);
+                  return (
+                    <div key={ipo.ticker} className="flex items-center justify-between bg-muted/30 rounded-md px-3 py-2.5 gap-3">
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center gap-2">
+                          <Landmark className="h-4 w-4 text-primary shrink-0" />
+                          <div>
+                            <div className="text-sm font-mono font-bold text-foreground">{ipo.ticker}</div>
+                            <div className="text-[10px] text-muted-foreground">{ipo.displayName}</div>
+                          </div>
+                        </div>
+                        <div className="flex gap-3 mt-1 text-[10px] font-mono text-muted-foreground">
+                          <span>{t(`sector.${ipo.sector}`)}</span>
+                          <span>R$ {ipo.offerPrice.toFixed(2)}</span>
+                          <span>{locale === 'pt-BR' ? 'Demanda' : 'Demand'}: {(ipo.demand * 100).toFixed(0)}%</span>
+                          <span>D{ipo.listingDay}</span>
+                        </div>
+                        {ipo.playerReservation > 0 && (
+                          <div className="text-[10px] text-primary font-semibold mt-0.5">
+                            ✓ {locale === 'pt-BR' ? 'Reservado' : 'Reserved'}: {ipo.playerReservation}
+                          </div>
+                        )}
+                      </div>
+                      <div className="flex items-center gap-1.5 shrink-0">
+                        <Input
+                          type="number"
+                          min={1}
+                          max={maxQty}
+                          value={ipoReserveQty[ipo.ticker] || ''}
+                          onChange={e => setIpoReserveQty(prev => ({ ...prev, [ipo.ticker]: e.target.value }))}
+                          className="w-20 h-8 text-xs font-mono text-center"
+                          placeholder={String(Math.min(10, maxQty))}
+                        />
+                        <Button
+                          size="sm"
+                          className="h-8 text-xs font-mono"
+                          disabled={rqty <= 0 || rqty > maxQty}
+                          onClick={() => {
+                            const success = reserveIPO(ipo.ticker, rqty);
+                            if (success) {
+                              toast.success(locale === 'pt-BR' ? `Reserva de ${rqty}× ${ipo.ticker} confirmada!` : `Reserved ${rqty}× ${ipo.ticker}!`);
+                              setIpoReserveQty(prev => ({ ...prev, [ipo.ticker]: '' }));
+                            } else {
+                              toast.error(locale === 'pt-BR' ? 'Falha na reserva' : 'Reservation failed');
+                            }
+                          }}
+                        >
+                          {locale === 'pt-BR' ? 'Reservar' : 'Reserve'}
+                        </Button>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </SectionCard>
+          )}
           <SectionCard
             title={locale === 'pt-BR' ? 'Ativos' : 'Assets'}
             noPadding
