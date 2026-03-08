@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, useState, useCallback } from 'react';
 import { useGame } from '@/context/GameContext';
 import { generateSocialPosts, type SocialPost } from '@/engine/socialFeed';
 import { Heart, Repeat2, MessageCircle, BadgeCheck } from 'lucide-react';
@@ -8,7 +8,24 @@ function formatCount(n: number): string {
   return String(n);
 }
 
-function PostCard({ post, index }: { post: SocialPost; index: number }) {
+interface PostInteractions {
+  liked: boolean;
+  reposted: boolean;
+}
+
+function PostCard({
+  post,
+  index,
+  interactions,
+  onLike,
+  onRepost,
+}: {
+  post: SocialPost;
+  index: number;
+  interactions: PostInteractions;
+  onLike: (id: string) => void;
+  onRepost: (id: string) => void;
+}) {
   const sentimentBorder =
     post.accountType === 'influencer'
       ? post.sentiment === 'bullish'
@@ -23,20 +40,20 @@ function PostCard({ post, index }: { post: SocialPost; index: number }) {
       ? 'bg-[hsl(var(--terminal-blue)/0.05)]'
       : '';
 
+  const likeCount = post.engagement.likes + (interactions.liked ? 1 : 0);
+  const repostCount = post.engagement.reposts + (interactions.reposted ? 1 : 0);
+
   return (
     <div
       className={`px-3 py-2.5 border-b border-border/40 last:border-0 animate-news-slide-in hover:bg-secondary/20 transition-colors duration-150 ${sentimentBorder} ${accountBg}`}
       style={{ animationDelay: `${index * 50}ms` }}
     >
-      {/* Header: Avatar + Name + Handle + Verified + Day */}
       <div className="flex items-start gap-2">
-        {/* Avatar */}
         <div className="shrink-0 w-8 h-8 rounded-full bg-secondary flex items-center justify-center text-sm">
           {post.avatarEmoji}
         </div>
 
         <div className="min-w-0 flex-1">
-          {/* Name row */}
           <div className="flex items-center gap-1 flex-wrap">
             <span className="text-xs font-semibold text-foreground truncate max-w-[120px]">
               {post.displayName}
@@ -53,25 +70,38 @@ function PostCard({ post, index }: { post: SocialPost; index: number }) {
             </span>
           </div>
 
-          {/* Post body */}
           <p className="text-[11px] leading-relaxed text-foreground/90 mt-0.5 whitespace-pre-line">
             {post.text}
           </p>
 
-          {/* Engagement bar */}
+          {/* Engagement bar — interactive */}
           <div className="flex items-center gap-4 mt-1.5">
             <span className="flex items-center gap-1 text-[10px] text-muted-foreground/60 hover:text-[hsl(var(--terminal-cyan))] transition-colors cursor-default">
               <MessageCircle className="h-3 w-3" />
               {formatCount(post.engagement.replies)}
             </span>
-            <span className="flex items-center gap-1 text-[10px] text-muted-foreground/60 hover:text-[hsl(var(--terminal-green))] transition-colors cursor-default">
+            <button
+              onClick={() => onRepost(post.id)}
+              className={`flex items-center gap-1 text-[10px] transition-all duration-200 cursor-pointer hover:scale-110 active:scale-95 ${
+                interactions.reposted
+                  ? 'text-[hsl(var(--terminal-green))]'
+                  : 'text-muted-foreground/60 hover:text-[hsl(var(--terminal-green))]'
+              }`}
+            >
               <Repeat2 className="h-3 w-3" />
-              {formatCount(post.engagement.reposts)}
-            </span>
-            <span className="flex items-center gap-1 text-[10px] text-muted-foreground/60 hover:text-[hsl(var(--terminal-red))] transition-colors cursor-default">
-              <Heart className="h-3 w-3" />
-              {formatCount(post.engagement.likes)}
-            </span>
+              {formatCount(repostCount)}
+            </button>
+            <button
+              onClick={() => onLike(post.id)}
+              className={`flex items-center gap-1 text-[10px] transition-all duration-200 cursor-pointer hover:scale-110 active:scale-95 ${
+                interactions.liked
+                  ? 'text-[hsl(var(--terminal-red))]'
+                  : 'text-muted-foreground/60 hover:text-[hsl(var(--terminal-red))]'
+              }`}
+            >
+              <Heart className={`h-3 w-3 ${interactions.liked ? 'fill-current' : ''}`} />
+              {formatCount(likeCount)}
+            </button>
           </div>
         </div>
       </div>
@@ -79,13 +109,30 @@ function PostCard({ post, index }: { post: SocialPost; index: number }) {
   );
 }
 
+const DEFAULT_INTERACTION: PostInteractions = { liked: false, reposted: false };
+
 export default function SocialFeed() {
   const { dayResults, state, locale } = useGame();
+  const [interactions, setInteractions] = useState<Record<string, PostInteractions>>({});
 
   const posts = useMemo(
     () => generateSocialPosts(dayResults, state, 20, locale),
     [dayResults, state, locale],
   );
+
+  const handleLike = useCallback((id: string) => {
+    setInteractions(prev => {
+      const current = prev[id] ?? DEFAULT_INTERACTION;
+      return { ...prev, [id]: { ...current, liked: !current.liked } };
+    });
+  }, []);
+
+  const handleRepost = useCallback((id: string) => {
+    setInteractions(prev => {
+      const current = prev[id] ?? DEFAULT_INTERACTION;
+      return { ...prev, [id]: { ...current, reposted: !current.reposted } };
+    });
+  }, []);
 
   if (posts.length === 0) {
     return (
@@ -102,7 +149,14 @@ export default function SocialFeed() {
   return (
     <div className="max-h-[320px] overflow-y-auto scrollbar-terminal">
       {posts.map((post, i) => (
-        <PostCard key={post.id} post={post} index={i} />
+        <PostCard
+          key={post.id}
+          post={post}
+          index={i}
+          interactions={interactions[post.id] ?? DEFAULT_INTERACTION}
+          onLike={handleLike}
+          onRepost={handleRepost}
+        />
       ))}
     </div>
   );
