@@ -1,66 +1,113 @@
 
 
-## Análise do Cálculo Atual
+# UI Macroeconômica Imersiva — Plano de Implementação
 
-O score de **Saúde do Portfólio** (0–100) é composto por 3 sub-scores:
+## Escopo
 
-| Componente | Peso Máx | Como Calcula | Problemas |
-|---|---|---|---|
-| **Liquidez** | 40 pts | `cash / (equity/6)` — meses de "burn" | Fórmula estranha: divide equity por 6 como "burn mensal", o que não faz sentido financeiro. Penaliza quem está investido. |
-| **Diversificação** | 30 pts | `(1 - HHI) * 40`, cap 30 | HHI é bom, mas ignora diversificação entre *classes* de ativos (só conta posições individuais). |
-| **Drawdown** | 30 pts | Faixas fixas: <5%=30, <10%=20, <20%=10, else 0 | Razoável, mas usa drawdown desde o início do jogo (nunca "reseta"), penalizando permanentemente. |
+7 tarefas que adicionam camada imersiva ao Dashboard sem alterar a engine. Tudo consome dados já existentes em `GameState` (macro, regime, events, history, portfolio).
 
-**Problemas principais:**
-1. **Liquidez mal definida** — "monthly burn = equity/6" é arbitrário e sem significado financeiro real.
-2. **Sem diversificação por classe** — ter 10 ações diferentes dá score alto, mas é tudo renda variável.
-3. **Sem componente de performance** — o score ignora se o jogador está ganhando ou perdendo dinheiro.
-4. **Sem feedback educativo** — o usuário vê um número mas não sabe *o que melhorar*.
-5. **UI minimalista demais** — só mostra score e barra, sem breakdown.
+## Dados disponíveis na engine (sem mudanças)
 
----
+- `state.macro.baseRateAnnual` / `state.macro.inflationAnnual` — SELIC e IPCA
+- `state.regime` — regime atual
+- `state.history.equity[]` / `state.history.cdiAccumulated[]` / `state.history.drawdown[]`
+- `dayResults[]` — array de DayResult com events, regime changes
+- `state.portfolio` / `state.assets` / `state.cash` — posições
 
-## Plano de Melhoria
+**Dados não existentes que precisam ser derivados (sem mudar engine):**
+- USD/BRL: derivar de regime (simulado, não existe na engine). Alternativa: omitir ou criar valor cosmético baseado em regime.
+- Risk Index: calcular no frontend a partir de regime + drawdown + volatility.
+- Patrimônio real (ajustado inflação): calcular no frontend acumulando inflação diária do histórico.
+- Narrativa: if/else puro no frontend.
 
-### 1. Reformular o cálculo (engine + componente)
+## Arquivos a criar
 
-Novo score com **5 componentes** (total = 100):
+| Arquivo | Tarefa |
+|---|---|
+| `src/components/game/MacroPanel.tsx` | T1 — Painel macro no topo |
+| `src/components/game/NewsFeed.tsx` | T2 — Eventos como manchetes |
+| `src/components/game/PortfolioHealth.tsx` | T4 — Score de saúde |
+| `src/components/game/QuickActions.tsx` | T6 — Botões de estratégia |
+| `src/utils/generateNarrative.ts` | T5 — Gerador de narrativa |
 
-| Componente | Peso | Lógica |
-|---|---|---|
-| **Reserva de Caixa** (20 pts) | 20 | % do patrimônio em caixa: ideal 10-30%. Abaixo de 5% = 0, acima de 30% perde pontos (dinheiro parado). |
-| **Diversificação por Ativo** (20 pts) | 20 | `(1 - HHI)` normalizado. Mantém a lógica atual mas com peso ajustado. |
-| **Diversificação por Classe** (20 pts) | 20 | Conta quantas classes distintas estão representadas (RF, Ações, FII, Crypto). Ideal >= 3 classes, nenhuma > 50%. |
-| **Drawdown** (20 pts) | 20 | Drawdown dos últimos 30 dias (rolling), não desde o início. Faixas mais granulares. |
-| **Performance vs CDI** (20 pts) | 20 | Retorno acumulado vs CDI. Batendo CDI = 20 pts. Perdendo < 5% = 10 pts. Perdendo mais = 0. |
+## Arquivos a editar
 
-### 2. Extrair lógica para `src/engine/healthScore.ts`
+| Arquivo | Mudança |
+|---|---|
+| `src/pages/Dashboard.tsx` | T7 — Novo layout integrando MacroPanel, Narrative, NewsFeed, PortfolioHealth, QuickActions + T3 gráfico melhorado |
+| `src/context/GameContext.tsx` | Expor `previousDayMacro` para comparação de setas ↑↓ no MacroPanel |
+| `src/index.css` | Adicionar classes de animação fade-in para NewsFeed |
 
-Mover o cálculo para o engine como função pura testável, retornando o score total **e o breakdown** de cada componente.
+## Implementação por tarefa
 
+### T1 — MacroPanel.tsx
+- Grid responsivo: 6 colunas desktop, 3 mobile
+- Itens: SELIC, CDI (= SELIC/252 diário), IPCA, Regime, Drawdown atual, vs CDI
+- Cada item: valor + seta comparando `state.macro` atual vs valor do dia anterior (armazenar `prevMacro` no GameContext ao avançar dia)
+- Regime badge com cores já definidas no CSS (`.regime-CALM`, `.regime-BULL`, etc.)
+- Omitir USD/BRL (não existe na engine). Substituir por "Risk Index" = f(regime, drawdown, vol) calculado inline
+
+### T2 — NewsFeed.tsx
+- Input: `dayResults` (últimos 10)
+- Mapear `EventCard.type` para ícone + headline amigável + cor
+- Mapeamento hardcoded: `RATE_HIKE → 📈 "BC sobe juros"`, etc.
+- Card list vertical, max 8 items, com `animate-fadeIn` CSS
+- Mostrar dia do evento + regime badge
+
+### T3 — Gráfico patrimônio melhorado (dentro do Dashboard)
+- Adicionar linha "Patrimônio Real" = equity[i] / (inflação acumulada desde dia 0)
+- Calcular inflação acumulada: produto de (1 + inflDiária) — derivar de `state.macro.inflationAnnual / 252` por dia. Problema: não temos histórico de inflação diária. Alternativa pragmática: usar inflação atual para ajustar todo o histórico (simplificação aceitável para MVP).
+- Colorir área do gráfico: verde acima do pico, vermelho abaixo
+- Label "Drawdown atual: -X%"
+- Usar recharts ComposedChart existente, adicionar mais uma Line
+
+### T4 — PortfolioHealth.tsx
+- Liquidez: `state.cash / (equity / 6)` → meses de reserva
+- Diversificação: contar classes distintas, Herfindahl index
+- Drawdown: penalizar drawdown > 10%
+- Score 0-100 com barra colorida (Progress component)
+- Labels: 70+ Saudável, 40-69 Moderado, <40 Arriscado
+
+### T5 — generateNarrative.ts
+- If/else baseado em: regime, último evento, drawdown, inflação, SELIC
+- Retorna string PT-BR ou EN dependendo do locale passado
+- ~15 templates cobrindo combinações principais
+- Ex: regime=CRISIS + drawdown>10% → "A crise aprofunda as perdas. Considere ativos defensivos."
+
+### T6 — QuickActions.tsx
+- 3 botões: Defensivo / Balanceado / Agressivo
+- Cada botão executa trades automáticos:
+  - Defensivo: vende stocks/crypto, compra RF_POS
+  - Balanceado: distribui igualmente entre classes
+  - Agressivo: vende RF, compra stocks/crypto
+- Usa `buy`/`sell` do GameContext
+- Confirma antes de executar
+- Mostra resumo após execução
+
+### T7 — Layout do Dashboard
+Reestruturar o Dashboard:
 ```text
-healthScore(state, equity, cdiAccumulated) → {
-  total: number,
-  breakdown: { cash: number, assetDiv: number, classDiv: number, drawdown: number, performance: number },
-  tips: string[]   // dicas educativas localizadas
-}
+┌──────────────────────────────────┐
+│         MacroPanel (6 cols)       │
+├──────────────────────────────────┤
+│     Narrative (1-2 frases)       │
+├────────────────────┬─────────────┤
+│  Equity Chart      │  NewsFeed   │
+│  (nominal + real)  │  (últimos)  │
+│  + drawdown label  │             │
+├────────────────────┴─────────────┤
+│  Action Bar (play/FF buttons)    │
+├──────────────┬───────────────────┤
+│ PortfolioHealth │  QuickActions  │
+├──────────────┴───────────────────┤
+│  Day/Period Result (existing)    │
+│  Recent History ticker           │
+└──────────────────────────────────┘
 ```
+Mobile: tudo em coluna única, NewsFeed abaixo do gráfico.
 
-### 3. Gerar dicas educativas automáticas
-
-Baseado nos sub-scores mais baixos, gerar 1-3 dicas contextuais:
-- "Aumente sua reserva de caixa para pelo menos 10%"
-- "Diversifique entre classes: você só tem ações"
-- "Seu drawdown recente está alto, considere reduzir risco"
-
-### 4. Melhorar a UI do componente
-
-- Mostrar o **breakdown visual** com mini-barras por componente (5 barrinhas empilhadas ou em grid).
-- Exibir as **dicas** como texto abaixo do score.
-- Tooltip em cada componente explicando o que significa.
-- Manter o design compacto atual mas expansível (collapsible details).
-
-### Arquivos a modificar:
-- **Criar** `src/engine/healthScore.ts` — lógica pura do novo cálculo
-- **Editar** `src/components/game/PortfolioHealth.tsx` — nova UI com breakdown e dicas
-- **Editar** `src/engine/types.ts` — tipo `HealthScoreResult` (se necessário)
+### GameContext changes
+- Adicionar `prevMacro: MacroState | null` ao state tracking
+- No `advanceDay`, salvar macro antes de simular: `setPrevMacro({...state.macro})`
+- Expor `prevMacro` no context para MacroPanel comparar valores
 
