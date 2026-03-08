@@ -55,6 +55,10 @@ const translations: Record<Locale, Record<string, string>> = {
     'event.fiscal_stress.desc': 'Deterioração fiscal eleva juros futuros e pressiona bolsa.',
     'event.commodity_boom.title': 'Boom de Commodities',
     'event.commodity_boom.desc': 'Alta global de commodities beneficia exportadores e atividade.',
+    'event.sector_crash.title': 'Crash Setorial',
+    'event.sector_crash.desc': 'Bolha estoura e setor sofre colapso severo.',
+    'event.ipo.title': 'Novo IPO',
+    'event.ipo.desc': 'Nova empresa listada na bolsa.',
     // Regimes
     'regime.CALM': 'Calmo', 'regime.BULL': 'Bull', 'regime.BEAR': 'Bear',
     'regime.CRISIS': 'Crise', 'regime.CRYPTO_EUPHORIA': 'Euforia Cripto',
