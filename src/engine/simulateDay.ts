@@ -13,10 +13,6 @@ import { processCreditWatchAndDefaults } from './credit';
 import { applyDividendsAndDistributions } from './dividends';
 import { checkInvariants, computeEquity } from './invariants';
 import { IPO } from './params';
-import { rollEvents, applyEventMacro, mergeEventImpacts } from './events';
-import { processCreditWatchAndDefaults } from './credit';
-import { applyDividendsAndDistributions } from './dividends';
-import { checkInvariants, computeEquity } from './invariants';
 
 export interface SimulateDayOptions {
   seed?: number;
