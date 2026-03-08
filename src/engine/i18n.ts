@@ -13,23 +13,9 @@ const translations: Record<Locale, Record<string, string>> = {
     'asset.tipca': 'Tesouro IPCA+',
     'asset.debaa': 'Debênture AA',
     'asset.debbbb': 'Debênture BBB',
-    // Assets - Stocks (Bancos)
-    'asset.itub3': 'Itaú Unibanco', 'asset.bbdc4': 'Bradesco', 'asset.sanb3': 'Santander Brasil',
-    // Assets - Stocks (Energia)
-    'asset.elet3': 'Eletrobras', 'asset.engi4': 'Energisa', 'asset.cpfe3': 'CPFL Energia',
-    // Assets - Stocks (Varejo)
-    'asset.mglu3': 'Magazine Luiza', 'asset.lren3': 'Lojas Renner', 'asset.amer3': 'Americanas',
-    // Assets - Stocks (Tech)
-    'asset.tots3': 'TOTVS', 'asset.lwsa3': 'Locaweb', 'asset.cash3': 'Méliuz',
-    // Assets - ETFs
+    // Assets - ETFs (real index names)
     'asset.bova11': 'ETF Ibovespa', 'asset.divo11': 'ETF Dividendos',
     'asset.teck11': 'ETF Tech Brasil', 'asset.smal11': 'ETF Small Caps',
-    // Assets - FIIs
-    'asset.hglg11': 'FII CSHG Logística', 'asset.kncr11': 'FII Kinea Rendimentos',
-    'asset.xplg11': 'FII XP Log', 'asset.mxrf11': 'FII Maxi Renda',
-    // Assets - Crypto
-    'asset.btc': 'Bitcoin', 'asset.eth': 'Ethereum',
-    'asset.sol': 'Solana', 'asset.doge': 'Dogecoin',
     'asset.ivvb11': 'ETF S&P 500 (Dólar)',
     // Events
     'event.rate_hike.title': 'Juros Sobem',
@@ -49,7 +35,7 @@ const translations: Record<Locale, Record<string, string>> = {
     'event.crypto_euphoria.title': 'Euforia Cripto',
     'event.crypto_euphoria.desc': 'Redes sociais impulsionam alts. Volatilidade explode.',
     'event.crypto_rug_pull.title': 'Rug Pull!',
-    'event.crypto_rug_pull.desc': 'Projeto colapsa. Dogecoin perde valor catastroficamente.',
+    'event.crypto_rug_pull.desc': 'Projeto colapsa. Cripto alt perde valor catastroficamente.',
     'event.credit_downgrade.title': 'Rebaixamento de Crédito',
     'event.credit_downgrade.desc': 'Agência rebaixa rating de debênture. Preço cai.',
     'event.fx_shock.title': 'Choque Cambial',
@@ -92,20 +78,9 @@ const translations: Record<Locale, Record<string, string>> = {
     'asset.tselic': 'Treasury Selic', 'asset.cdb100': 'CDB 100% CDI', 'asset.cdb110': 'CDB 110% CDI',
     'asset.cdbpre': 'CDB Pre 12%', 'asset.tpre': 'Treasury Pre', 'asset.tipca': 'Treasury IPCA+',
     'asset.debaa': 'Debenture AA', 'asset.debbbb': 'Debenture BBB',
-    // Stocks
-    'asset.itub3': 'Itaú Unibanco', 'asset.bbdc4': 'Bradesco', 'asset.sanb3': 'Santander Brazil',
-    'asset.elet3': 'Eletrobras', 'asset.engi4': 'Energisa', 'asset.cpfe3': 'CPFL Energy',
-    'asset.mglu3': 'Magazine Luiza', 'asset.lren3': 'Lojas Renner', 'asset.amer3': 'Americanas',
-    'asset.tots3': 'TOTVS', 'asset.lwsa3': 'Locaweb', 'asset.cash3': 'Méliuz',
     // ETFs
     'asset.bova11': 'Ibovespa ETF', 'asset.divo11': 'Dividend ETF',
     'asset.teck11': 'Brazil Tech ETF', 'asset.smal11': 'Small Cap ETF',
-    // FIIs
-    'asset.hglg11': 'REIT CSHG Logistics', 'asset.kncr11': 'REIT Kinea Income',
-    'asset.xplg11': 'REIT XP Log', 'asset.mxrf11': 'REIT Maxi Income',
-    // Crypto
-    'asset.btc': 'Bitcoin', 'asset.eth': 'Ethereum',
-    'asset.sol': 'Solana', 'asset.doge': 'Dogecoin',
     'asset.ivvb11': 'S&P 500 ETF (Dollar)',
     // Events
     'event.rate_hike.title': 'Rate Hike',
@@ -125,7 +100,7 @@ const translations: Record<Locale, Record<string, string>> = {
     'event.crypto_euphoria.title': 'Crypto Euphoria',
     'event.crypto_euphoria.desc': 'Social media drives alts. Volatility explodes.',
     'event.crypto_rug_pull.title': 'Rug Pull!',
-    'event.crypto_rug_pull.desc': 'Project collapses. Dogecoin loses value catastrophically.',
+    'event.crypto_rug_pull.desc': 'Project collapses. Alt crypto loses value catastrophically.',
     'event.credit_downgrade.title': 'Credit Downgrade',
     'event.credit_downgrade.desc': 'Agency downgrades debenture rating. Price drops.',
     'event.fx_shock.title': 'FX Shock',
@@ -178,4 +153,10 @@ export function t(key: string, vars?: Record<string, string | number>): string {
     }
   }
   return text;
+}
+
+/** Resolve asset display name: use displayName if available, otherwise i18n lookup */
+export function assetName(def: { nameKey: string; displayName?: string }): string {
+  if (def.displayName) return def.displayName;
+  return t(def.nameKey);
 }

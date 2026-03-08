@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
 import { Search, Plus, Minus, ShoppingCart } from 'lucide-react';
 import type { TradeQuote } from '@/engine/types';
+import { assetName } from '@/engine/i18n';
 
 import { PageHeader } from '@/components/ui/PageHeader';
 import { SectionCard } from '@/components/ui/SectionCard';
@@ -34,7 +35,7 @@ export default function Trade() {
   const sortedAssets = useMemo(() =>
     Object.entries(state.assetCatalog)
       .map(([id, def]) => ({ id, def, assetState: state.assets[id], position: state.portfolio[id] }))
-      .filter(a => !searchQuery || a.id.toLowerCase().includes(searchQuery.toLowerCase()) || t(a.def.nameKey).toLowerCase().includes(searchQuery.toLowerCase()))
+      .filter(a => !searchQuery || a.id.toLowerCase().includes(searchQuery.toLowerCase()) || assetName(a.def).toLowerCase().includes(searchQuery.toLowerCase()))
       .sort((a, b) => a.id.localeCompare(b.id)),
     [state.assetCatalog, state.assets, state.portfolio, searchQuery, t]
   );
@@ -114,7 +115,7 @@ export default function Trade() {
                     <div className="flex items-center gap-3 min-w-0">
                       <div>
                         <div className="text-sm font-mono font-bold text-foreground">{a.id}</div>
-                        <div className="text-[10px] text-muted-foreground truncate">{t(a.def.nameKey)}</div>
+                        <div className="text-[10px] text-muted-foreground truncate">{assetName(a.def)}</div>
                       </div>
                     </div>
                     <div className="flex items-center gap-4 shrink-0">
@@ -168,7 +169,7 @@ export default function Trade() {
                   <div className="flex items-center justify-between bg-muted/30 rounded-md px-3 py-2">
                     <div>
                       <div className="text-sm font-mono font-bold text-foreground">{assetId}</div>
-                      <div className="text-[10px] text-muted-foreground">{t(selectedDef.nameKey)}</div>
+                      <div className="text-[10px] text-muted-foreground">{assetName(selectedDef)}</div>
                     </div>
                     <div className="text-right">
                       <div className="text-sm font-mono font-semibold text-foreground">{formatCurrency(selectedAsset.price)}</div>

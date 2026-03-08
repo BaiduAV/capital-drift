@@ -33,7 +33,10 @@ export default function QuickActions() {
           if (pos && pos.quantity > 0) sell(id, pos.quantity);
         }
         const s = getState();
-        const targets = ['BOVA11', 'BTC'];
+        // Pick first ETF and first crypto
+        const etf = Object.keys(catalog).find(id => catalog[id].class === 'ETF' && catalog[id].sector === 'TOTAL_MARKET') || eqAssets[0];
+        const crypto = crAssets[0];
+        const targets = [etf, crypto].filter(Boolean) as string[];
         const perTarget = s.cash * 0.9 / targets.length;
         for (const id of targets) {
           const price = s.assets[id]?.price ?? 50;
@@ -47,7 +50,10 @@ export default function QuickActions() {
           if (pos && pos.quantity > 0) sell(id, pos.quantity);
         }
         const s = getState();
-        const targets = ['TSELIC', 'BOVA11', 'HGLG11', 'BTC'];
+        const etf = Object.keys(catalog).find(id => catalog[id].class === 'ETF' && catalog[id].sector === 'TOTAL_MARKET') || eqAssets[0];
+        const fii = Object.keys(catalog).find(id => catalog[id].class === 'FII') || eqAssets[0];
+        const crypto = crAssets[0];
+        const targets = ['TSELIC', etf, fii, crypto].filter(Boolean) as string[];
         const perTarget = s.cash * 0.9 / targets.length;
         for (const id of targets) {
           const price = s.assets[id]?.price ?? 50;

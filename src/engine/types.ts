@@ -28,6 +28,7 @@ export type LiquidityRule = 'D0' | 'D7' | 'D30_OR_PENALTY';
 export interface AssetDefinition {
   id: string;
   nameKey: string; // i18n key
+  displayName?: string; // Dynamic name for generated assets (used when no i18n key exists)
   class: AssetClass;
   sector: Sector;
   corrGroup: CorrGroup;

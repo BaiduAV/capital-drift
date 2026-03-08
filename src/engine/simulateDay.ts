@@ -112,17 +112,13 @@ function phaseShocks(state: SimulationState, ctx: DayContext): { next: Simulatio
           next.assetCatalog[ticker] = {
             id: ticker,
             nameKey,
+            displayName: companyName,
             class: 'STOCK',
             sector,
             corrGroup: 'EQUITY',
             liquidityRule: 'D0',
             initialPrice
           };
-
-          // Register the company name in i18n dynamically
-          // We store the companyName directly in the nameKey for display
-          // Since this is dynamic, we'll just set it as the nameKey value won't exist in i18n
-          // The t() function will fall back to the key, so we store the name in the catalog
 
           // Generate a trace event for the IPO with company details
           allGenerated.push({
