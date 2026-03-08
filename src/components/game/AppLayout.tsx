@@ -18,7 +18,13 @@ import {
   Trophy,
   Sun,
   Moon,
+  Smile,
+  Rocket,
+  ShieldAlert,
+  Flame,
+  type LucideIcon,
 } from 'lucide-react';
+import type { RegimeId } from '@/engine/types';
 import { Button } from '@/components/ui/button';
 import { KPIChip } from '@/components/ui/KPIChip';
 import { cn } from '@/lib/utils';
