@@ -96,28 +96,45 @@ function phaseShocks(state: SimulationState, ctx: DayContext): { next: Simulatio
   // 4b. Dynamic IPOs (Heat > 0.6)
   if (next.market?.sectors) {
     const sectors = Object.keys(next.market.sectors) as import('./types').Sector[];
+    const fiiSectors = new Set(['BRICK', 'PAPER', 'LOGISTICA', 'HYBRID']);
     for (const sector of sectors) {
       const heat = next.market.sectors[sector]?.ipoHeat || 0;
       // Probability of an IPO scales with heat above 0.6
       if (heat > 0.6) {
         const prob = (heat - 0.6) * 0.05; // Max 2% per day at 1.0 heat
         if (ctx.rng.market.next() < prob) {
+          const isFII = fiiSectors.has(sector);
           const count = next.market.newListingsCount[sector] || 0;
-          const { ticker, nameKey, companyName } = generateAssetIdentity(ctx.rng.names, sector, count);
+
+          let ticker: string, nameKey: string, companyName: string;
+          if (isFII) {
+            const identity = generateFIIIdentity(
+              { usedTickers: new Set(Object.keys(next.assets)), usedNames: new Set(), rng: ctx.rng.names } as any,
+              sector
+            );
+            ticker = identity.ticker;
+            companyName = identity.displayName;
+            nameKey = `asset.${ticker.toLowerCase()}`;
+          } else {
+            ({ ticker, nameKey, companyName } = generateAssetIdentity(ctx.rng.names, sector, count));
+          }
 
           next.market.newListingsCount[sector] = count + 1;
 
-          const initialPrice = 10 + 20 * ctx.rng.market.next(); // 10 to 30
+          const initialPrice = isFII ? (70 + 30 * ctx.rng.market.next()) : (10 + 20 * ctx.rng.market.next());
+          const assetClass = isFII ? 'FII' as const : 'STOCK' as const;
+
           next.assets[ticker] = { price: initialPrice, lastReturn: 0, haltedUntilDay: null, priceHistory: [initialPrice] };
           next.assetCatalog[ticker] = {
             id: ticker,
             nameKey,
             displayName: companyName,
-            class: 'STOCK',
+            class: assetClass,
             sector,
             corrGroup: 'EQUITY',
             liquidityRule: 'D0',
-            initialPrice
+            initialPrice,
+            ...(isFII ? { dividendYieldAnnual: 0.06 + ctx.rng.market.next() * 0.04, dividendPeriodDays: 30 } : {}),
           };
 
           // Generate a trace event for the IPO with company details
