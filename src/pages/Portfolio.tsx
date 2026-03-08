@@ -195,7 +195,7 @@ export default function Portfolio() {
                   render: p => (
                     <div className="flex flex-col">
                       <span className="font-semibold text-foreground font-mono">{p.id}</span>
-                      <span className="text-[9px] text-muted-foreground uppercase">{p.def.class}</span>
+                      <span className="text-[9px] text-muted-foreground uppercase">{t(`class.${p.def.class}`)}</span>
                     </div>
                   )
                 },

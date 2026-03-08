@@ -93,10 +93,10 @@ export default function AssetDetailModal({ assetId, onClose }: Props) {
 
         {/* Info grid */}
         <div className="grid grid-cols-2 gap-x-4 gap-y-1.5 p-4 text-xs font-mono">
-          <InfoRow label={locale === 'pt-BR' ? 'Classe' : 'Class'} value={def.class} />
-          <InfoRow label={locale === 'pt-BR' ? 'Setor' : 'Sector'} value={def.sector} />
+          <InfoRow label={locale === 'pt-BR' ? 'Classe' : 'Class'} value={t(`class.${def.class}`)} />
+          <InfoRow label={locale === 'pt-BR' ? 'Setor' : 'Sector'} value={t(`sector.${def.sector}`)} />
           <InfoRow label={locale === 'pt-BR' ? 'Liquidez' : 'Liquidity'} value={def.liquidityRule} />
-          <InfoRow label={locale === 'pt-BR' ? 'Correlação' : 'Correlation'} value={def.corrGroup} />
+          <InfoRow label={locale === 'pt-BR' ? 'Correlação' : 'Correlation'} value={t(`group.${def.corrGroup}`)} />
           {def.dividendYieldAnnual != null && (
             <InfoRow label="Div. Yield" value={formatPct(def.dividendYieldAnnual)} className="price-up" />
           )}
