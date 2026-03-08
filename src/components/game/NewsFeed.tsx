@@ -81,7 +81,6 @@ export default function NewsFeed() {
             </div>
           );
         })}
-      </CardContent>
-    </Card>
+      </div>
   );
 }
