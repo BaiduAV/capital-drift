@@ -17,7 +17,7 @@ export function StatCard({ label, value, sub, trend, className }: StatCardProps)
                 <div className="text-[10px] sm:text-xs text-muted-foreground uppercase tracking-wider font-semibold mb-1 truncate">
                     {label}
                 </div>
-                <div className="text-sm sm:text-lg font-mono font-bold text-foreground truncate">
+                <div className="text-xs sm:text-base lg:text-lg font-mono font-bold text-foreground truncate" title={typeof value === 'string' ? value : undefined}>
                     {value}
                 </div>
                 {sub && (

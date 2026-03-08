@@ -121,7 +121,7 @@ export default function Dashboard() {
         title={locale === 'pt-BR' ? 'Mission Control' : 'Mission Control'}
         subtitle={narrative}
       >
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
           <div className="hidden sm:flex items-center gap-1.5 text-[10px] text-muted-foreground font-mono mr-2">
             <Keyboard className="h-3 w-3" />
             <span>N={locale === 'pt-BR' ? 'Próximo' : 'Next'}</span>
