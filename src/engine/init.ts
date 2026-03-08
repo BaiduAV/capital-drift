@@ -4,6 +4,7 @@ import type { GameState, AssetState } from './types';
 import { buildAssetCatalog } from './assets';
 import { MACRO, INITIAL_CASH, INITIAL_REGIME, DIVIDENDS } from './params';
 import { createRNG } from './rng';
+import { initDividendSchedules } from './dividends';
 
 export function createGameState(seed: number): GameState {
   const catalog = buildAssetCatalog(seed);
@@ -21,7 +22,7 @@ export function createGameState(seed: number): GameState {
     };
   }
 
-  return {
+  const state: GameState = {
     dayIndex: 0,
     cash: INITIAL_CASH,
     portfolio: {},
@@ -49,4 +50,9 @@ export function createGameState(seed: number): GameState {
       newListingsCount: {},
     },
   };
+
+  // Initialize per-asset dividend schedules
+  initDividendSchedules(state);
+
+  return state;
 }
