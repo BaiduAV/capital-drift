@@ -258,8 +258,8 @@ export default function Trade() {
 
                   {/* Asset Info */}
                   <div className="border-t border-border/30 pt-3 space-y-1 text-xs font-mono">
-                    <InfoRow label={locale === 'pt-BR' ? 'Classe' : 'Class'} value={selectedDef.class} />
-                    <InfoRow label={locale === 'pt-BR' ? 'Setor' : 'Sector'} value={selectedDef.sector} />
+                    <InfoRow label={locale === 'pt-BR' ? 'Classe' : 'Class'} value={t(`class.${selectedDef.class}`)} />
+                    <InfoRow label={locale === 'pt-BR' ? 'Setor' : 'Sector'} value={t(`sector.${selectedDef.sector}`)} />
                     <InfoRow label={locale === 'pt-BR' ? 'Liquidez' : 'Liquidity'} value={selectedDef.liquidityRule} />
                     {selectedDef.creditRating && <InfoRow label="Rating" value={selectedDef.creditRating} />}
                     {selectedDef.dividendYieldAnnual != null && selectedDef.dividendYieldAnnual > 0 && (

@@ -57,12 +57,22 @@ export default function NewsFeed() {
             >
               <span className="text-sm shrink-0 group-hover:scale-110 transition-transform duration-200">{meta.icon}</span>
               <div className="min-w-0 flex-1">
-                <div className={`text-xs font-mono font-semibold ${meta.colorClass} truncate`}>
-                  {t(item.event.titleKey, item.event.vars)}
-                </div>
-                <div className="text-[10px] text-muted-foreground leading-tight mt-0.5">
-                  {t(item.event.descriptionKey, item.event.vars)}
-                </div>
+                {(() => {
+                  // Translate sector in vars if present
+                  const vars = item.event.vars
+                    ? { ...item.event.vars, sector: item.event.vars.sector ? t(`sector.${item.event.vars.sector}`) : '' }
+                    : undefined;
+                  return (
+                    <>
+                      <div className={`text-xs font-mono font-semibold ${meta.colorClass} truncate`}>
+                        {t(item.event.titleKey, vars)}
+                      </div>
+                      <div className="text-[10px] text-muted-foreground leading-tight mt-0.5">
+                        {t(item.event.descriptionKey, vars)}
+                      </div>
+                    </>
+                  );
+                })()}
                 <div className="text-[9px] text-muted-foreground/50 mt-0.5 font-mono">
                   D{item.dayIndex}
                 </div>

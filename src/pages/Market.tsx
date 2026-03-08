@@ -80,7 +80,7 @@ export default function Market() {
       {viewTab === 'overview' && (
         <div className="space-y-4 animate-fade-in">
           {Object.entries(heatmapGroups).map(([groupName, groupAssets]) => (
-            <SectionCard key={groupName} title={groupName} className="bg-transparent border-none shadow-none" contentClassName="p-0">
+            <SectionCard key={groupName} title={t(`group.${groupName}`)} className="bg-transparent border-none shadow-none" contentClassName="p-0">
               <div className="flex flex-wrap gap-2">
                 {groupAssets
                   .sort((a, b) => b.assetState.lastReturn - a.assetState.lastReturn)
@@ -170,13 +170,13 @@ export default function Market() {
                   key: 'class',
                   header: locale === 'pt-BR' ? 'Classe' : 'Class',
                   className: 'hidden md:table-cell',
-                  render: (a) => <span className="text-[10px] text-muted-foreground">{a.def.class}</span>
+                  render: (a) => <span className="text-[10px] text-muted-foreground">{t(`class.${a.def.class}`)}</span>
                 },
                 {
                   key: 'sector',
                   header: locale === 'pt-BR' ? 'Setor' : 'Sector',
                   className: 'hidden lg:table-cell',
-                  render: (a) => <span className="text-[10px] text-muted-foreground">{a.def.sector}</span>
+                  render: (a) => <span className="text-[10px] text-muted-foreground">{t(`sector.${a.def.sector}`)}</span>
                 },
                 {
                   key: 'action',

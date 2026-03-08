@@ -62,6 +62,20 @@ const translations: Record<Locale, Record<string, string>> = {
     'event.sector_crash.desc': 'Bolha estoura e setor sofre colapso severo.',
     'event.ipo.title': 'IPO: {company}',
     'event.ipo.desc': '{company} ({ticker}) estreia na bolsa no setor {sector}.',
+    // Sectors
+    'sector.BANCOS': 'Bancos', 'sector.ENERGIA': 'Energia', 'sector.VAREJO': 'Varejo',
+    'sector.AGRO': 'Agronegócio', 'sector.TECH': 'Tecnologia', 'sector.MINERACAO': 'Mineração',
+    'sector.SAUDE': 'Saúde', 'sector.INDUSTRIA': 'Indústria', 'sector.UTILITIES': 'Utilidades',
+    'sector.IMOB': 'Imobiliário', 'sector.TELECOM': 'Telecom', 'sector.LOGISTICA': 'Logística',
+    'sector.TOTAL_MARKET': 'Mercado Total', 'sector.DIVIDENDS': 'Dividendos',
+    'sector.SMALL_CAPS': 'Small Caps', 'sector.BRICK': 'Tijolo', 'sector.PAPER': 'Papel',
+    'sector.HYBRID': 'Híbrido', 'sector.NONE': 'N/A',
+    // CorrGroups
+    'group.EQUITY': 'Renda Variável', 'group.CRYPTO': 'Criptomoedas', 'group.FIXED_INCOME': 'Renda Fixa',
+    // Asset Classes
+    'class.RF_POS': 'RF Pós', 'class.RF_PRE': 'RF Pré', 'class.RF_IPCA': 'RF IPCA+',
+    'class.DEBENTURE': 'Debênture', 'class.STOCK': 'Ação', 'class.ETF': 'ETF',
+    'class.FII': 'FII', 'class.CRYPTO_MAJOR': 'Cripto Major', 'class.CRYPTO_ALT': 'Cripto Alt',
     // Regimes
     'regime.CALM': 'Calmo', 'regime.BULL': 'Bull', 'regime.BEAR': 'Bear',
     'regime.CRISIS': 'Crise', 'regime.CRYPTO_EUPHORIA': 'Euforia Cripto',
@@ -124,6 +138,21 @@ const translations: Record<Locale, Record<string, string>> = {
     'event.sector_crash.desc': 'Bubble bursts and sector suffers severe collapse.',
     'event.ipo.title': 'IPO: {company}',
     'event.ipo.desc': '{company} ({ticker}) listed on the exchange in {sector} sector.',
+    // Sectors
+    'sector.BANCOS': 'Banks', 'sector.ENERGIA': 'Energy', 'sector.VAREJO': 'Retail',
+    'sector.AGRO': 'Agriculture', 'sector.TECH': 'Technology', 'sector.MINERACAO': 'Mining',
+    'sector.SAUDE': 'Healthcare', 'sector.INDUSTRIA': 'Industry', 'sector.UTILITIES': 'Utilities',
+    'sector.IMOB': 'Real Estate', 'sector.TELECOM': 'Telecom', 'sector.LOGISTICA': 'Logistics',
+    'sector.TOTAL_MARKET': 'Total Market', 'sector.DIVIDENDS': 'Dividends',
+    'sector.SMALL_CAPS': 'Small Caps', 'sector.BRICK': 'Brick', 'sector.PAPER': 'Paper',
+    'sector.HYBRID': 'Hybrid', 'sector.NONE': 'N/A',
+    // CorrGroups
+    'group.EQUITY': 'Equities', 'group.CRYPTO': 'Crypto', 'group.FIXED_INCOME': 'Fixed Income',
+    // Asset Classes
+    'class.RF_POS': 'Post-fixed', 'class.RF_PRE': 'Pre-fixed', 'class.RF_IPCA': 'Inflation-linked',
+    'class.DEBENTURE': 'Debenture', 'class.STOCK': 'Stock', 'class.ETF': 'ETF',
+    'class.FII': 'REIT', 'class.CRYPTO_MAJOR': 'Crypto Major', 'class.CRYPTO_ALT': 'Crypto Alt',
+    // Regimes
     'regime.CALM': 'Calm', 'regime.BULL': 'Bull', 'regime.BEAR': 'Bear',
     'regime.CRISIS': 'Crisis', 'regime.CRYPTO_EUPHORIA': 'Crypto Euphoria',
     'missed.drawdown': 'Significant drawdown occurred during fast-forward.',
