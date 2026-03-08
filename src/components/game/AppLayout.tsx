@@ -71,6 +71,15 @@ export default function AppLayout() {
           variant="ghost"
           size="sm"
           className="w-full justify-start gap-2 text-xs text-muted-foreground hover:text-foreground"
+          onClick={openTutorial}
+        >
+          <HelpCircle className="h-3.5 w-3.5" />
+          {(!collapsed || mobileOpen) && <span>{locale === 'pt-BR' ? 'Tutorial' : 'Tutorial'}</span>}
+        </Button>
+        <Button
+          variant="ghost"
+          size="sm"
+          className="w-full justify-start gap-2 text-xs text-muted-foreground hover:text-foreground"
           onClick={switchLocale}
         >
           <Globe className="h-3.5 w-3.5" />
