@@ -115,7 +115,7 @@ export default function Trade() {
                     <div className="flex items-center gap-3 min-w-0">
                       <div>
                         <div className="text-sm font-mono font-bold text-foreground">{a.id}</div>
-                        <div className="text-[10px] text-muted-foreground truncate">{t(a.def.nameKey)}</div>
+                        <div className="text-[10px] text-muted-foreground truncate">{assetName(a.def)}</div>
                       </div>
                     </div>
                     <div className="flex items-center gap-4 shrink-0">
