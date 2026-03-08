@@ -5,7 +5,7 @@ import { useGame } from '@/context/GameContext';
 import {
   LayoutDashboard,
   TrendingUp,
-  Briefcase,
+  TrendingDown,
   ArrowLeftRight,
   Clock,
   Globe,
