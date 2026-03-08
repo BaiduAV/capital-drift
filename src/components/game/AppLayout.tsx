@@ -108,6 +108,15 @@ export default function AppLayout() {
         <Button
           variant="ghost"
           size="sm"
+          className="w-full justify-start gap-2 text-xs text-muted-foreground hover:text-foreground"
+          onClick={toggleTheme}
+        >
+          {theme === 'dark' ? <Sun className="h-3.5 w-3.5" /> : <Moon className="h-3.5 w-3.5" />}
+          {(!collapsed || mobileOpen) && <span>{theme === 'dark' ? (locale === 'pt-BR' ? 'Tema Claro' : 'Light Mode') : (locale === 'pt-BR' ? 'Tema Escuro' : 'Dark Mode')}</span>}
+        </Button>
+        <Button
+          variant="ghost"
+          size="sm"
           className="w-full justify-start gap-2 text-xs text-muted-foreground hover:text-destructive"
           onClick={() => { if (confirm(locale === 'pt-BR' ? 'Iniciar novo jogo?' : 'Start new game?')) newGame(); }}
         >
