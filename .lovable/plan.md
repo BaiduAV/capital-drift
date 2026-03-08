@@ -1,55 +1,113 @@
 
 
-## Rebalanceamento de Carteira + Recomendações Inteligentes
+# UI Macroeconômica Imersiva — Plano de Implementação
 
-### O que será construído
+## Escopo
 
-1. **Painel de Rebalanceamento** — Um novo componente que mostra a alocação atual vs. a alocação-alvo de uma estratégia, com botão de "Rebalancear" que executa as trades necessárias automaticamente.
+7 tarefas que adicionam camada imersiva ao Dashboard sem alterar a engine. Tudo consome dados já existentes em `GameState` (macro, regime, events, history, portfolio).
 
-2. **Recomendações Contextuais** — Substituir os tips genéricos do `healthScore` por recomendações acionáveis baseadas no estado atual do mercado (regime, macro, setor em alta/baixa) e na composição real do portfólio.
+## Dados disponíveis na engine (sem mudanças)
 
-### Arquivos
+- `state.macro.baseRateAnnual` / `state.macro.inflationAnnual` — SELIC e IPCA
+- `state.regime` — regime atual
+- `state.history.equity[]` / `state.history.cdiAccumulated[]` / `state.history.drawdown[]`
+- `dayResults[]` — array de DayResult com events, regime changes
+- `state.portfolio` / `state.assets` / `state.cash` — posições
 
-**Criar:**
-- `src/engine/recommendations.ts` — Motor de recomendações que analisa o estado do jogo e gera sugestões contextuais
-- `src/components/game/RebalancePanel.tsx` — UI do painel de rebalanceamento com visualização de alocação atual vs. alvo
+**Dados não existentes que precisam ser derivados (sem mudar engine):**
+- USD/BRL: derivar de regime (simulado, não existe na engine). Alternativa: omitir ou criar valor cosmético baseado em regime.
+- Risk Index: calcular no frontend a partir de regime + drawdown + volatility.
+- Patrimônio real (ajustado inflação): calcular no frontend acumulando inflação diária do histórico.
+- Narrativa: if/else puro no frontend.
 
-**Modificar:**
-- `src/components/game/QuickActions.tsx` — Integrar o RebalancePanel como expansão dos quick actions
-- `src/pages/Dashboard.tsx` — Adicionar o RebalancePanel ao layout do dashboard
+## Arquivos a criar
 
-### Motor de Recomendações (`recommendations.ts`)
+| Arquivo | Tarefa |
+|---|---|
+| `src/components/game/MacroPanel.tsx` | T1 — Painel macro no topo |
+| `src/components/game/NewsFeed.tsx` | T2 — Eventos como manchetes |
+| `src/components/game/PortfolioHealth.tsx` | T4 — Score de saúde |
+| `src/components/game/QuickActions.tsx` | T6 — Botões de estratégia |
+| `src/utils/generateNarrative.ts` | T5 — Gerador de narrativa |
 
-Função `generateRecommendations(state, equity, locale)` que retorna uma lista de recomendações priorizadas:
+## Arquivos a editar
 
-- **Baseadas no regime**: Em CRISIS → "Reduza exposição a renda variável"; em BULL → "Considere aumentar posição em ações"
-- **Baseadas no macro**: Selic subindo → "Renda fixa pós-fixada se beneficia"; Inflação alta → "IPCA+ protege contra inflação"
-- **Baseadas no portfólio**: Crypto > 30% → "Alta concentração em crypto, considere diversificar"; Sem RF → "Adicione renda fixa como âncora"
-- **Baseadas em eventos recentes**: Setor em crash → "Oportunidade de compra em {setor}?"; IPO disponível → "Avalie o IPO de {empresa}"
-- **Baseadas no drawdown**: DD > 10% → "Stop-loss: considere reduzir posições perdedoras"
+| Arquivo | Mudança |
+|---|---|
+| `src/pages/Dashboard.tsx` | T7 — Novo layout integrando MacroPanel, Narrative, NewsFeed, PortfolioHealth, QuickActions + T3 gráfico melhorado |
+| `src/context/GameContext.tsx` | Expor `previousDayMacro` para comparação de setas ↑↓ no MacroPanel |
+| `src/index.css` | Adicionar classes de animação fade-in para NewsFeed |
 
-Cada recomendação terá: `icon`, `text` (pt/en), `priority` (1-5), `actionType` ('buy'|'sell'|'rebalance'|'info'), e opcionalmente `targetAssets[]`.
+## Implementação por tarefa
 
-### Painel de Rebalanceamento (`RebalancePanel.tsx`)
+### T1 — MacroPanel.tsx
+- Grid responsivo: 6 colunas desktop, 3 mobile
+- Itens: SELIC, CDI (= SELIC/252 diário), IPCA, Regime, Drawdown atual, vs CDI
+- Cada item: valor + seta comparando `state.macro` atual vs valor do dia anterior (armazenar `prevMacro` no GameContext ao avançar dia)
+- Regime badge com cores já definidas no CSS (`.regime-CALM`, `.regime-BULL`, etc.)
+- Omitir USD/BRL (não existe na engine). Substituir por "Risk Index" = f(regime, drawdown, vol) calculado inline
 
-Três perfis-alvo pré-definidos com alocações percentuais:
+### T2 — NewsFeed.tsx
+- Input: `dayResults` (últimos 10)
+- Mapear `EventCard.type` para ícone + headline amigável + cor
+- Mapeamento hardcoded: `RATE_HIKE → 📈 "BC sobe juros"`, etc.
+- Card list vertical, max 8 items, com `animate-fadeIn` CSS
+- Mostrar dia do evento + regime badge
 
-| Perfil | RF | Ações/ETF | FII | Crypto | Caixa |
-|---|---|---|---|---|---|
-| Conservador | 60% | 15% | 10% | 5% | 10% |
-| Moderado | 30% | 30% | 15% | 10% | 15% |
-| Agressivo | 10% | 35% | 10% | 35% | 10% |
+### T3 — Gráfico patrimônio melhorado (dentro do Dashboard)
+- Adicionar linha "Patrimônio Real" = equity[i] / (inflação acumulada desde dia 0)
+- Calcular inflação acumulada: produto de (1 + inflDiária) — derivar de `state.macro.inflationAnnual / 252` por dia. Problema: não temos histórico de inflação diária. Alternativa pragmática: usar inflação atual para ajustar todo o histórico (simplificação aceitável para MVP).
+- Colorir área do gráfico: verde acima do pico, vermelho abaixo
+- Label "Drawdown atual: -X%"
+- Usar recharts ComposedChart existente, adicionar mais uma Line
 
-**UI:**
-- Selector de perfil (3 botões como os QuickActions atuais)
-- Barras horizontais mostrando "Atual" vs "Alvo" por classe de ativo, com cor verde/vermelho indicando se precisa comprar/vender
-- Preview das trades necessárias (lista de compras/vendas)
-- Botão "Rebalancear" com confirmação de duplo clique (padrão existente)
-- As recomendações contextuais aparecem abaixo como cards com ícones
+### T4 — PortfolioHealth.tsx
+- Liquidez: `state.cash / (equity / 6)` → meses de reserva
+- Diversificação: contar classes distintas, Herfindahl index
+- Drawdown: penalizar drawdown > 10%
+- Score 0-100 com barra colorida (Progress component)
+- Labels: 70+ Saudável, 40-69 Moderado, <40 Arriscado
 
-### Integração
+### T5 — generateNarrative.ts
+- If/else baseado em: regime, último evento, drawdown, inflação, SELIC
+- Retorna string PT-BR ou EN dependendo do locale passado
+- ~15 templates cobrindo combinações principais
+- Ex: regime=CRISIS + drawdown>10% → "A crise aprofunda as perdas. Considere ativos defensivos."
 
-O `QuickActions` será expandido para incluir um botão "Rebalancear" que abre o `RebalancePanel` inline. As recomendações contextuais substituem os tips genéricos no `PortfolioHealth` e também aparecem no `RebalancePanel`.
+### T6 — QuickActions.tsx
+- 3 botões: Defensivo / Balanceado / Agressivo
+- Cada botão executa trades automáticos:
+  - Defensivo: vende stocks/crypto, compra RF_POS
+  - Balanceado: distribui igualmente entre classes
+  - Agressivo: vende RF, compra stocks/crypto
+- Usa `buy`/`sell` do GameContext
+- Confirma antes de executar
+- Mostra resumo após execução
 
-A lógica de execução do rebalanceamento usará `batchTrades` do contexto (já existente) — vende posições acima do alvo, depois compra as abaixo do alvo, escolhendo ativos representativos de cada classe (ETF para ações, TSELIC para RF pós, etc.).
+### T7 — Layout do Dashboard
+Reestruturar o Dashboard:
+```text
+┌──────────────────────────────────┐
+│         MacroPanel (6 cols)       │
+├──────────────────────────────────┤
+│     Narrative (1-2 frases)       │
+├────────────────────┬─────────────┤
+│  Equity Chart      │  NewsFeed   │
+│  (nominal + real)  │  (últimos)  │
+│  + drawdown label  │             │
+├────────────────────┴─────────────┤
+│  Action Bar (play/FF buttons)    │
+├──────────────┬───────────────────┤
+│ PortfolioHealth │  QuickActions  │
+├──────────────┴───────────────────┤
+│  Day/Period Result (existing)    │
+│  Recent History ticker           │
+└──────────────────────────────────┘
+```
+Mobile: tudo em coluna única, NewsFeed abaixo do gráfico.
+
+### GameContext changes
+- Adicionar `prevMacro: MacroState | null` ao state tracking
+- No `advanceDay`, salvar macro antes de simular: `setPrevMacro({...state.macro})`
+- Expor `prevMacro` no context para MacroPanel comparar valores
 
