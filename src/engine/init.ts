@@ -50,6 +50,7 @@ export function createGameState(seed: number): GameState {
       newListingsCount: {},
     },
     ipoPipeline: [],
+    achievements: {},
   };
 
   // Initialize per-asset dividend schedules
