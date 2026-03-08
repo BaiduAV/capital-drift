@@ -201,6 +201,123 @@ export default function History() {
         </div>
       )}
 
+      {/* Macro Tab */}
+      {activeTab === 'macro' && (
+        <div className="space-y-4 animate-fade-in">
+          {/* Range selector */}
+          <div className="flex gap-1">
+            {[30, 100, 365, len].map(r => (
+              <Button
+                key={r}
+                variant={range === r ? 'secondary' : 'ghost'}
+                size="sm"
+                className="text-xs font-mono h-6"
+                onClick={() => setRange(r)}
+              >
+                {r >= len ? 'All' : `${r}d`}
+              </Button>
+            ))}
+          </div>
+
+          {macroChartData.length === 0 ? (
+            <div className="text-center py-8 text-sm text-muted-foreground font-mono">
+              {locale === 'pt-BR' ? 'Avance dias para ver o histórico macro.' : 'Advance days to see macro history.'}
+            </div>
+          ) : (
+            <>
+              {/* SELIC & IPCA */}
+              <SectionCard
+                title={locale === 'pt-BR' ? 'Juros & Inflação' : 'Rates & Inflation'}
+                action={
+                  <div className="flex gap-3 text-[10px] font-mono">
+                    <span className="text-[hsl(45,90%,55%)]">● SELIC</span>
+                    <span className="text-[hsl(0,72%,55%)]">● IPCA</span>
+                  </div>
+                }
+              >
+                <ResponsiveContainer width="100%" height={180}>
+                  <ComposedChart data={macroChartData} margin={{ top: 4, right: 4, bottom: 0, left: 0 }}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(220, 10%, 18%)" />
+                    <XAxis dataKey="day" tick={{ fontSize: 10, fill: 'hsl(220, 10%, 45%)' }} tickLine={false} axisLine={false} />
+                    <YAxis tick={{ fontSize: 10, fill: 'hsl(220, 10%, 45%)' }} tickLine={false} axisLine={false} tickFormatter={(v: number) => v.toFixed(1) + '%'} width={45} />
+                    <Tooltip
+                      {...tooltipStyle}
+                      formatter={(v: number, name: string) => [
+                        v.toFixed(2) + '%',
+                        name === 'selic' ? 'SELIC' : 'IPCA'
+                      ]}
+                      labelFormatter={(l) => `${locale === 'pt-BR' ? 'Dia' : 'Day'} ${l}`}
+                    />
+                    <Line type="monotone" dataKey="selic" stroke="hsl(45, 90%, 55%)" strokeWidth={1.5} dot={false} />
+                    <Line type="monotone" dataKey="ipca" stroke="hsl(0, 72%, 55%)" strokeWidth={1.5} dot={false} />
+                  </ComposedChart>
+                </ResponsiveContainer>
+              </SectionCard>
+
+              {/* USD/BRL */}
+              <SectionCard
+                title="USD/BRL"
+                action={
+                  <span className="text-xs font-mono text-muted-foreground">
+                    {macroChartData.length > 0 ? macroChartData[macroChartData.length - 1].usdBrl.toFixed(2) : '—'}
+                  </span>
+                }
+              >
+                <ResponsiveContainer width="100%" height={150}>
+                  <AreaChart data={macroChartData} margin={{ top: 4, right: 4, bottom: 0, left: 0 }}>
+                    <defs>
+                      <linearGradient id="fxGrad" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stopColor="hsl(190, 80%, 55%)" stopOpacity={0.3} />
+                        <stop offset="100%" stopColor="hsl(190, 80%, 55%)" stopOpacity={0} />
+                      </linearGradient>
+                    </defs>
+                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(220, 10%, 18%)" />
+                    <XAxis dataKey="day" tick={{ fontSize: 10, fill: 'hsl(220, 10%, 45%)' }} tickLine={false} axisLine={false} />
+                    <YAxis tick={{ fontSize: 10, fill: 'hsl(220, 10%, 45%)' }} tickLine={false} axisLine={false} tickFormatter={(v: number) => v.toFixed(2)} width={45} domain={['auto', 'auto']} />
+                    <Tooltip
+                      {...tooltipStyle}
+                      formatter={(v: number) => ['R$ ' + v.toFixed(2), 'USD/BRL']}
+                      labelFormatter={(l) => `${locale === 'pt-BR' ? 'Dia' : 'Day'} ${l}`}
+                    />
+                    <Area type="monotone" dataKey="usdBrl" stroke="hsl(190, 80%, 55%)" fill="url(#fxGrad)" strokeWidth={1.5} dot={false} />
+                  </AreaChart>
+                </ResponsiveContainer>
+              </SectionCard>
+
+              {/* Risco & Atividade */}
+              <SectionCard
+                title={locale === 'pt-BR' ? 'Risco & Atividade' : 'Risk & Activity'}
+                action={
+                  <div className="flex gap-3 text-[10px] font-mono">
+                    <span className="text-[hsl(0,72%,55%)]">● {locale === 'pt-BR' ? 'Risco' : 'Risk'}</span>
+                    <span className="text-[hsl(140,70%,50%)]">● {locale === 'pt-BR' ? 'Atividade' : 'Activity'}</span>
+                  </div>
+                }
+              >
+                <ResponsiveContainer width="100%" height={150}>
+                  <ComposedChart data={macroChartData} margin={{ top: 4, right: 4, bottom: 0, left: 0 }}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(220, 10%, 18%)" />
+                    <XAxis dataKey="day" tick={{ fontSize: 10, fill: 'hsl(220, 10%, 45%)' }} tickLine={false} axisLine={false} />
+                    <YAxis yAxisId="risk" tick={{ fontSize: 10, fill: 'hsl(220, 10%, 45%)' }} tickLine={false} axisLine={false} tickFormatter={(v: number) => v.toFixed(0)} width={30} domain={[0, 100]} />
+                    <YAxis yAxisId="activity" orientation="right" tick={{ fontSize: 10, fill: 'hsl(220, 10%, 45%)' }} tickLine={false} axisLine={false} tickFormatter={(v: number) => v.toFixed(1) + '%'} width={45} />
+                    <Tooltip
+                      {...tooltipStyle}
+                      formatter={(v: number, name: string) => [
+                        name === 'risco' ? v.toFixed(0) : v.toFixed(2) + '%',
+                        name === 'risco' ? (locale === 'pt-BR' ? 'Risco' : 'Risk') : (locale === 'pt-BR' ? 'Atividade' : 'Activity')
+                      ]}
+                      labelFormatter={(l) => `${locale === 'pt-BR' ? 'Dia' : 'Day'} ${l}`}
+                    />
+                    <Line yAxisId="risk" type="monotone" dataKey="risco" stroke="hsl(0, 72%, 55%)" strokeWidth={1.5} dot={false} />
+                    <Line yAxisId="activity" type="monotone" dataKey="atividade" stroke="hsl(140, 70%, 50%)" strokeWidth={1.5} dot={false} />
+                  </ComposedChart>
+                </ResponsiveContainer>
+              </SectionCard>
+            </>
+          )}
+        </div>
+      )}
+
       {/* Events Tab */}
       {activeTab === 'events' && (
         <SectionCard title={locale === 'pt-BR' ? 'Timeline de Eventos' : 'Event Timeline'} className="animate-fade-in">
