@@ -3,9 +3,22 @@
 import type { RNG } from './rng';
 import type { Sector } from './types';
 
-function removeAccents(str: string): string {
-    return str.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
-}
+const COMPANY_NAMES: Partial<Record<Sector, string[]>> = {
+    BANCOS: ['Banco Nordeste', 'CredPay', 'FinBank', 'Banco Plural', 'NovaCred', 'DigiBank'],
+    ENERGIA: ['SolForce', 'VentoPower', 'HidroNova', 'LuzVerde', 'EnergiaBR', 'PowerGrid'],
+    VAREJO: ['MegaShop', 'NovaTrend', 'FlexModa', 'SuperBuy', 'UrbanStore', 'PrimeMart'],
+    AGRO: ['AgroBrasil', 'SafraGold', 'CampoBom', 'TerraViva', 'GrãoRico', 'VerdeCampo'],
+    TECH: ['ByteNova', 'CloudBR', 'DataPulse', 'NexTech', 'CodeForge', 'PixelWave'],
+    MINERACAO: ['MineroSteel', 'FerroNorte', 'MetalBR', 'OuroVale', 'AçoForte', 'GeoMetal'],
+    SAUDE: ['VidaPlena', 'MedGroup', 'SaúdeMax', 'BioLab', 'CareVita', 'PharmaGo'],
+    INDUSTRIA: ['IndusBR', 'MecaTech', 'ForjaMax', 'TurboInd', 'AutoParts', 'SteelWorks'],
+    UTILITIES: ['AquaPura', 'SaneBR', 'HidroServ', 'GásNova', 'EcoServ', 'UtilPrime'],
+    IMOB: ['CasaNova', 'UrbanBuild', 'TorreAlta', 'MetroLiving', 'VidaHouse', 'SkyBuild'],
+    TELECOM: ['ConectaBR', 'FibraLink', 'NetPlus', 'TeleNova', 'WaveComm', 'DataLink'],
+    LOGISTICA: ['TransLog', 'ViaRápida', 'CargoMax', 'RotaBR', 'ExpressGo', 'FluxLog'],
+};
+
+const FALLBACK_NAMES = ['NovaCorp', 'HoldingBR', 'GrowthCo', 'VenturePrime', 'EquityMax', 'CapitalBR'];
 
 const PREFIXES: Partial<Record<Sector, string[]>> = {
     BANCOS: ['ITAU', 'BRAD', 'BANC', 'SANT', 'PANC', 'CRED'],
@@ -24,31 +37,25 @@ const PREFIXES: Partial<Record<Sector, string[]>> = {
 
 const FALLBACK_PREFIXES = ['CORP', 'HOLD', 'PART', 'VENT', 'EQTY', 'ASST', 'CAPT', 'GROW'];
 
-export function generateAssetIdentity(rng: RNG, sector: Sector, listIndex: number): { ticker: string; nameKey: string } {
-    // Use RNG to pick a prefix based on the sector deterministically
-    // We can "hash" the listIndex directly or just use the RNG since we pass a dedicated names rng.
+export function generateAssetIdentity(rng: RNG, sector: Sector, listIndex: number): { ticker: string; nameKey: string; companyName: string } {
     const prefixes = PREFIXES[sector] || FALLBACK_PREFIXES;
+    const names = COMPANY_NAMES[sector] || FALLBACK_NAMES;
 
-    // Pick a prefix
     const prefixIdx = Math.floor(rng.next() * prefixes.length);
     const prefix = prefixes[prefixIdx];
 
-    // For suffix, in Brazil usually 3 for common stock, 4 for pref, 11 for units.
-    // The user requested 4 letras + "3". The prefix must be 4 characters.
+    const nameIdx = Math.floor(rng.next() * names.length);
+    const companyName = names[nameIdx];
+
     const baseTicker = prefix.substring(0, 4).toUpperCase();
-    // Ensure the ticker is 4 chars + number
     const paddedTicker = baseTicker.padEnd(4, 'X');
 
     let tickerNum = '3';
     if (rng.next() > 0.8) tickerNum = '4';
     if (rng.next() > 0.95) tickerNum = '11';
 
-    // To differentiate identical tickers if they get generated
-    const idSuffix = listIndex > 0 ? `${listIndex}` : '';
-    let ticker = `${paddedTicker}${tickerNum}`;
-
-    // This is a naive generated name. A real app would have localized parts.
+    const ticker = `${paddedTicker}${tickerNum}`;
     const nameKey = `asset.${ticker.toLowerCase()}`;
 
-    return { ticker, nameKey };
+    return { ticker, nameKey, companyName };
 }

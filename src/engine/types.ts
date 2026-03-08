@@ -111,6 +111,7 @@ export interface EventCard {
   impact: Record<string, number>; // assetId -> return shock
   macroImpact?: { baseRateDelta?: number; inflationDelta?: number; fxDelta?: number; activityDelta?: number; riskDelta?: number };
   magnitude: number; // absolute impact for ranking
+  vars?: Record<string, string>; // i18n interpolation variables
 }
 
 export interface DayResult {
