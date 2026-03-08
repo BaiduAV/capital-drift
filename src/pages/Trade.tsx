@@ -220,6 +220,9 @@ export default function Trade() {
                       {locale === 'pt-BR' ? 'Quantidade' : 'Quantity'}
                     </label>
                     <div className="flex items-center gap-1.5 mt-1">
+                      <Button variant="outline" size="icon" className="h-9 w-9 shrink-0" onClick={() => setQuantity(String(Math.max(0, qty - 1)))}>
+                        <span className="text-sm font-mono font-bold">−</span>
+                      </Button>
                       <Input
                         type="number"
                         min={1}
@@ -228,14 +231,8 @@ export default function Trade() {
                         className="text-center text-sm font-mono h-9 flex-1"
                         placeholder="0"
                       />
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="h-9 px-3 text-[10px] font-mono font-bold shrink-0"
-                        onClick={setMaxQuantity}
-                      >
-                        <Maximize2 className="h-3 w-3 mr-1" />
-                        MAX
+                      <Button variant="outline" size="icon" className="h-9 w-9 shrink-0" onClick={() => setQuantity(String(qty + 1))}>
+                        <span className="text-sm font-mono font-bold">+</span>
                       </Button>
                     </div>
 
