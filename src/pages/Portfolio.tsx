@@ -127,7 +127,7 @@ export default function Portfolio() {
                     ))}
                   </Pie>
                   <Tooltip
-                    contentStyle={{ backgroundColor: 'hsl(220, 20%, 10%)', border: '1px solid hsl(220, 10%, 25%)', borderRadius: '4px', fontSize: '11px', fontFamily: 'monospace' }}
+                    contentStyle={{ backgroundColor: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: '4px', fontSize: '11px', fontFamily: 'monospace', color: 'hsl(var(--foreground))' }}
                     formatter={(v: number) => [formatCurrency(v)]}
                   />
                 </PieChart>
