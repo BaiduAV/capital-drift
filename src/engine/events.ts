@@ -130,8 +130,8 @@ function generateSingleEvent(state: GameState, rng: RNG): EventCard | null {
       break;
     }
     case 'CRYPTO_RUG_PULL': {
-      impact['CRALTM'] = randRange(rng, EVENT_IMPACTS.cryptoRugPull.targetShock as [number, number]);
-      magnitude = Math.abs(impact['CRALTM'] ?? 0.5);
+      impact['DOGE'] = randRange(rng, EVENT_IMPACTS.cryptoRugPull.targetShock as [number, number]);
+      magnitude = Math.abs(impact['DOGE'] ?? 0.5);
       break;
     }
     case 'CREDIT_DOWNGRADE': {

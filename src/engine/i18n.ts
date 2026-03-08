@@ -13,21 +13,24 @@ const translations: Record<Locale, Record<string, string>> = {
     'asset.tipca': 'Tesouro IPCA+',
     'asset.debaa': 'Debênture AA',
     'asset.debbbb': 'Debênture BBB',
-    // Assets - Stocks
-    'asset.bank1': 'Banco Alpha', 'asset.bank2': 'Banco Beta', 'asset.bank3': 'Banco Gamma',
-    'asset.ener1': 'Energia Sol', 'asset.ener2': 'Energia Vento', 'asset.ener3': 'Energia Água',
-    'asset.ret1': 'Varejo Plus', 'asset.ret2': 'Varejo Max', 'asset.ret3': 'Varejo Prime',
-    'asset.tech1': 'Tech Nova', 'asset.tech2': 'Tech Cloud', 'asset.tech3': 'Tech Data',
+    // Assets - Stocks (Bancos)
+    'asset.itub3': 'Itaú Unibanco', 'asset.bbdc4': 'Bradesco', 'asset.sanb3': 'Santander Brasil',
+    // Assets - Stocks (Energia)
+    'asset.elet3': 'Eletrobras', 'asset.engi4': 'Energisa', 'asset.cpfe3': 'CPFL Energia',
+    // Assets - Stocks (Varejo)
+    'asset.mglu3': 'Magazine Luiza', 'asset.lren3': 'Lojas Renner', 'asset.amer3': 'Americanas',
+    // Assets - Stocks (Tech)
+    'asset.tots3': 'TOTVS', 'asset.lwsa3': 'Locaweb', 'asset.cash3': 'Méliuz',
     // Assets - ETFs
-    'asset.etftot': 'ETF Mercado Total', 'asset.etfdiv': 'ETF Dividendos',
-    'asset.etftec': 'ETF Tech', 'asset.etfsml': 'ETF Small Caps',
+    'asset.bova11': 'ETF Ibovespa', 'asset.divo11': 'ETF Dividendos',
+    'asset.teck11': 'ETF Tech Brasil', 'asset.smal11': 'ETF Small Caps',
     // Assets - FIIs
-    'asset.fiitij': 'FII Tijolo', 'asset.fiipap': 'FII Papel',
-    'asset.fiilog': 'FII Logística', 'asset.fiihyb': 'FII Híbrido',
+    'asset.hglg11': 'FII CSHG Logística', 'asset.kncr11': 'FII Kinea Rendimentos',
+    'asset.xplg11': 'FII XP Log', 'asset.mxrf11': 'FII Maxi Renda',
     // Assets - Crypto
-    'asset.crbtc': 'CriptoBTC', 'asset.creth': 'CriptoETH',
-    'asset.craltg': 'Alt Growth', 'asset.craltm': 'Alt Meme',
-    'asset.usd': 'ETF Dólar',
+    'asset.btc': 'Bitcoin', 'asset.eth': 'Ethereum',
+    'asset.sol': 'Solana', 'asset.doge': 'Dogecoin',
+    'asset.ivvb11': 'ETF S&P 500 (Dólar)',
     // Events
     'event.rate_hike.title': 'Juros Sobem',
     'event.rate_hike.desc': 'Banco Central eleva taxa base. Renda fixa se beneficia, bolsa pressiona.',
@@ -46,7 +49,7 @@ const translations: Record<Locale, Record<string, string>> = {
     'event.crypto_euphoria.title': 'Euforia Cripto',
     'event.crypto_euphoria.desc': 'Redes sociais impulsionam alts. Volatilidade explode.',
     'event.crypto_rug_pull.title': 'Rug Pull!',
-    'event.crypto_rug_pull.desc': 'Projeto colapsa. Alt Meme perde valor catastroficamente.',
+    'event.crypto_rug_pull.desc': 'Projeto colapsa. Dogecoin perde valor catastroficamente.',
     'event.credit_downgrade.title': 'Rebaixamento de Crédito',
     'event.credit_downgrade.desc': 'Agência rebaixa rating de debênture. Preço cai.',
     'event.fx_shock.title': 'Choque Cambial',
@@ -57,8 +60,8 @@ const translations: Record<Locale, Record<string, string>> = {
     'event.commodity_boom.desc': 'Alta global de commodities beneficia exportadores e atividade.',
     'event.sector_crash.title': 'Crash Setorial',
     'event.sector_crash.desc': 'Bolha estoura e setor sofre colapso severo.',
-    'event.ipo.title': 'Novo IPO',
-    'event.ipo.desc': 'Nova empresa listada na bolsa.',
+    'event.ipo.title': 'IPO: {company}',
+    'event.ipo.desc': '{company} ({ticker}) estreia na bolsa no setor {sector}.',
     // Regimes
     'regime.CALM': 'Calmo', 'regime.BULL': 'Bull', 'regime.BEAR': 'Bear',
     'regime.CRISIS': 'Crise', 'regime.CRYPTO_EUPHORIA': 'Euforia Cripto',
@@ -75,17 +78,22 @@ const translations: Record<Locale, Record<string, string>> = {
     'asset.tselic': 'Treasury Selic', 'asset.cdb100': 'CDB 100% CDI', 'asset.cdb110': 'CDB 110% CDI',
     'asset.cdbpre': 'CDB Pre 12%', 'asset.tpre': 'Treasury Pre', 'asset.tipca': 'Treasury IPCA+',
     'asset.debaa': 'Debenture AA', 'asset.debbbb': 'Debenture BBB',
-    'asset.bank1': 'Alpha Bank', 'asset.bank2': 'Beta Bank', 'asset.bank3': 'Gamma Bank',
-    'asset.ener1': 'Sun Energy', 'asset.ener2': 'Wind Energy', 'asset.ener3': 'Water Energy',
-    'asset.ret1': 'Retail Plus', 'asset.ret2': 'Retail Max', 'asset.ret3': 'Retail Prime',
-    'asset.tech1': 'Tech Nova', 'asset.tech2': 'Tech Cloud', 'asset.tech3': 'Tech Data',
-    'asset.etftot': 'Total Market ETF', 'asset.etfdiv': 'Dividend ETF',
-    'asset.etftec': 'Tech ETF', 'asset.etfsml': 'Small Cap ETF',
-    'asset.fiitij': 'REIT Brick', 'asset.fiipap': 'REIT Paper',
-    'asset.fiilog': 'REIT Logistics', 'asset.fiihyb': 'REIT Hybrid',
-    'asset.crbtc': 'CryptoBTC', 'asset.creth': 'CryptoETH',
-    'asset.craltg': 'Alt Growth', 'asset.craltm': 'Alt Meme',
-    'asset.usd': 'Dollar ETF',
+    // Stocks
+    'asset.itub3': 'Itaú Unibanco', 'asset.bbdc4': 'Bradesco', 'asset.sanb3': 'Santander Brazil',
+    'asset.elet3': 'Eletrobras', 'asset.engi4': 'Energisa', 'asset.cpfe3': 'CPFL Energy',
+    'asset.mglu3': 'Magazine Luiza', 'asset.lren3': 'Lojas Renner', 'asset.amer3': 'Americanas',
+    'asset.tots3': 'TOTVS', 'asset.lwsa3': 'Locaweb', 'asset.cash3': 'Méliuz',
+    // ETFs
+    'asset.bova11': 'Ibovespa ETF', 'asset.divo11': 'Dividend ETF',
+    'asset.teck11': 'Brazil Tech ETF', 'asset.smal11': 'Small Cap ETF',
+    // FIIs
+    'asset.hglg11': 'REIT CSHG Logistics', 'asset.kncr11': 'REIT Kinea Income',
+    'asset.xplg11': 'REIT XP Log', 'asset.mxrf11': 'REIT Maxi Income',
+    // Crypto
+    'asset.btc': 'Bitcoin', 'asset.eth': 'Ethereum',
+    'asset.sol': 'Solana', 'asset.doge': 'Dogecoin',
+    'asset.ivvb11': 'S&P 500 ETF (Dollar)',
+    // Events
     'event.rate_hike.title': 'Rate Hike',
     'event.rate_hike.desc': 'Central bank raises base rate. Fixed income benefits, equities pressured.',
     'event.rate_cut.title': 'Rate Cut',
@@ -103,7 +111,7 @@ const translations: Record<Locale, Record<string, string>> = {
     'event.crypto_euphoria.title': 'Crypto Euphoria',
     'event.crypto_euphoria.desc': 'Social media drives alts. Volatility explodes.',
     'event.crypto_rug_pull.title': 'Rug Pull!',
-    'event.crypto_rug_pull.desc': 'Project collapses. Alt Meme loses value catastrophically.',
+    'event.crypto_rug_pull.desc': 'Project collapses. Dogecoin loses value catastrophically.',
     'event.credit_downgrade.title': 'Credit Downgrade',
     'event.credit_downgrade.desc': 'Agency downgrades debenture rating. Price drops.',
     'event.fx_shock.title': 'FX Shock',
@@ -114,8 +122,8 @@ const translations: Record<Locale, Record<string, string>> = {
     'event.commodity_boom.desc': 'Global commodity surge benefits exporters and economic activity.',
     'event.sector_crash.title': 'Sector Crash',
     'event.sector_crash.desc': 'Bubble bursts and sector suffers severe collapse.',
-    'event.ipo.title': 'New IPO',
-    'event.ipo.desc': 'New company listed on the exchange.',
+    'event.ipo.title': 'IPO: {company}',
+    'event.ipo.desc': '{company} ({ticker}) listed on the exchange in {sector} sector.',
     'regime.CALM': 'Calm', 'regime.BULL': 'Bull', 'regime.BEAR': 'Bear',
     'regime.CRISIS': 'Crisis', 'regime.CRYPTO_EUPHORIA': 'Crypto Euphoria',
     'missed.drawdown': 'Significant drawdown occurred during fast-forward.',
@@ -137,7 +145,7 @@ export function t(key: string, vars?: Record<string, string | number>): string {
   let text = translations[currentLocale]?.[key] ?? translations['en']?.[key] ?? key;
   if (vars) {
     for (const [k, v] of Object.entries(vars)) {
-      text = text.replace(`{${k}}`, String(v));
+      text = text.replace(new RegExp(`\\{${k}\\}`, 'g'), String(v));
     }
   }
   return text;

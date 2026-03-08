@@ -183,37 +183,37 @@ describe('Engine - Fast forward equivalence', () => {
 describe('Engine - Trading', () => {
   it('can buy and sell assets', () => {
     const state = createGameState(SEED);
-    const buyQuote = quoteBuy(state, 'ETFTOT', 10);
+    const buyQuote = quoteBuy(state, 'BOVA11', 10);
     expect(buyQuote.canExecute).toBe(true);
 
     const cashBefore = state.cash;
     executeBuy(state, buyQuote);
     expect(state.cash).toBeLessThan(cashBefore);
-    expect(state.portfolio['ETFTOT']?.quantity).toBe(10);
+    expect(state.portfolio['BOVA11']?.quantity).toBe(10);
 
-    const sellQuote = quoteSell(state, 'ETFTOT', 5);
+    const sellQuote = quoteSell(state, 'BOVA11', 5);
     expect(sellQuote.canExecute).toBe(true);
     executeSell(state, sellQuote);
-    expect(state.portfolio['ETFTOT']?.quantity).toBe(5);
+    expect(state.portfolio['BOVA11']?.quantity).toBe(5);
   });
 
   it('cannot buy more than cash allows', () => {
     const state = createGameState(SEED);
-    const quote = quoteBuy(state, 'CRBTC', 10000);
+    const quote = quoteBuy(state, 'BTC', 10000);
     expect(quote.canExecute).toBe(false);
     expect(quote.reason).toBe('trade.insufficient_cash');
   });
 
   it('cannot sell more than held', () => {
     const state = createGameState(SEED);
-    const quote = quoteSell(state, 'ETFTOT', 5);
+    const quote = quoteSell(state, 'BOVA11', 5);
     expect(quote.canExecute).toBe(false);
     expect(quote.reason).toBe('trade.no_position');
   });
 
   it('applies crypto fees and spread', () => {
     const state = createGameState(SEED);
-    const quote = quoteBuy(state, 'CRBTC', 1);
+    const quote = quoteBuy(state, 'BTC', 1);
     expect(quote.spread).toBe(0.0015);
     expect(quote.fees).toBeGreaterThan(0);
   });
@@ -223,7 +223,7 @@ describe('Engine - Dividends', () => {
   it('FIIs pay dividends monthly', () => {
     let state = createGameState(SEED);
     // Buy FII
-    const q = quoteBuy(state, 'FIITIJ', 10);
+    const q = quoteBuy(state, 'HGLG11', 10);
     executeBuy(state, q);
     const cashAfterBuy = state.cash;
 
@@ -236,7 +236,7 @@ describe('Engine - Dividends', () => {
 
   it('stocks pay dividends quarterly', () => {
     let state = createGameState(SEED);
-    const q = quoteBuy(state, 'BANK1', 10);
+    const q = quoteBuy(state, 'ITUB3', 10);
     executeBuy(state, q);
     const cashAfterBuy = state.cash;
 

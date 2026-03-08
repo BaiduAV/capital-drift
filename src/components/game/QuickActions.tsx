@@ -33,7 +33,7 @@ export default function QuickActions() {
           if (pos && pos.quantity > 0) sell(id, pos.quantity);
         }
         const s = getState();
-        const targets = ['ETFTOT', 'CRBTC'];
+        const targets = ['BOVA11', 'BTC'];
         const perTarget = s.cash * 0.9 / targets.length;
         for (const id of targets) {
           const price = s.assets[id]?.price ?? 50;
@@ -47,7 +47,7 @@ export default function QuickActions() {
           if (pos && pos.quantity > 0) sell(id, pos.quantity);
         }
         const s = getState();
-        const targets = ['TSELIC', 'ETFTOT', 'FIITIJ', 'CRBTC'];
+        const targets = ['TSELIC', 'BOVA11', 'HGLG11', 'BTC'];
         const perTarget = s.cash * 0.9 / targets.length;
         for (const id of targets) {
           const price = s.assets[id]?.price ?? 50;
