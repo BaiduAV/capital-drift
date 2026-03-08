@@ -147,6 +147,17 @@ export function GameProvider({ children }: { children: ReactNode }) {
     setState(stateCopy);
   }, [state]);
 
+  const reserveIPO = useCallback((ticker: string, qty: number): boolean => {
+    const stateCopy = structuredClone(state);
+    const entry = stateCopy.ipoPipeline?.find(e => e.ticker === ticker && e.status === 'bookbuilding');
+    if (!entry || qty <= 0) return false;
+    const maxAffordable = Math.floor(stateCopy.cash / entry.offerPrice);
+    if (maxAffordable <= 0) return false;
+    entry.playerReservation = Math.min(qty, maxAffordable);
+    setState(stateCopy);
+    return true;
+  }, [state]);
+
   const newGame = useCallback((seed?: number) => {
     deleteSave();
     const s = createGameState(seed ?? Date.now());
