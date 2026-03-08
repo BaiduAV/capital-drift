@@ -119,7 +119,7 @@ const translations: Record<Locale, Record<string, string>> = {
     'sector.SAUDE': 'Healthcare', 'sector.INDUSTRIA': 'Industry', 'sector.UTILITIES': 'Utilities',
     'sector.IMOB': 'Real Estate', 'sector.TELECOM': 'Telecom', 'sector.LOGISTICA': 'Logistics',
     'sector.TOTAL_MARKET': 'Total Market', 'sector.DIVIDENDS': 'Dividends',
-    'sector.SMALL_CAPS': 'Small Caps', 'sector.BRICK': 'Construction', 'sector.PAPER': 'Paper',
+    'sector.SMALL_CAPS': 'Small Caps', 'sector.BRICK': 'Brick & Mortar', 'sector.PAPER': 'Paper (CRI/CRA)',
     'sector.HYBRID': 'Hybrid', 'sector.NONE': 'N/A',
     // CorrGroups
     'group.EQUITY': 'Equities', 'group.CRYPTO': 'Crypto', 'group.FIXED_INCOME': 'Fixed Income', 'group.FX': 'Forex',
