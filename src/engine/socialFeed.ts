@@ -711,8 +711,14 @@ function getTemplates(locale: string): Record<EventType, TemplateSet> {
 
 // ── Helpers ──
 
-function pickTemplate(templates: string[], dayIndex: number, salt: number): string {
-  return templates[(dayIndex + salt) % templates.length];
+function pickTemplate(templates: string[], dayIndex: number, salt: number, vars?: Record<string, string>): string {
+  let text = templates[(dayIndex + salt) % templates.length];
+  if (vars) {
+    for (const [key, value] of Object.entries(vars)) {
+      text = text.replaceAll(`{${key}}`, value);
+    }
+  }
+  return text;
 }
 
 function findMediaChannel(eventType: EventType): MediaChannel {
