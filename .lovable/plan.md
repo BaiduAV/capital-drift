@@ -1,113 +1,101 @@
 
 
-# UI Macroeconômica Imersiva — Plano de Implementação
+## Reconstrução do NewsFeed — Estilo "Twitter/X-like"
 
-## Escopo
+### Conceito
 
-7 tarefas que adicionam camada imersiva ao Dashboard sem alterar a engine. Tudo consome dados já existentes em `GameState` (macro, regime, events, history, portfolio).
+Substituir o feed linear de notícias por um timeline social com 3 tipos de "contas" que postam:
 
-## Dados disponíveis na engine (sem mudanças)
+1. **Canais de mídia** (verificados, ícone de organização) — reportam eventos factuais
+2. **Influencers/comentaristas** — reagem aos eventos com opinião e tom pessoal
+3. **Contas corporativas** — empresas do catálogo informando resultados/IPOs
 
-- `state.macro.baseRateAnnual` / `state.macro.inflationAnnual` — SELIC e IPCA
-- `state.regime` — regime atual
-- `state.history.equity[]` / `state.history.cdiAccumulated[]` / `state.history.drawdown[]`
-- `dayResults[]` — array de DayResult com events, regime changes
-- `state.portfolio` / `state.assets` / `state.cash` — posições
+Cada post tem: avatar, nome, handle (@), badge verificado, texto do post, timestamp (D{n}), e opcionalmente métricas fake (likes/retweets).
 
-**Dados não existentes que precisam ser derivados (sem mudar engine):**
-- USD/BRL: derivar de regime (simulado, não existe na engine). Alternativa: omitir ou criar valor cosmético baseado em regime.
-- Risk Index: calcular no frontend a partir de regime + drawdown + volatility.
-- Patrimônio real (ajustado inflação): calcular no frontend acumulando inflação diária do histórico.
-- Narrativa: if/else puro no frontend.
+### Dados: Personagens Mock
 
-## Arquivos a criar
+**Canais de mídia** (mapeados por tipo de evento):
+| Handle | Nome | Cobertura |
+|---|---|---|
+| @InfoMoneyBR | InfoMoney | Macro, juros, inflação |
+| @BloombergBR | Bloomberg Línea | FX, commodities, macro |
+| @ValorInveste | Valor Econômico | Ações, setores, IPOs |
+| @CoinDeskBR | CoinDesk Brasil | Crypto |
+| @ExameBiz | Exame Invest | Geral, fiscal |
 
-| Arquivo | Tarefa |
-|---|---|
-| `src/components/game/MacroPanel.tsx` | T1 — Painel macro no topo |
-| `src/components/game/NewsFeed.tsx` | T2 — Eventos como manchetes |
-| `src/components/game/PortfolioHealth.tsx` | T4 — Score de saúde |
-| `src/components/game/QuickActions.tsx` | T6 — Botões de estratégia |
-| `src/utils/generateNarrative.ts` | T5 — Gerador de narrativa |
+**Influencers/comentaristas** (reagem com opinião):
+| Handle | Nome | Especialidade | Tom |
+|---|---|---|---|
+| @thiagofinancas | Thiago Nigro | Renda variável | Otimista/educativo |
+| @naborges | Nathalia Arcuri | RF, diversificação | Cauteloso/didático |
+| @felipecripto | Felipe Crypto | Crypto | Hype/ousado |
+| @luizbarsi | Luiz Barsi Jr. | Dividendos/value | Conservador/value |
+| @analistamacro | Ana Macro | Macro/juros | Técnico/analítico |
 
-## Arquivos a editar
+**Contas corporativas**: Derivadas dinamicamente do `assetCatalog` — quando um evento afeta um setor, a empresa mais relevante "posta".
 
-| Arquivo | Mudança |
-|---|---|
-| `src/pages/Dashboard.tsx` | T7 — Novo layout integrando MacroPanel, Narrative, NewsFeed, PortfolioHealth, QuickActions + T3 gráfico melhorado |
-| `src/context/GameContext.tsx` | Expor `previousDayMacro` para comparação de setas ↑↓ no MacroPanel |
-| `src/index.css` | Adicionar classes de animação fade-in para NewsFeed |
+### Arquitetura de Geração de Posts
 
-## Implementação por tarefa
+Para cada `EventCard` no `dayResults`, gerar 2-3 posts:
+1. **Post primário**: canal de mídia relevante reporta o fato (substitui o título/desc atual)
+2. **Post de reação**: influencer relevante comenta com opinião (templates por tipo de evento + tom do personagem)
+3. **Post corporativo** (opcional): se o evento envolve setor específico ou IPO, a empresa posta
 
-### T1 — MacroPanel.tsx
-- Grid responsivo: 6 colunas desktop, 3 mobile
-- Itens: SELIC, CDI (= SELIC/252 diário), IPCA, Regime, Drawdown atual, vs CDI
-- Cada item: valor + seta comparando `state.macro` atual vs valor do dia anterior (armazenar `prevMacro` no GameContext ao avançar dia)
-- Regime badge com cores já definidas no CSS (`.regime-CALM`, `.regime-BULL`, etc.)
-- Omitir USD/BRL (não existe na engine). Substituir por "Risk Index" = f(regime, drawdown, vol) calculado inline
+Os templates serão definidos em `src/engine/socialFeed.ts` — um mapeamento `EventType → { mediaPost, reactions[] }` com variações randomizadas via `dayIndex % N` para variedade.
 
-### T2 — NewsFeed.tsx
-- Input: `dayResults` (últimos 10)
-- Mapear `EventCard.type` para ícone + headline amigável + cor
-- Mapeamento hardcoded: `RATE_HIKE → 📈 "BC sobe juros"`, etc.
-- Card list vertical, max 8 items, com `animate-fadeIn` CSS
-- Mostrar dia do evento + regime badge
+### Arquivos
 
-### T3 — Gráfico patrimônio melhorado (dentro do Dashboard)
-- Adicionar linha "Patrimônio Real" = equity[i] / (inflação acumulada desde dia 0)
-- Calcular inflação acumulada: produto de (1 + inflDiária) — derivar de `state.macro.inflationAnnual / 252` por dia. Problema: não temos histórico de inflação diária. Alternativa pragmática: usar inflação atual para ajustar todo o histórico (simplificação aceitável para MVP).
-- Colorir área do gráfico: verde acima do pico, vermelho abaixo
-- Label "Drawdown atual: -X%"
-- Usar recharts ComposedChart existente, adicionar mais uma Line
+**Criar:**
+- `src/engine/socialFeed.ts` — Definições de personagens (canais, influencers) + função `generateSocialPosts(events, state, locale)` que transforma `EventCard[]` em `SocialPost[]`
+- `src/components/game/SocialFeed.tsx` — Componente visual Twitter-like substituindo o NewsFeed
 
-### T4 — PortfolioHealth.tsx
-- Liquidez: `state.cash / (equity / 6)` → meses de reserva
-- Diversificação: contar classes distintas, Herfindahl index
-- Drawdown: penalizar drawdown > 10%
-- Score 0-100 com barra colorida (Progress component)
-- Labels: 70+ Saudável, 40-69 Moderado, <40 Arriscado
+**Modificar:**
+- `src/pages/Dashboard.tsx` — Trocar `<NewsFeed />` por `<SocialFeed />`
+- `src/index.css` — Estilos do feed social (verified badge, timeline line)
 
-### T5 — generateNarrative.ts
-- If/else baseado em: regime, último evento, drawdown, inflação, SELIC
-- Retorna string PT-BR ou EN dependendo do locale passado
-- ~15 templates cobrindo combinações principais
-- Ex: regime=CRISIS + drawdown>10% → "A crise aprofunda as perdas. Considere ativos defensivos."
+### Estrutura do SocialPost
 
-### T6 — QuickActions.tsx
-- 3 botões: Defensivo / Balanceado / Agressivo
-- Cada botão executa trades automáticos:
-  - Defensivo: vende stocks/crypto, compra RF_POS
-  - Balanceado: distribui igualmente entre classes
-  - Agressivo: vende RF, compra stocks/crypto
-- Usa `buy`/`sell` do GameContext
-- Confirma antes de executar
-- Mostra resumo após execução
-
-### T7 — Layout do Dashboard
-Reestruturar o Dashboard:
-```text
-┌──────────────────────────────────┐
-│         MacroPanel (6 cols)       │
-├──────────────────────────────────┤
-│     Narrative (1-2 frases)       │
-├────────────────────┬─────────────┤
-│  Equity Chart      │  NewsFeed   │
-│  (nominal + real)  │  (últimos)  │
-│  + drawdown label  │             │
-├────────────────────┴─────────────┤
-│  Action Bar (play/FF buttons)    │
-├──────────────┬───────────────────┤
-│ PortfolioHealth │  QuickActions  │
-├──────────────┴───────────────────┤
-│  Day/Period Result (existing)    │
-│  Recent History ticker           │
-└──────────────────────────────────┘
+```typescript
+interface SocialPost {
+  id: string;
+  accountType: 'media' | 'influencer' | 'corporate';
+  handle: string;
+  displayName: string;
+  avatarEmoji: string;      // emoji como avatar (📰, 🧑‍💼, 🏢)
+  verified: boolean;
+  text: string;             // corpo do post, já traduzido
+  dayIndex: number;
+  sentiment: 'bullish' | 'bearish' | 'neutral';
+  engagement: { likes: number; reposts: number };  // números fake baseados em magnitude
+  relatedEvent: EventType;
+}
 ```
-Mobile: tudo em coluna única, NewsFeed abaixo do gráfico.
 
-### GameContext changes
-- Adicionar `prevMacro: MacroState | null` ao state tracking
-- No `advanceDay`, salvar macro antes de simular: `setPrevMacro({...state.macro})`
-- Expor `prevMacro` no context para MacroPanel comparar valores
+### UI do SocialFeed.tsx
+
+- Timeline vertical com linha conectora à esquerda (como Twitter)
+- Cada post: avatar (emoji em circle) → nome + handle + verified badge → texto → barra de engajamento (❤️ 🔄 números)
+- Posts de influencer têm borda lateral colorida (verde/vermelho por sentiment)
+- Posts corporativos têm badge "🏢" e tom institucional
+- Animação `animate-news-slide-in` existente reutilizada
+- Max 15 posts visíveis, scroll
+
+### Templates de Posts (exemplos)
+
+**RATE_HIKE:**
+- @InfoMoneyBR: "🔴 URGENTE: Banco Central eleva Selic em {delta}pp. Nova taxa: {rate}%"
+- @analistamacro: "Decisão era esperada. Com inflação em {ipca}%, não havia alternativa. Renda fixa segue atrativa."
+- @thiagofinancas: "Calma, galera! Juros altos = oportunidade pra quem pensa no longo prazo. Ações de qualidade ficam baratas. 📉➡️📈"
+
+**CRYPTO_HACK:**
+- @CoinDeskBR: "⚠️ BREAKING: Exchange sofre ataque hacker. Criptomoedas em forte queda."
+- @felipecripto: "Mais um hack... por isso eu sempre digo: NOT YOUR KEYS, NOT YOUR COINS. Quem segura na cold wallet tá safe. 💎🙌"
+
+**IPO_LISTED:**
+- @ValorInveste: "🔔 {company} ({ticker}) estreia na B3 com valorização de {pop}% no primeiro dia"
+- Conta @{ticker}: "Hoje marcamos o início de uma nova fase. Obrigado pela confiança dos investidores. #IPO #{ticker}"
+
+### Engagement Fake
+
+`likes = Math.floor(magnitude * 5000 + dayIndex * 3)`, `reposts = Math.floor(likes * 0.3)` — apenas para ambientação.
 
