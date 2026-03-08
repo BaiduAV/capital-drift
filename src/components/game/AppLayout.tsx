@@ -29,6 +29,7 @@ const navItems = [
   { path: '/portfolio', icon: Briefcase, labelEn: 'Portfolio', labelPt: 'Carteira' },
   { path: '/trade', icon: ArrowLeftRight, labelEn: 'Trade', labelPt: 'Negociar' },
   { path: '/history', icon: Clock, labelEn: 'History', labelPt: 'Histórico' },
+  { path: '/achievements', icon: Trophy, labelEn: 'Achievements', labelPt: 'Conquistas' },
 ];
 
 export default function AppLayout() {

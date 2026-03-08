@@ -31,6 +31,7 @@ const App = () => (
               <Route path="/portfolio" element={<Portfolio />} />
               <Route path="/trade" element={<Trade />} />
               <Route path="/history" element={<History />} />
+              <Route path="/achievements" element={<Achievements />} />
             </Route>
             <Route path="*" element={<NotFound />} />
           </Routes>
