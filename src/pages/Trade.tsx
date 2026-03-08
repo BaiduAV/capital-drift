@@ -4,8 +4,8 @@ import { useGame } from '@/context/GameContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
-import { Search, ShoppingCart, TrendingUp, TrendingDown } from 'lucide-react';
-import type { TradeQuote } from '@/engine/types';
+import { Search, ShoppingCart, TrendingUp, TrendingDown, Landmark } from 'lucide-react';
+import type { TradeQuote, IPOPipelineEntry } from '@/engine/types';
 import { assetName } from '@/engine/i18n';
 
 import { PageHeader } from '@/components/ui/PageHeader';
@@ -13,7 +13,7 @@ import { SectionCard } from '@/components/ui/SectionCard';
 import { KPIChip } from '@/components/ui/KPIChip';
 
 export default function Trade() {
-  const { state, locale, buy, sell, getBuyQuote, getSellQuote, t } = useGame();
+  const { state, locale, buy, sell, getBuyQuote, getSellQuote, reserveIPO, t } = useGame();
   const [searchParams] = useSearchParams();
 
   const [assetId, setAssetId] = useState('');
