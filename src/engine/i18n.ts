@@ -48,6 +48,12 @@ const translations: Record<Locale, Record<string, string>> = {
     'event.sector_crash.desc': 'Bolha estoura e setor sofre colapso severo.',
     'event.ipo.title': 'IPO: {company}',
     'event.ipo.desc': '{company} ({ticker}) estreia na bolsa no setor {sector}.',
+    'event.ipo.announced.title': 'IPO Anunciado: {company}',
+    'event.ipo.announced.desc': '{company} ({ticker}) anuncia IPO no setor {sector}. Preço indicativo: R$ {price}.',
+    'event.ipo.bookbuilding.title': 'Bookbuilding: {company}',
+    'event.ipo.bookbuilding.desc': 'Reserva aberta para {company} ({ticker}). Demanda: {demand}%.',
+    'event.ipo.listed.title': '🔔 Listado: {company}',
+    'event.ipo.listed.desc': '{company} ({ticker}) estreia com pop de {pop}%.',
     // Sectors
     'sector.BANCOS': 'Bancos', 'sector.ENERGIA': 'Energia', 'sector.VAREJO': 'Varejo',
     'sector.AGRO': 'Agronegócio', 'sector.TECH': 'Tecnologia', 'sector.MINERACAO': 'Mineração',
