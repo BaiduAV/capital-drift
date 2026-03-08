@@ -289,6 +289,52 @@ export default function AppLayout() {
       </div>
 
       <OnboardingTutorial />
+
+      {/* New Game Dialog */}
+      <Dialog open={newGameOpen} onOpenChange={setNewGameOpen}>
+        <DialogContent className="sm:max-w-sm">
+          <DialogHeader>
+            <DialogTitle className="font-sans">
+              {locale === 'pt-BR' ? 'Novo Jogo' : 'New Game'}
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3 py-2">
+            <p className="text-sm text-muted-foreground">
+              {locale === 'pt-BR'
+                ? 'Seu progresso atual será perdido. Opcionalmente, insira uma seed para reproduzir uma partida específica.'
+                : 'Your current progress will be lost. Optionally enter a seed to reproduce a specific game.'}
+            </p>
+            <div className="space-y-1.5">
+              <Label htmlFor="seed-input" className="text-xs font-mono">
+                Seed ({locale === 'pt-BR' ? 'opcional' : 'optional'})
+              </Label>
+              <Input
+                id="seed-input"
+                type="number"
+                min="0"
+                placeholder={locale === 'pt-BR' ? 'Ex: 42' : 'e.g. 42'}
+                value={seedInput}
+                onChange={(e) => setSeedInput(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && handleNewGame()}
+                className="font-mono text-sm"
+              />
+              <p className="text-[10px] text-muted-foreground/70">
+                {locale === 'pt-BR'
+                  ? 'Deixe vazio para uma seed aleatória. Mesma seed = mesmos eventos e preços.'
+                  : 'Leave empty for a random seed. Same seed = same events and prices.'}
+              </p>
+            </div>
+          </div>
+          <DialogFooter className="gap-2 sm:gap-0">
+            <Button variant="ghost" size="sm" onClick={() => setNewGameOpen(false)}>
+              {locale === 'pt-BR' ? 'Cancelar' : 'Cancel'}
+            </Button>
+            <Button size="sm" variant="destructive" onClick={handleNewGame}>
+              {locale === 'pt-BR' ? 'Iniciar' : 'Start'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
