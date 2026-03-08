@@ -180,12 +180,13 @@ export default function Trade() {
 
                   {/* Quantity */}
                   <div>
-                    <label className="text-[10px] text-muted-foreground uppercase font-semibold">{locale === 'pt-BR' ? 'Quantidade' : 'Quantity'}</label>
+                    <label htmlFor="trade-quantity" className="text-[10px] text-muted-foreground uppercase font-semibold">{locale === 'pt-BR' ? 'Quantidade' : 'Quantity'}</label>
                     <div className="flex items-center gap-1 mt-1">
-                      <Button variant="outline" size="icon" className="h-8 w-8 shrink-0" onClick={() => setQuantity(String(Math.max(0, qty - 1)))}>
+                      <Button aria-label={locale === 'pt-BR' ? 'Diminuir quantidade' : 'Decrease quantity'} variant="outline" size="icon" className="h-8 w-8 shrink-0" onClick={() => setQuantity(String(Math.max(0, qty - 1)))}>
                         <Minus className="h-3 w-3" />
                       </Button>
                       <Input
+                        id="trade-quantity"
                         type="number"
                         min={1}
                         value={quantity}
@@ -193,7 +194,7 @@ export default function Trade() {
                         className="text-center text-sm font-mono h-8"
                         placeholder="0"
                       />
-                      <Button variant="outline" size="icon" className="h-8 w-8 shrink-0" onClick={() => setQuantity(String(qty + 1))}>
+                      <Button aria-label={locale === 'pt-BR' ? 'Aumentar quantidade' : 'Increase quantity'} variant="outline" size="icon" className="h-8 w-8 shrink-0" onClick={() => setQuantity(String(qty + 1))}>
                         <Plus className="h-3 w-3" />
                       </Button>
                     </div>
