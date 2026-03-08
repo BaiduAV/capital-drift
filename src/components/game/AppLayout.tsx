@@ -22,7 +22,7 @@ import {
   Smile,
   Rocket,
   ShieldAlert,
-  Flame,
+  type LucideIcon,
   type LucideIcon,
 } from 'lucide-react';
 import type { RegimeId } from '@/engine/types';
