@@ -41,6 +41,7 @@ function createMockState(seed: number): SimulationState {
         rngState: rng.state(),
         events: { active: [] },
         market: { sectors: {}, newListingsCount: {} },
+        ipoPipeline: [],
     };
 }
 

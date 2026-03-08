@@ -229,6 +229,15 @@ export const CREDIT = {
 export const INITIAL_CASH = 5000;
 export const INITIAL_REGIME: RegimeId = 'CALM';
 
+// ── K. IPO Pipeline ──
+export const IPO = {
+  leadDays: 5,
+  bookbuildingStart: 2,       // days after announcement to start bookbuilding
+  volatilityMultiplier: 1.5,
+  volatilityDays: 5,          // days post-listing with extra vol
+  popRange: { low: -0.05, high: 0.20 },
+};
+
 // ── J. Macro-to-pricing tilt coefficients ──
 export const MACRO_TILT = {
   equityActivityCoeff: 0.008,   // positive activity boosts equity

@@ -46,6 +46,7 @@ export interface AssetState {
   priceHistory: number[]; // last 90 prices
   isBankrupt?: boolean;
   nextDividendDay?: number; // per-asset dividend schedule
+  ipoVolatilityUntilDay?: number; // elevated vol post-listing
 }
 
 export interface Position {
@@ -92,6 +93,21 @@ export interface GameState {
     sectors: Partial<Record<Sector, SectorBubbleState>>;
     newListingsCount: Partial<Record<Sector, number>>;
   };
+  ipoPipeline: IPOPipelineEntry[];
+}
+
+export interface IPOPipelineEntry {
+  ticker: string;
+  displayName: string;
+  sector: Sector;
+  assetClass: 'STOCK' | 'FII';
+  offerPrice: number;
+  announcedDay: number;
+  listingDay: number;
+  status: 'announced' | 'bookbuilding' | 'listed';
+  demand: number;
+  playerReservation: number;
+  catalogEntry: AssetDefinition;
 }
 
 export interface PersistentEvent {
@@ -104,7 +120,7 @@ export interface PersistentEvent {
 
 export type SimulationState = GameState;
 
-export type EventType = 'RATE_HIKE' | 'RATE_CUT' | 'INFLATION_UP' | 'INFLATION_DOWN' | 'SECTOR_BOOM' | 'SECTOR_BUST' | 'CRYPTO_HACK' | 'CRYPTO_EUPHORIA_EVENT' | 'CRYPTO_RUG_PULL' | 'CREDIT_DOWNGRADE' | 'FX_SHOCK' | 'FISCAL_STRESS' | 'COMMODITY_BOOM' | 'SECTOR_CRASH';
+export type EventType = 'RATE_HIKE' | 'RATE_CUT' | 'INFLATION_UP' | 'INFLATION_DOWN' | 'SECTOR_BOOM' | 'SECTOR_BUST' | 'CRYPTO_HACK' | 'CRYPTO_EUPHORIA_EVENT' | 'CRYPTO_RUG_PULL' | 'CREDIT_DOWNGRADE' | 'FX_SHOCK' | 'FISCAL_STRESS' | 'COMMODITY_BOOM' | 'SECTOR_CRASH' | 'IPO_ANNOUNCED' | 'IPO_BOOKBUILDING' | 'IPO_LISTED';
 
 export interface EventCard {
   type: EventType;

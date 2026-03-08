@@ -22,6 +22,7 @@ interface GameContextType {
   buy: (assetId: string, qty: number) => { success: boolean; quote: TradeQuote };
   sell: (assetId: string, qty: number) => { success: boolean; quote: TradeQuote };
   batchTrades: (fn: (ops: { buy: (id: string, qty: number) => boolean; sell: (id: string, qty: number) => boolean; getState: () => GameState }) => void) => void;
+  reserveIPO: (ticker: string, qty: number) => boolean;
   newGame: (seed?: number) => void;
   switchLocale: () => void;
   t: typeof t;
@@ -146,6 +147,17 @@ export function GameProvider({ children }: { children: ReactNode }) {
     setState(stateCopy);
   }, [state]);
 
+  const reserveIPO = useCallback((ticker: string, qty: number): boolean => {
+    const stateCopy = structuredClone(state);
+    const entry = stateCopy.ipoPipeline?.find(e => e.ticker === ticker && e.status === 'bookbuilding');
+    if (!entry || qty <= 0) return false;
+    const maxAffordable = Math.floor(stateCopy.cash / entry.offerPrice);
+    if (maxAffordable <= 0) return false;
+    entry.playerReservation = Math.min(qty, maxAffordable);
+    setState(stateCopy);
+    return true;
+  }, [state]);
+
   const newGame = useCallback((seed?: number) => {
     deleteSave();
     const s = createGameState(seed ?? Date.now());
@@ -162,7 +174,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
   }, [locale]);
 
   return (
-    <GameContext.Provider value={{ state, dayResults, locale, equity, prevMacro, advanceDay, fastForward, getBuyQuote, getSellQuote, buy, sell, batchTrades, newGame, switchLocale, t }}>
+    <GameContext.Provider value={{ state, dayResults, locale, equity, prevMacro, advanceDay, fastForward, getBuyQuote, getSellQuote, buy, sell, batchTrades, reserveIPO, newGame, switchLocale, t }}>
       {children}
     </GameContext.Provider>
   );

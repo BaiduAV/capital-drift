@@ -16,6 +16,9 @@ const eventMeta: Record<EventType, { icon: string; colorClass: string }> = {
   FX_SHOCK:               { icon: '💵', colorClass: 'text-terminal-red' },
   FISCAL_STRESS:          { icon: '🏛️', colorClass: 'text-terminal-red' },
   COMMODITY_BOOM:         { icon: '🛢️', colorClass: 'text-terminal-green' },
+  IPO_ANNOUNCED:          { icon: '📋', colorClass: 'text-terminal-amber' },
+  IPO_BOOKBUILDING:       { icon: '📊', colorClass: 'text-terminal-amber' },
+  IPO_LISTED:             { icon: '🏦', colorClass: 'text-terminal-green' },
 };
 
 interface NewsItem {

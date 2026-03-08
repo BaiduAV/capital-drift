@@ -2,7 +2,7 @@
 
 import type { GameState } from './types';
 import type { RNG } from './rng';
-import { DRIFT_VOL, CORR_STRENGTH, CRISIS_CRYPTO_CROSS_LINK, MACRO_TILT, MACRO } from './params';
+import { DRIFT_VOL, CORR_STRENGTH, CRISIS_CRYPTO_CROSS_LINK, MACRO_TILT, MACRO, IPO } from './params';
 import { computeSectorReturn } from './correlation';
 
 export function generateReturns(state: GameState, rng: RNG): Record<string, number> {
@@ -39,7 +39,13 @@ export function generateReturns(state: GameState, rng: RNG): Record<string, numb
       continue;
     }
 
-    const { drift, vol } = dv;
+    let { drift, vol } = dv;
+
+    // IPO volatility multiplier for recently listed assets
+    const assetState = state.assets[assetId];
+    if (assetState?.ipoVolatilityUntilDay && state.dayIndex < assetState.ipoVolatilityUntilDay) {
+      vol *= IPO.volatilityMultiplier;
+    }
 
     if (def.corrGroup === 'FIXED_INCOME') {
       // Fixed income: mostly idiosyncratic, very low correlation
