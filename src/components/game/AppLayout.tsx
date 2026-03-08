@@ -23,7 +23,6 @@ import {
   Rocket,
   ShieldAlert,
   type LucideIcon,
-  type LucideIcon,
 } from 'lucide-react';
 import type { RegimeId } from '@/engine/types';
 import { Button } from '@/components/ui/button';
