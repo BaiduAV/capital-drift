@@ -62,6 +62,20 @@ const translations: Record<Locale, Record<string, string>> = {
     'event.sector_crash.desc': 'Bolha estoura e setor sofre colapso severo.',
     'event.ipo.title': 'IPO: {company}',
     'event.ipo.desc': '{company} ({ticker}) estreia na bolsa no setor {sector}.',
+    // Sectors
+    'sector.BANCOS': 'Bancos', 'sector.ENERGIA': 'Energia', 'sector.VAREJO': 'Varejo',
+    'sector.AGRO': 'Agronegócio', 'sector.TECH': 'Tecnologia', 'sector.MINERACAO': 'Mineração',
+    'sector.SAUDE': 'Saúde', 'sector.INDUSTRIA': 'Indústria', 'sector.UTILITIES': 'Utilidades',
+    'sector.IMOB': 'Imobiliário', 'sector.TELECOM': 'Telecom', 'sector.LOGISTICA': 'Logística',
+    'sector.TOTAL_MARKET': 'Mercado Total', 'sector.DIVIDENDS': 'Dividendos',
+    'sector.SMALL_CAPS': 'Small Caps', 'sector.BRICK': 'Tijolo', 'sector.PAPER': 'Papel',
+    'sector.HYBRID': 'Híbrido', 'sector.NONE': 'N/A',
+    // CorrGroups
+    'group.EQUITY': 'Renda Variável', 'group.CRYPTO': 'Criptomoedas', 'group.FIXED_INCOME': 'Renda Fixa',
+    // Asset Classes
+    'class.RF_POS': 'RF Pós', 'class.RF_PRE': 'RF Pré', 'class.RF_IPCA': 'RF IPCA+',
+    'class.DEBENTURE': 'Debênture', 'class.STOCK': 'Ação', 'class.ETF': 'ETF',
+    'class.FII': 'FII', 'class.CRYPTO_MAJOR': 'Cripto Major', 'class.CRYPTO_ALT': 'Cripto Alt',
     // Regimes
     'regime.CALM': 'Calmo', 'regime.BULL': 'Bull', 'regime.BEAR': 'Bear',
     'regime.CRISIS': 'Crise', 'regime.CRYPTO_EUPHORIA': 'Euforia Cripto',
