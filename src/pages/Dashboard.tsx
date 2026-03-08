@@ -292,7 +292,7 @@ function DayResultCard({ day, locale, formatPct, navigate, t }: {
             </span>
             {day.events.map((e, i) => (
               <div key={i} className="pl-4 text-muted-foreground">
-                <span className="text-foreground">{t(e.titleKey)}</span> — {t(e.descriptionKey)}
+                <span className="text-foreground">{t(e.titleKey, e.vars)}</span> — {t(e.descriptionKey, e.vars)}
               </div>
             ))}
           </div>
