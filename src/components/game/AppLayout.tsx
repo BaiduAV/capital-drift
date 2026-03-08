@@ -44,7 +44,9 @@ export default function AppLayout() {
   }, [location.pathname]);
 
   const formatCurrency = (val: number) =>
-    new Intl.NumberFormat(locale, { style: 'currency', currency: 'BRL', minimumFractionDigits: 2 }).format(val);
+    Math.abs(val) >= 1_000_000
+      ? new Intl.NumberFormat(locale, { style: 'currency', currency: 'BRL', notation: 'compact', maximumFractionDigits: 2 }).format(val)
+      : new Intl.NumberFormat(locale, { style: 'currency', currency: 'BRL', minimumFractionDigits: 2 }).format(val);
 
   const formatPct = (val: number) =>
     (val >= 0 ? '+' : '') + (val * 100).toFixed(2) + '%';
