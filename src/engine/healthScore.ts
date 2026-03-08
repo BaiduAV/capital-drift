@@ -136,7 +136,7 @@ export function computeHealthScore(
     const initialEquity = eqHist[0];
     if (initialEquity > 0) {
       const totalReturn = (equity - initialEquity) / initialEquity;
-      const cdiReturn = cdiHist[cdiHist.length - 1] - 1; // cdiAccumulated starts at 1
+      const cdiReturn = cdiHist[0] > 0 ? (cdiHist[cdiHist.length - 1] - cdiHist[0]) / cdiHist[0] : 0;
       const diff = totalReturn - cdiReturn;
       if (diff >= 0.02) perfScore = 20;
       else if (diff >= 0) perfScore = 16;
