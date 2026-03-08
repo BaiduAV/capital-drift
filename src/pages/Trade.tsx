@@ -35,7 +35,7 @@ export default function Trade() {
   const sortedAssets = useMemo(() =>
     Object.entries(state.assetCatalog)
       .map(([id, def]) => ({ id, def, assetState: state.assets[id], position: state.portfolio[id] }))
-      .filter(a => !searchQuery || a.id.toLowerCase().includes(searchQuery.toLowerCase()) || t(a.def.nameKey).toLowerCase().includes(searchQuery.toLowerCase()))
+      .filter(a => !searchQuery || a.id.toLowerCase().includes(searchQuery.toLowerCase()) || assetName(a.def).toLowerCase().includes(searchQuery.toLowerCase()))
       .sort((a, b) => a.id.localeCompare(b.id)),
     [state.assetCatalog, state.assets, state.portfolio, searchQuery, t]
   );
