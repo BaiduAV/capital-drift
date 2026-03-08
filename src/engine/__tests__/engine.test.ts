@@ -223,7 +223,7 @@ describe('Engine - Dividends', () => {
   it('FIIs pay dividends monthly', () => {
     let state = createGameState(SEED);
     // Buy FII
-    const q = quoteBuy(state, 'FIITIJ', 10);
+    const q = quoteBuy(state, 'HGLG11', 10);
     executeBuy(state, q);
     const cashAfterBuy = state.cash;
 
@@ -236,7 +236,7 @@ describe('Engine - Dividends', () => {
 
   it('stocks pay dividends quarterly', () => {
     let state = createGameState(SEED);
-    const q = quoteBuy(state, 'BANK1', 10);
+    const q = quoteBuy(state, 'ITUB3', 10);
     executeBuy(state, q);
     const cashAfterBuy = state.cash;
 
