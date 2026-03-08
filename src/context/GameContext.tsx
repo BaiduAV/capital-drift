@@ -95,6 +95,22 @@ export function GameProvider({ children }: { children: ReactNode }) {
     return { success, quote };
   }, [state]);
 
+  const batchTrades = useCallback((fn: (ops: { buy: (id: string, qty: number) => boolean; sell: (id: string, qty: number) => boolean; getState: () => GameState }) => void) => {
+    const stateCopy = structuredClone(state);
+    fn({
+      buy: (id, qty) => {
+        const quote = quoteBuy(stateCopy, id, qty);
+        return executeBuy(stateCopy, quote);
+      },
+      sell: (id, qty) => {
+        const quote = quoteSell(stateCopy, id, qty);
+        return executeSell(stateCopy, quote);
+      },
+      getState: () => stateCopy,
+    });
+    setState(stateCopy);
+  }, [state]);
+
   const newGame = useCallback((seed?: number) => {
     deleteSave();
     const s = createGameState(seed ?? Date.now());
@@ -111,7 +127,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
   }, [locale]);
 
   return (
-    <GameContext.Provider value={{ state, dayResults, locale, equity, prevMacro, advanceDay, fastForward, getBuyQuote, getSellQuote, buy, sell, newGame, switchLocale, t }}>
+    <GameContext.Provider value={{ state, dayResults, locale, equity, prevMacro, advanceDay, fastForward, getBuyQuote, getSellQuote, buy, sell, batchTrades, newGame, switchLocale, t }}>
       {children}
     </GameContext.Provider>
   );
