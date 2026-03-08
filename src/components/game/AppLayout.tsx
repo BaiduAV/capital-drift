@@ -58,6 +58,8 @@ export default function AppLayout() {
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [theme, setTheme] = useState<AppTheme>(loadTheme);
+  const [newGameOpen, setNewGameOpen] = useState(false);
+  const [seedInput, setSeedInput] = useState('');
   const location = useLocation();
 
   // Apply theme class to document
