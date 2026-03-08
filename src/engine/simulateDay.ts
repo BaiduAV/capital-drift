@@ -5,7 +5,7 @@ import { createRNG } from './rng';
 import { maybeSwitchRegime } from './regimes';
 import { updateMacro } from './macro';
 import { updateSectorBubble } from './bubbles';
-import { generateAssetIdentity } from './naming';
+import { generateAssetIdentity, generateFIIIdentity } from './naming';
 import { maybeBankruptAsset } from './bankruptcy';
 import { generateReturns, applyReturnsToPrices } from './pricing';
 import { rollEvents, applyEventMacro, mergeEventImpacts } from './events';
