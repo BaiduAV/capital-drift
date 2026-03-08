@@ -57,7 +57,7 @@ const translations: Record<Locale, Record<string, string>> = {
     'sector.SMALL_CAPS': 'Small Caps', 'sector.BRICK': 'Construção', 'sector.PAPER': 'Papel',
     'sector.HYBRID': 'Híbrido', 'sector.NONE': 'N/A',
     // CorrGroups
-    'group.EQUITY': 'Renda Variável', 'group.CRYPTO': 'Criptomoedas', 'group.FIXED_INCOME': 'Renda Fixa',
+    'group.EQUITY': 'Renda Variável', 'group.CRYPTO': 'Criptomoedas', 'group.FIXED_INCOME': 'Renda Fixa', 'group.FX': 'Câmbio',
     // Asset Classes
     'class.RF_POS': 'RF Pós', 'class.RF_PRE': 'RF Pré', 'class.RF_IPCA': 'RF IPCA+',
     'class.DEBENTURE': 'Debênture', 'class.STOCK': 'Ação', 'class.ETF': 'ETF',
