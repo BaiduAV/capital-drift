@@ -166,7 +166,7 @@ export default function Dashboard() {
         <StatCard
           label={locale === 'pt-BR' ? 'Caixa livre' : 'Free Cash'}
           value={formatPct(equity > 0 ? state.cash / equity : 0)}
-          sub={formatCurrency(state.cash)}
+          sub={formatCurrencyCompact(state.cash)}
         />
         <div className="hidden lg:block">
           <StatCard
