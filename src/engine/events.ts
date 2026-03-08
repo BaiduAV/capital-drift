@@ -9,10 +9,19 @@ function randRange(rng: RNG, range: [number, number] | number[]): number {
 }
 
 function pickSector(state: GameState, rng: RNG): { sector: string; assets: string[] } {
-  const sectors = ['BANK', 'ENERGY', 'RETAIL', 'TECH'];
+  // Derive sectors dynamically from the catalog, filtering out non-economic sectors
+  const excludedSectors = new Set(['NONE', 'TOTAL_MARKET', 'DIVIDENDS', 'SMALL_CAPS']);
+  const sectorSet = new Set<string>();
+  for (const def of Object.values(state.assetCatalog)) {
+    if (def.sector && !excludedSectors.has(def.sector) && (def.class === 'STOCK' || def.class === 'ETF' || def.class === 'FII')) {
+      sectorSet.add(def.sector);
+    }
+  }
+  const sectors = Array.from(sectorSet);
+  if (sectors.length === 0) return { sector: 'NONE', assets: [] };
   const sector = sectors[Math.floor(rng.next() * sectors.length)];
   const assets = Object.values(state.assetCatalog)
-    .filter(a => a.sector === sector && (a.class === 'STOCK' || a.class === 'ETF'))
+    .filter(a => a.sector === sector && (a.class === 'STOCK' || a.class === 'ETF' || a.class === 'FII'))
     .map(a => a.id);
   return { sector, assets };
 }
