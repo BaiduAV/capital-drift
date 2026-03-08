@@ -58,17 +58,16 @@ export function generateReturns(state: GameState, rng: RNG): Record<string, numb
       const fxNoise = rng.nextGaussian() * MACRO.fxUSDBRL.dailyVol * 0.5;
       returns[assetId] = fxDrift + fxNoise;
     } else if (def.corrGroup === 'EQUITY') {
-        const sectorBubble = state.market?.sectors?.[def.sector];
+      const sectorBubble = state.market?.sectors?.[def.sector];
 
-        const shocks = {
-          marketShock: equityFactor * vol,
-          sectorShock: rng.nextGaussian() * vol, // Sector specific noise
-          idioShock: rng.nextGaussian() * vol
-        };
+      const shocks = {
+        marketShock: equityFactor * vol,
+        sectorShock: rng.nextGaussian() * vol,
+        idioShock: rng.nextGaussian() * vol
+      };
 
-        const secReturn = computeSectorReturn(def.sector, macroDelta, shocks, sectorBubble);
-        returns[assetId] = drift + secReturn;
-      }
+      const secReturn = computeSectorReturn(def.sector, macroDelta, shocks, sectorBubble);
+      returns[assetId] = drift + secReturn;
     } else if (def.corrGroup === 'CRYPTO') {
       const idioNoise = rng.nextGaussian();
       let factor = cryptoFactor;
