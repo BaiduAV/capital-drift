@@ -183,6 +183,7 @@ describe('Engine - Fast forward equivalence', () => {
 describe('Engine - Trading', () => {
   it('can buy and sell assets', () => {
     const state = createGameState(SEED);
+    // Use BOVA11 (static ETF)
     const buyQuote = quoteBuy(state, 'BOVA11', 10);
     expect(buyQuote.canExecute).toBe(true);
 
@@ -199,7 +200,9 @@ describe('Engine - Trading', () => {
 
   it('cannot buy more than cash allows', () => {
     const state = createGameState(SEED);
-    const quote = quoteBuy(state, 'BTC', 10000);
+    // Find a crypto asset dynamically
+    const cryptoId = Object.keys(state.assetCatalog).find(id => state.assetCatalog[id].class === 'CRYPTO_MAJOR')!;
+    const quote = quoteBuy(state, cryptoId, 10000);
     expect(quote.canExecute).toBe(false);
     expect(quote.reason).toBe('trade.insufficient_cash');
   });
@@ -213,7 +216,8 @@ describe('Engine - Trading', () => {
 
   it('applies crypto fees and spread', () => {
     const state = createGameState(SEED);
-    const quote = quoteBuy(state, 'BTC', 1);
+    const cryptoId = Object.keys(state.assetCatalog).find(id => state.assetCatalog[id].class === 'CRYPTO_MAJOR')!;
+    const quote = quoteBuy(state, cryptoId, 1);
     expect(quote.spread).toBe(0.0015);
     expect(quote.fees).toBeGreaterThan(0);
   });
@@ -222,8 +226,8 @@ describe('Engine - Trading', () => {
 describe('Engine - Dividends', () => {
   it('FIIs pay dividends monthly', () => {
     let state = createGameState(SEED);
-    // Buy FII
-    const q = quoteBuy(state, 'HGLG11', 10);
+    const fiiId = Object.keys(state.assetCatalog).find(id => state.assetCatalog[id].class === 'FII')!;
+    const q = quoteBuy(state, fiiId, 10);
     executeBuy(state, q);
     const cashAfterBuy = state.cash;
 
@@ -236,7 +240,8 @@ describe('Engine - Dividends', () => {
 
   it('stocks pay dividends quarterly', () => {
     let state = createGameState(SEED);
-    const q = quoteBuy(state, 'ITUB3', 10);
+    const stockId = Object.keys(state.assetCatalog).find(id => state.assetCatalog[id].class === 'STOCK')!;
+    const q = quoteBuy(state, stockId, 10);
     executeBuy(state, q);
     const cashAfterBuy = state.cash;
 
