@@ -46,8 +46,8 @@ export default function History() {
 
   const tooltipStyle = {
     contentStyle: {
-      backgroundColor: 'hsl(220, 20%, 10%)',
-      border: '1px solid hsl(220, 10%, 25%)',
+      backgroundColor: 'hsl(var(--card))',
+      border: '1px solid hsl(var(--border))',
       borderRadius: '4px',
       fontSize: '11px',
       fontFamily: 'monospace',
