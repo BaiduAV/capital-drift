@@ -83,8 +83,8 @@ export default function SocialFeed() {
   const { dayResults, state, locale } = useGame();
 
   const posts = useMemo(
-    () => generateSocialPosts(dayResults, state, 20),
-    [dayResults, state],
+    () => generateSocialPosts(dayResults, state, 20, locale),
+    [dayResults, state, locale],
   );
 
   if (posts.length === 0) {
