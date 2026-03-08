@@ -239,23 +239,6 @@ export default function AppLayout() {
             <span className="text-xs text-muted-foreground font-mono shrink-0">
               {locale === 'pt-BR' ? 'DIA' : 'DAY'} {state.dayIndex}
             </span>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <button
-                  className="text-[10px] text-muted-foreground/60 font-mono hover:text-muted-foreground transition-colors cursor-pointer hidden sm:inline"
-                  onClick={() => {
-                    navigator.clipboard.writeText(String(state.seed));
-                    toast.success(locale === 'pt-BR' ? 'Seed copiada!' : 'Seed copied!');
-                  }}
-                  title={locale === 'pt-BR' ? 'Clique para copiar' : 'Click to copy'}
-                >
-                  #{state.seed}
-                </button>
-              </TooltipTrigger>
-              <TooltipContent side="bottom" className="text-xs">
-                {locale === 'pt-BR' ? 'Copiar seed' : 'Copy seed'}
-              </TooltipContent>
-            </Tooltip>
           </div>
 
           {/* Right: Premium macro stats */}
