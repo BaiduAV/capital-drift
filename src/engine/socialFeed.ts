@@ -750,6 +750,7 @@ export function generateSocialPosts(
   state: GameState,
   maxPosts: number = 20,
   locale: string = 'pt-BR',
+  t?: (key: string) => string,
 ): SocialPost[] {
   const posts: SocialPost[] = [];
   let postId = 0;
