@@ -2,7 +2,7 @@
 
 import type { GameState } from './types';
 import type { RNG } from './rng';
-import { DRIFT_VOL, CORR_STRENGTH, CRISIS_CRYPTO_CROSS_LINK, MACRO_TILT, MACRO } from './params';
+import { DRIFT_VOL, CORR_STRENGTH, CRISIS_CRYPTO_CROSS_LINK, MACRO_TILT, MACRO, IPO } from './params';
 import { computeSectorReturn } from './correlation';
 
 export function generateReturns(state: GameState, rng: RNG): Record<string, number> {
