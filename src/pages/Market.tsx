@@ -234,8 +234,84 @@ export default function Market() {
               }
             ]}
           />
-        </SectionCard>
+        </CardContent>
+      </Card>
       )}
+    ) : (
+      <SectionCard
+        title={locale === 'pt-BR' ? 'Mercado' : 'Market'}
+        subtitle={locale === 'pt-BR' ? 'Tabela de ativos em tempo real' : 'Real-time assets table'}
+      >
+        <div className="overflow-x-auto">
+          <DataTable
+            data={filteredAssets.sort((a, b) => b.assetState.lastReturn - a.assetState.lastReturn)}
+            keyExtractor={a => a.id}
+            onRowClick={a => setSelectedAsset(a.id)}
+            emptyMessage={locale === 'pt-BR' ? 'Nenhum ativo encontrado.' : 'No assets found.'}
+            columns={[
+              {
+                key: 'asset',
+                header: locale === 'pt-BR' ? 'Ativo' : 'Asset',
+                render: (a) => (
+                  <div>
+                    <span className="text-foreground font-semibold font-mono">{a.id}</span>
+                    <span className="text-muted-foreground ml-2 hidden sm:inline text-xs">{t(a.def.nameKey)}</span>
+                    {a.assetState.haltedUntilDay && state.dayIndex < a.assetState.haltedUntilDay && (
+                      <span className="ml-2 text-xs text-accent">⏸</span>
+                    )}
+                  </div>
+                )
+              },
+              {
+                key: 'price',
+                header: locale === 'pt-BR' ? 'Preço' : 'Price',
+                align: 'right',
+                render: (a) => <span className="font-mono text-xs text-muted-foreground">{formatPrice(a.assetState.price)}</span>
+              },
+              {
+                key: 'change',
+                header: locale === 'pt-BR' ? 'Variação' : 'Change',
+                align: 'right',
+                render: (a) => (
+                  <span className={`font-mono text-xs font-bold ${a.assetState.lastReturn >= 0 ? 'price-up' : 'price-down'}`}>
+                    {formatPct(a.assetState.lastReturn)}
+                  </span>
+                )
+              },
+              {
+                key: 'class',
+                header: locale === 'pt-BR' ? 'Classe' : 'Class',
+                className: 'hidden md:table-cell',
+                render: (a) => <span className="text-[10px] text-muted-foreground">{a.def.class}</span>
+              },
+              {
+                key: 'sector',
+                header: locale === 'pt-BR' ? 'Setor' : 'Sector',
+                className: 'hidden lg:table-cell',
+                render: (a) => <span className="text-[10px] text-muted-foreground">{a.def.sector}</span>
+              },
+              {
+                key: 'action',
+                header: '',
+                align: 'right',
+                className: 'w-12',
+                render: (a) => (
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-6 w-6 text-muted-foreground hover:text-primary shrink-0"
+                    onClick={(e) => { e.stopPropagation(); navigate(`/trade?asset=${a.id}`); }}
+                    disabled={!!(a.assetState.haltedUntilDay && state.dayIndex < a.assetState.haltedUntilDay)}
+                  >
+                    <ShoppingCart className="h-3 w-3" />
+                  </Button>
+                )
+              }
+            ]}
+          />
+        </div>
+      </SectionCard>
+    )}
 
       <AssetDetailModal assetId={selectedAsset} onClose={() => setSelectedAsset(null)} />
     </div>
