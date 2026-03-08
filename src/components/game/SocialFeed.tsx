@@ -116,8 +116,8 @@ export default function SocialFeed() {
   const [interactions, setInteractions] = useState<Record<string, PostInteractions>>({});
 
   const posts = useMemo(
-    () => generateSocialPosts(dayResults, state, 20, locale),
-    [dayResults, state, locale],
+    () => generateSocialPosts(dayResults, state, 20, locale, t),
+    [dayResults, state, locale, t],
   );
 
   const handleLike = useCallback((id: string) => {

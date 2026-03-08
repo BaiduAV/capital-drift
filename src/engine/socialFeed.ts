@@ -815,11 +815,17 @@ export function generateSocialPosts(
             : null;
 
           if (corp) {
+            // Resolve display name: prefer displayName, then i18n nameKey, then ticker
+            const corpName = corp.displayName
+              || (t ? t(corp.nameKey) : null)
+              || corp.id;
+            // Only use resolved name if it's not the raw key
+            const resolvedName = corpName !== corp.nameKey ? corpName : corp.id;
             posts.push({
               id: `sp-${dr.dayIndex}-${event.type}-corp-${postId++}`,
               accountType: 'corporate',
               handle: corp.id,
-              displayName: corp.displayName ?? corp.id,
+              displayName: resolvedName,
               avatarEmoji: '🏢',
               verified: true,
               text: pickTemplate(templates.corporate, dr.dayIndex, postId),
