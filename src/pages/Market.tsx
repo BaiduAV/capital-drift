@@ -115,7 +115,6 @@ export default function Market() {
         <div className="space-y-4">
           <SectionCard
             title={locale === 'pt-BR' ? 'Mercado' : 'Market'}
-            subtitle={locale === 'pt-BR' ? 'Tabela de ativos em tempo real' : 'Real-time assets table'}
             action={
               <div className="flex gap-2">
                 {CLASS_TABS.map(tab => (
