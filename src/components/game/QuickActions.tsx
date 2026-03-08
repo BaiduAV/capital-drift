@@ -8,75 +8,54 @@ import { toast } from 'sonner';
 type Strategy = 'defensive' | 'balanced' | 'aggressive';
 
 export default function QuickActions() {
-  const { state, buy, sell, locale, equity } = useGame();
+  const { state, batchTrades, locale } = useGame();
   const [pending, setPending] = useState<Strategy | null>(null);
 
-  const rfAssets = Object.entries(state.assetCatalog).filter(([, d]) => d.corrGroup === 'FIXED_INCOME');
-  const eqAssets = Object.entries(state.assetCatalog).filter(([, d]) => d.corrGroup === 'EQUITY');
-  const crAssets = Object.entries(state.assetCatalog).filter(([, d]) => d.corrGroup === 'CRYPTO');
-
   const executeStrategy = (strategy: Strategy) => {
-    let sold = 0;
-    let bought = 0;
+    batchTrades(({ buy, sell, getState }) => {
+      const catalog = state.assetCatalog;
+      const rfAssets = Object.keys(catalog).filter(id => catalog[id].corrGroup === 'FIXED_INCOME');
+      const eqAssets = Object.keys(catalog).filter(id => catalog[id].corrGroup === 'EQUITY');
+      const crAssets = Object.keys(catalog).filter(id => catalog[id].corrGroup === 'CRYPTO');
 
-    if (strategy === 'defensive') {
-      // Sell all equity + crypto positions
-      for (const [id] of [...eqAssets, ...crAssets]) {
-        const pos = state.portfolio[id];
-        if (pos && pos.quantity > 0) {
-          const r = sell(id, pos.quantity);
-          if (r.success) sold++;
+      if (strategy === 'defensive') {
+        for (const id of [...eqAssets, ...crAssets]) {
+          const pos = getState().portfolio[id];
+          if (pos && pos.quantity > 0) sell(id, pos.quantity);
+        }
+        const s = getState();
+        const price = s.assets['TSELIC']?.price ?? 100;
+        const qty = Math.floor((s.cash * 0.9) / price);
+        if (qty > 0) buy('TSELIC', qty);
+      } else if (strategy === 'aggressive') {
+        for (const id of rfAssets) {
+          const pos = getState().portfolio[id];
+          if (pos && pos.quantity > 0) sell(id, pos.quantity);
+        }
+        const s = getState();
+        const targets = ['ETFTOT', 'CRBTC'];
+        const perTarget = s.cash * 0.9 / targets.length;
+        for (const id of targets) {
+          const price = s.assets[id]?.price ?? 50;
+          const qty = Math.floor(perTarget / price);
+          if (qty > 0) buy(id, qty);
+        }
+      } else {
+        // Balanced: sell everything, redistribute
+        for (const id of Object.keys(catalog)) {
+          const pos = getState().portfolio[id];
+          if (pos && pos.quantity > 0) sell(id, pos.quantity);
+        }
+        const s = getState();
+        const targets = ['TSELIC', 'ETFTOT', 'FIITIJ', 'CRBTC'];
+        const perTarget = s.cash * 0.9 / targets.length;
+        for (const id of targets) {
+          const price = s.assets[id]?.price ?? 50;
+          const qty = Math.floor(perTarget / price);
+          if (qty > 0) buy(id, qty);
         }
       }
-      // Buy RF_POS with available cash
-      const tselic = state.assetCatalog['TSELIC'];
-      if (tselic) {
-        const price = state.assets['TSELIC']?.price ?? 100;
-        const qty = Math.floor((state.cash * 0.9) / price);
-        if (qty > 0) {
-          const r = buy('TSELIC', qty);
-          if (r.success) bought++;
-        }
-      }
-    } else if (strategy === 'aggressive') {
-      // Sell RF positions
-      for (const [id] of rfAssets) {
-        const pos = state.portfolio[id];
-        if (pos && pos.quantity > 0) {
-          const r = sell(id, pos.quantity);
-          if (r.success) sold++;
-        }
-      }
-      // Buy stocks/crypto equally
-      const targets = ['ETFTOT', 'CRBTC'];
-      const perTarget = state.cash * 0.9 / targets.length;
-      for (const id of targets) {
-        const price = state.assets[id]?.price ?? 50;
-        const qty = Math.floor(perTarget / price);
-        if (qty > 0) {
-          const r = buy(id, qty);
-          if (r.success) bought++;
-        }
-      }
-    } else {
-      // Balanced: sell everything, redistribute equally across classes
-      for (const [id] of Object.entries(state.assetCatalog)) {
-        const pos = state.portfolio[id];
-        if (pos && pos.quantity > 0) {
-          sell(id, pos.quantity);
-        }
-      }
-      const targets = ['TSELIC', 'ETFTOT', 'FIITIJ', 'CRBTC'];
-      const perTarget = state.cash * 0.9 / targets.length;
-      for (const id of targets) {
-        const price = state.assets[id]?.price ?? 50;
-        const qty = Math.floor(perTarget / price);
-        if (qty > 0) {
-          const r = buy(id, qty);
-          if (r.success) bought++;
-        }
-      }
-    }
+    });
 
     const labels = {
       defensive: locale === 'pt-BR' ? 'Defensiva' : 'Defensive',
