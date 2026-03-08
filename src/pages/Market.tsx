@@ -176,7 +176,7 @@ export default function Market() {
                   key: 'sector',
                   header: locale === 'pt-BR' ? 'Setor' : 'Sector',
                   className: 'hidden lg:table-cell',
-                  render: (a) => <span className="text-[10px] text-muted-foreground">{a.def.sector}</span>
+                  render: (a) => <span className="text-[10px] text-muted-foreground">{t(`sector.${a.def.sector}`)}</span>
                 },
                 {
                   key: 'action',
