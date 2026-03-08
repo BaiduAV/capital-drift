@@ -151,7 +151,7 @@ export default function Dashboard() {
       <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-3">
         <StatCard
           label={locale === 'pt-BR' ? 'Patrimônio' : 'Equity'}
-          value={formatCurrency(equity)}
+          value={formatCurrencyCompact(equity)}
         />
         <StatCard
           label={locale === 'pt-BR' ? 'Retorno Total' : 'Total Return'}
