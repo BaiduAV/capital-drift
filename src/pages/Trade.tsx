@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
 import { Search, Plus, Minus, ShoppingCart } from 'lucide-react';
 import type { TradeQuote } from '@/engine/types';
+import { assetName } from '@/engine/i18n';
 
 import { PageHeader } from '@/components/ui/PageHeader';
 import { SectionCard } from '@/components/ui/SectionCard';
