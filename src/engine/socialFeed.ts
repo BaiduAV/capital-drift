@@ -770,6 +770,14 @@ export function generateSocialPosts(
       const templates = allTemplates[event.type];
       if (!templates) continue;
 
+      // Build interpolation vars — translate sector name if present
+      const postVars: Record<string, string> = {};
+      if (event.vars?.sector) {
+        postVars.sector = t ? t(`sector.${event.vars.sector}`) : event.vars.sector;
+        // If t() returned the raw key, fallback to the sector id
+        if (postVars.sector.startsWith('sector.')) postVars.sector = event.vars.sector;
+      }
+
       const channel = findMediaChannel(event.type);
 
       // 1. Media post
@@ -780,7 +788,7 @@ export function generateSocialPosts(
         displayName: channel.displayName,
         avatarEmoji: channel.avatarEmoji,
         verified: true,
-        text: pickTemplate(templates.media, dr.dayIndex, postId),
+        text: pickTemplate(templates.media, dr.dayIndex, postId, postVars),
         dayIndex: dr.dayIndex,
         sentiment: templates.sentiment,
         engagement: computeEngagement(event.magnitude, dr.dayIndex, 0),
@@ -802,7 +810,7 @@ export function generateSocialPosts(
           displayName: inf.displayName,
           avatarEmoji: inf.avatarEmoji,
           verified: false,
-          text: pickTemplate(infTemplates, dr.dayIndex, postId),
+          text: pickTemplate(infTemplates, dr.dayIndex, postId, postVars),
           dayIndex: dr.dayIndex,
           sentiment: sentimentFromTone(inf.tone, templates.sentiment),
           engagement: computeEngagement(event.magnitude * 0.6, dr.dayIndex, inf.handle.length),
