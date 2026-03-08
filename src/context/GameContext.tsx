@@ -6,7 +6,7 @@ import { simulateDay } from '@/engine/simulateDay';
 import { quoteBuy, quoteSell, executeBuy, executeSell } from '@/engine/trading';
 import { computeEquity } from '@/engine/invariants';
 import { saveGame, loadGame, deleteSave, saveLocale, loadLocale } from '@/engine/persistence';
-import { setLocale, getLocale, t } from '@/engine/i18n';
+import { setLocale, getLocale, t, assetName } from '@/engine/i18n';
 
 interface GameContextType {
   state: GameState;
