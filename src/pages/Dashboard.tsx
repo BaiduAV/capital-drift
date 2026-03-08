@@ -233,6 +233,7 @@ export default function Dashboard() {
         </SectionCard>
         <div className="flex flex-col gap-3">
           <QuickActions />
+          <DividendCalendar />
           <PortfolioHealth />
         </div>
       </div>
