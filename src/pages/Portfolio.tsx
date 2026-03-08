@@ -119,7 +119,7 @@ export default function Portfolio() {
                     innerRadius={45}
                     outerRadius={75}
                     dataKey="value"
-                    stroke="hsl(220, 20%, 7%)"
+                    stroke="hsl(var(--background))"
                     strokeWidth={2}
                   >
                     {pieData.map((entry) => (
