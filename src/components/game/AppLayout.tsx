@@ -239,23 +239,6 @@ export default function AppLayout() {
             <span className="text-xs text-muted-foreground font-mono shrink-0">
               {locale === 'pt-BR' ? 'DIA' : 'DAY'} {state.dayIndex}
             </span>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <button
-                  className="text-[10px] text-muted-foreground/60 font-mono hover:text-muted-foreground transition-colors cursor-pointer hidden sm:inline"
-                  onClick={() => {
-                    navigator.clipboard.writeText(String(state.seed));
-                    toast.success(locale === 'pt-BR' ? 'Seed copiada!' : 'Seed copied!');
-                  }}
-                  title={locale === 'pt-BR' ? 'Clique para copiar' : 'Click to copy'}
-                >
-                  #{state.seed}
-                </button>
-              </TooltipTrigger>
-              <TooltipContent side="bottom" className="text-xs">
-                {locale === 'pt-BR' ? 'Copiar seed' : 'Copy seed'}
-              </TooltipContent>
-            </Tooltip>
           </div>
 
           {/* Right: Premium macro stats */}
@@ -286,6 +269,19 @@ export default function AppLayout() {
         <main className="flex-1 overflow-auto p-3 sm:p-4 scrollbar-terminal">
           <Outlet />
         </main>
+
+        {/* Footer with seed */}
+        <footer className="flex items-center justify-center border-t border-border/50 px-3 py-1.5 bg-card/50">
+          <button
+            className="text-[10px] text-muted-foreground/50 font-mono hover:text-muted-foreground transition-colors cursor-pointer"
+            onClick={() => {
+              navigator.clipboard.writeText(String(state.seed));
+              toast.success(locale === 'pt-BR' ? 'Seed copiada!' : 'Seed copied!');
+            }}
+          >
+            seed #{state.seed}
+          </button>
+        </footer>
       </div>
 
       <OnboardingTutorial />
