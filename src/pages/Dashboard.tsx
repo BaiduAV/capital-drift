@@ -206,8 +206,8 @@ export default function Dashboard() {
           <div className="shrink-0">
             <MacroPanel />
           </div>
-          <SectionCard title={locale === 'pt-BR' ? 'Feed de Notícias' : 'News Feed'} className="flex-1 min-h-0 overflow-hidden" noPadding>
-            <NewsFeed />
+          <SectionCard title={locale === 'pt-BR' ? 'Feed Social' : 'Social Feed'} className="flex-1 min-h-0 overflow-hidden" noPadding>
+            <SocialFeed />
           </SectionCard>
         </div>
       </div>
