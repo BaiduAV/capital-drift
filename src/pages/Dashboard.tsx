@@ -339,7 +339,7 @@ function PeriodResultCard({ period, locale, formatPct, navigate, t }: {
           <div>
             <span className="text-[hsl(var(--terminal-amber))]">{locale === 'pt-BR' ? 'Eventos' : 'Events'}: </span>
             {period.events.map((e, i) => (
-              <span key={i} className="mr-2 text-muted-foreground">{t(e.titleKey)}</span>
+              <span key={i} className="mr-2 text-muted-foreground">{t(e.titleKey, e.vars)}</span>
             ))}
           </div>
         )}
