@@ -138,7 +138,7 @@ export default function AppLayout() {
           variant="ghost"
           size="sm"
           className="w-full justify-start gap-2 text-xs text-muted-foreground hover:text-destructive"
-          onClick={() => { if (confirm(locale === 'pt-BR' ? 'Iniciar novo jogo?' : 'Start new game?')) newGame(); }}
+          onClick={() => { setSeedInput(''); setNewGameOpen(true); }}
         >
           <RotateCcw className="h-3.5 w-3.5" />
           {(!collapsed || mobileOpen) && <span>{locale === 'pt-BR' ? 'Novo Jogo' : 'New Game'}</span>}
@@ -146,6 +146,18 @@ export default function AppLayout() {
       </div>
     </>
   );
+
+  const handleNewGame = () => {
+    const trimmed = seedInput.trim();
+    const seed = trimmed.length > 0 ? parseInt(trimmed, 10) : undefined;
+    if (trimmed.length > 0 && (isNaN(seed!) || seed! < 0)) {
+      toast.error(locale === 'pt-BR' ? 'Seed inválida. Use um número inteiro positivo.' : 'Invalid seed. Use a positive integer.');
+      return;
+    }
+    newGame(seed);
+    setNewGameOpen(false);
+    toast.success(locale === 'pt-BR' ? 'Novo jogo iniciado!' : 'New game started!');
+  };
 
   return (
     <div className="flex min-h-screen w-full bg-background">
