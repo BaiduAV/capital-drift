@@ -197,55 +197,55 @@ const TEMPLATES_PT: Record<EventType, TemplateSet> = {
   },
   SECTOR_BOOM: {
     media: [
-      '🚀 Setor em alta: ações do segmento disparam na sessão de hoje.',
-      '🚀 Rally setorial: analistas apontam fundamentos sólidos para a alta.',
-      '🚀 Boom no setor! Empresas registram máximas históricas.',
+      '🚀 {sector} em alta: ações do segmento disparam na sessão de hoje.',
+      '🚀 Rally em {sector}: analistas apontam fundamentos sólidos para a alta.',
+      '🚀 Boom em {sector}! Empresas do setor registram máximas históricas.',
     ],
     reactions: {
       thiagofinancas: [
-        'Olha esse setor voando! 🚀 Quem montou posição meses atrás tá sorrindo agora. Paciência paga!',
-        'Rally forte! Mas cuidado pra não entrar no topo. Quem tá dentro, segura. Quem tá fora, estuda antes.',
+        'Olha {sector} voando! 🚀 Quem montou posição meses atrás tá sorrindo agora. Paciência paga!',
+        'Rally forte em {sector}! Mas cuidado pra não entrar no topo. Quem tá dentro, segura. Quem tá fora, estuda antes.',
       ],
       luizbarsi: [
+        '{sector} em alta expressiva. Mas lembrem: o que sobe rápido, pode cair rápido. Foquem em fundamentos.',
         'Setores cíclicos têm dessas altas. O importante é estar posicionado antes, não durante a euforia.',
-        'Alta expressiva. Mas lembrem: o que sobe rápido, pode cair rápido. Foquem em fundamentos.',
       ],
     },
     sentiment: 'bullish',
   },
   SECTOR_BUST: {
     media: [
-      '📉 Setor em queda: ações recuam forte com deterioração do cenário.',
-      '📉 Pressão vendedora atinge setor. Investidores buscam proteção.',
-      '📉 Queda setorial acentuada: analistas recomendam cautela.',
+      '📉 {sector} em queda: ações recuam forte com deterioração do cenário.',
+      '📉 Pressão vendedora atinge {sector}. Investidores buscam proteção.',
+      '📉 Queda acentuada em {sector}: analistas recomendam cautela.',
     ],
     reactions: {
       thiagofinancas: [
-        'Caiu? OPORTUNIDADE! As melhores empresas sobrevivem às crises e saem mais fortes. 💎',
-        'Todo mundo com medo? É quando eu começo a ficar de olho. Medo dos outros = desconto pra gente.',
+        '{sector} caiu? OPORTUNIDADE! As melhores empresas sobrevivem às crises e saem mais fortes. 💎',
+        'Todo mundo com medo de {sector}? É quando eu começo a ficar de olho. Medo dos outros = desconto pra gente.',
       ],
       luizbarsi: [
-        'Quedas assim são normais no mercado. Quem tem bons ativos e paciência, não precisa se preocupar.',
-        'Boas empresas baratas. É nessas horas que se constrói patrimônio de verdade.',
+        'Quedas em {sector} são normais no mercado. Quem tem bons ativos e paciência, não precisa se preocupar.',
+        'Boas empresas de {sector} baratas. É nessas horas que se constrói patrimônio de verdade.',
       ],
     },
     sentiment: 'bearish',
   },
   SECTOR_CRASH: {
     media: [
-      '💥 CRASH: Setor desaba em pregão histórico. Circuit breaker acionado.',
-      '💥 ALERTA: Queda abrupta em setor provoca pânico no mercado.',
-      '💥 Crash setorial: bilhões em valor de mercado evaporam em horas.',
+      '💥 CRASH em {sector}: setor desaba em pregão histórico. Circuit breaker acionado.',
+      '💥 ALERTA: Queda abrupta em {sector} provoca pânico no mercado.',
+      '💥 Crash em {sector}: bilhões em valor de mercado evaporam em horas.',
     ],
     reactions: {
       thiagofinancas: [
-        '😱 Dia difícil. Mas lembrem: quem vendeu na crise de 2008 se arrependeu. HOLD! 💪',
+        '😱 Dia difícil pra {sector}. Mas lembrem: quem vendeu na crise de 2008 se arrependeu. HOLD! 💪',
       ],
       luizbarsi: [
-        'Crashes acontecem. Eles separam quem investe de quem especula. Mantenham a calma e a estratégia.',
+        'Crashes em {sector} acontecem. Eles separam quem investe de quem especula. Mantenham a calma.',
       ],
       analistamacro: [
-        'Crash com volume recorde. Possível contágio para outros setores. Atenção redobrada.',
+        'Crash em {sector} com volume recorde. Possível contágio para outros setores. Atenção redobrada.',
       ],
     },
     sentiment: 'bearish',
