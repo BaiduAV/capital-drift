@@ -122,6 +122,7 @@ export interface DayResult {
     equityBefore: number;
     equityAfter: number;
     dividendsPaid: number;
+    dividendDetails: { assetId: string; amount: number; quantity: number }[];
   };
   warnings: string[];
   trace: {

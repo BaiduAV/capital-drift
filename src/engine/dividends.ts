@@ -45,8 +45,15 @@ export function initDividendSchedules(state: GameState): void {
   }
 }
 
-export function applyDividendsAndDistributions(state: GameState): number {
+export interface DividendPayment {
+  assetId: string;
+  amount: number;
+  quantity: number;
+}
+
+export function applyDividendsAndDistributions(state: GameState): { totalPaid: number; payments: DividendPayment[] } {
   let totalPaid = 0;
+  const payments: DividendPayment[] = [];
 
   for (const [assetId, def] of Object.entries(state.assetCatalog)) {
     if (!def.dividendYieldAnnual || !def.dividendPeriodDays) continue;
@@ -63,11 +70,12 @@ export function applyDividendsAndDistributions(state: GameState): number {
       const dividend = pos.quantity * asset.price * periodYield;
       state.cash += dividend;
       totalPaid += dividend;
+      payments.push({ assetId, amount: dividend, quantity: pos.quantity });
     }
 
     // Schedule next payment
     asset.nextDividendDay += def.dividendPeriodDays;
   }
 
-  return totalPaid;
+  return { totalPaid, payments };
 }
