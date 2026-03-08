@@ -130,8 +130,14 @@ function generateSingleEvent(state: GameState, rng: RNG): EventCard | null {
       break;
     }
     case 'CRYPTO_RUG_PULL': {
-      impact['DOGE'] = randRange(rng, EVENT_IMPACTS.cryptoRugPull.targetShock as [number, number]);
-      magnitude = Math.abs(impact['DOGE'] ?? 0.5);
+      const alts = Object.values(state.assetCatalog).filter(a => a.class === 'CRYPTO_ALT');
+      if (alts.length > 0) {
+        const target = alts[Math.floor(rng.next() * alts.length)];
+        impact[target.id] = randRange(rng, EVENT_IMPACTS.cryptoRugPull.targetShock as [number, number]);
+        magnitude = Math.abs(impact[target.id] ?? 0.5);
+      } else {
+        magnitude = 0;
+      }
       break;
     }
     case 'CREDIT_DOWNGRADE': {
