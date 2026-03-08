@@ -75,8 +75,22 @@ export default function History() {
       );
   }, [dayResults, t]);
 
+  // Macro history from dayResults
+  const macroChartData = useMemo(() => {
+    if (dayResults.length === 0) return [];
+    return dayResults.slice(-range).map(dr => ({
+      day: dr.dayIndex,
+      selic: dr.state.macro.baseRateAnnual * 100,
+      ipca: dr.state.macro.inflationAnnual * 100,
+      usdBrl: dr.state.macro.fxUSDBRL,
+      risco: dr.state.macro.riskIndex,
+      atividade: dr.state.macro.activityAnnual * 100,
+    }));
+  }, [dayResults, range]);
+
   const tabs: { key: HistoryTab; label: string }[] = [
     { key: 'performance', label: locale === 'pt-BR' ? 'Performance' : 'Performance' },
+    { key: 'macro', label: 'Macro' },
     { key: 'events', label: locale === 'pt-BR' ? 'Eventos' : 'Events' },
     { key: 'stats', label: locale === 'pt-BR' ? 'Estatísticas' : 'Statistics' },
   ];
