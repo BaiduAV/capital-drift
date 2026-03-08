@@ -155,9 +155,9 @@ export function GameProvider({ children }: { children: ReactNode }) {
     const stateCopy = structuredClone(state);
     const quote = quoteSell(stateCopy, assetId, qty);
     const success = executeSell(stateCopy, quote);
-    if (success) setState(stateCopy);
+    if (success) { unlockTradeAchievement(stateCopy); setState(stateCopy); }
     return { success, quote };
-  }, [state]);
+  }, [state, unlockTradeAchievement]);
 
   const batchTrades = useCallback((fn: (ops: { buy: (id: string, qty: number) => boolean; sell: (id: string, qty: number) => boolean; getState: () => GameState }) => void) => {
     const stateCopy = structuredClone(state);
