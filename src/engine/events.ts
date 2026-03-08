@@ -110,17 +110,19 @@ function generateSingleEvent(state: GameState, rng: RNG): EventCard | null {
       break;
     }
     case 'SECTOR_BOOM': {
-      const { assets } = pickSector(state, rng);
+      const { sector, assets } = pickSector(state, rng);
       const shock = 0.005 + rng.next() * 0.02;
       for (const id of assets) impact[id] = shock;
       magnitude = shock;
+      vars = { sector };
       break;
     }
     case 'SECTOR_BUST': {
-      const { assets } = pickSector(state, rng);
+      const { sector, assets } = pickSector(state, rng);
       const shock = -(0.005 + rng.next() * 0.02);
       for (const id of assets) impact[id] = shock;
       magnitude = Math.abs(shock);
+      vars = { sector };
       break;
     }
     case 'CRYPTO_HACK': {
