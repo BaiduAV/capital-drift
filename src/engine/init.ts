@@ -43,5 +43,10 @@ export function createGameState(seed: number): GameState {
     history: { equity: [INITIAL_CASH], drawdown: [0], cdiAccumulated: [INITIAL_CASH], inflationAccumulated: [1] },
     seed,
     rngState: rng.state(),
+    events: { active: [] },
+    market: {
+      sectors: {},
+      newListingsCount: {},
+    },
   };
 }

@@ -175,7 +175,7 @@ function generateSingleEvent(state: GameState, rng: RNG): EventCard | null {
       macroImpact = { activityDelta: actD, fxDelta: fxD, riskDelta: riskD };
       for (const [id, def] of Object.entries(state.assetCatalog)) {
         if (def.corrGroup === 'EQUITY') impact[id] = eqShock;
-        if (def.sector === 'ENERGY') impact[id] = (impact[id] ?? 0) + eqShock * 0.5;
+        if (def.sector === 'ENERGIA') impact[id] = (impact[id] ?? 0) + eqShock * 0.5;
       }
       magnitude = actD;
       break;
