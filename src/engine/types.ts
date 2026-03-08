@@ -93,6 +93,21 @@ export interface GameState {
     sectors: Partial<Record<Sector, SectorBubbleState>>;
     newListingsCount: Partial<Record<Sector, number>>;
   };
+  ipoPipeline: IPOPipelineEntry[];
+}
+
+export interface IPOPipelineEntry {
+  ticker: string;
+  displayName: string;
+  sector: Sector;
+  assetClass: 'STOCK' | 'FII';
+  offerPrice: number;
+  announcedDay: number;
+  listingDay: number;
+  status: 'announced' | 'bookbuilding' | 'listed';
+  demand: number;
+  playerReservation: number;
+  catalogEntry: AssetDefinition;
 }
 
 export interface PersistentEvent {
