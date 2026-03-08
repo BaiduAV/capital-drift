@@ -3,7 +3,7 @@
 import type { AssetDefinition } from './types';
 import { DIVIDENDS } from './params';
 import { createRNG } from './rng';
-import { generateStockIdentity, generateFIIIdentity, generateCryptoIdentity } from './naming';
+import { createNamingContext, generateStockIdentity, generateFIIIdentity, generateCryptoIdentity } from './naming';
 
 function randInRange(min: number, max: number, rng: ReturnType<typeof createRNG>): number {
   return min + rng.next() * (max - min);
@@ -11,7 +11,7 @@ function randInRange(min: number, max: number, rng: ReturnType<typeof createRNG>
 
 export function buildAssetCatalog(seed: number): Record<string, AssetDefinition> {
   const rng = createRNG(seed);
-  const usedTickers = new Set<string>();
+  const ctx = createNamingContext(rng);
 
   const assets: AssetDefinition[] = [
     // ── Fixed Income (8) — static IDs, well-known product names ──
@@ -26,7 +26,7 @@ export function buildAssetCatalog(seed: number): Record<string, AssetDefinition>
   ];
 
   // Mark fixed income tickers as used
-  for (const a of assets) usedTickers.add(a.id);
+  for (const a of assets) ctx.usedTickers.add(a.id);
 
   // ── Stocks (12) — dynamically generated ──
   const stockSectors: { sector: 'BANCOS' | 'ENERGIA' | 'VAREJO' | 'TECH'; count: number; basePrice: number; priceStep: number }[] = [
@@ -38,7 +38,7 @@ export function buildAssetCatalog(seed: number): Record<string, AssetDefinition>
 
   for (const { sector, count, basePrice, priceStep } of stockSectors) {
     for (let i = 0; i < count; i++) {
-      const { ticker, displayName } = generateStockIdentity(rng, sector, usedTickers);
+      const { ticker, displayName } = generateStockIdentity(ctx, sector);
       assets.push({
         id: ticker,
         nameKey: `asset.${ticker.toLowerCase()}`,
@@ -61,7 +61,7 @@ export function buildAssetCatalog(seed: number): Record<string, AssetDefinition>
     { id: 'TECK11', nameKey: 'asset.teck11', class: 'ETF', sector: 'TECH', corrGroup: 'EQUITY', liquidityRule: 'D0', initialPrice: 55 },
     { id: 'SMAL11', nameKey: 'asset.smal11', class: 'ETF', sector: 'SMALL_CAPS', corrGroup: 'EQUITY', liquidityRule: 'D0', initialPrice: 35 },
   );
-  ['BOVA11', 'DIVO11', 'TECK11', 'SMAL11'].forEach(id => usedTickers.add(id));
+  ['BOVA11', 'DIVO11', 'TECK11', 'SMAL11'].forEach(id => ctx.usedTickers.add(id));
 
   // ── FIIs (4) — dynamically generated ──
   const fiiSectors: { sector: 'BRICK' | 'PAPER' | 'LOGISTICA' | 'HYBRID'; price: number }[] = [
@@ -72,7 +72,7 @@ export function buildAssetCatalog(seed: number): Record<string, AssetDefinition>
   ];
 
   for (const { sector, price } of fiiSectors) {
-    const { ticker, displayName } = generateFIIIdentity(rng, sector, usedTickers);
+    const { ticker, displayName } = generateFIIIdentity(ctx, sector);
     assets.push({
       id: ticker,
       nameKey: `asset.${ticker.toLowerCase()}`,
@@ -87,25 +87,21 @@ export function buildAssetCatalog(seed: number): Record<string, AssetDefinition>
     });
   }
 
-  // ── Crypto (4) — dynamically generated ──
-  const cryptoSpecs: { isMajor: boolean; class: 'CRYPTO_MAJOR' | 'CRYPTO_ALT'; price: number }[] = [
-    { isMajor: true, class: 'CRYPTO_MAJOR', price: 150 },
-    { isMajor: true, class: 'CRYPTO_MAJOR', price: 80 },
-    { isMajor: false, class: 'CRYPTO_ALT', price: 10 },
-    { isMajor: false, class: 'CRYPTO_ALT', price: 2 },
-  ];
+  // ── Crypto (4) — dynamically generated, all from single unique pool ──
+  const cryptoClasses: ('CRYPTO_MAJOR' | 'CRYPTO_ALT')[] = ['CRYPTO_MAJOR', 'CRYPTO_MAJOR', 'CRYPTO_ALT', 'CRYPTO_ALT'];
+  const cryptoPrices = [150, 80, 10, 2];
 
-  for (const spec of cryptoSpecs) {
-    const { ticker, displayName } = generateCryptoIdentity(rng, spec.isMajor, usedTickers);
+  for (let i = 0; i < cryptoClasses.length; i++) {
+    const { ticker, displayName } = generateCryptoIdentity(ctx);
     assets.push({
       id: ticker,
       nameKey: `asset.${ticker.toLowerCase()}`,
       displayName,
-      class: spec.class,
+      class: cryptoClasses[i],
       sector: 'NONE',
       corrGroup: 'CRYPTO',
       liquidityRule: 'D0',
-      initialPrice: spec.price,
+      initialPrice: cryptoPrices[i],
     });
   }
 
@@ -113,7 +109,7 @@ export function buildAssetCatalog(seed: number): Record<string, AssetDefinition>
   assets.push(
     { id: 'IVVB11', nameKey: 'asset.ivvb11', class: 'ETF', sector: 'NONE', corrGroup: 'EQUITY', liquidityRule: 'D0', initialPrice: 50 },
   );
-  usedTickers.add('IVVB11');
+  ctx.usedTickers.add('IVVB11');
 
   // Assign random dividend yields for stocks and FIIs
   for (const a of assets) {
