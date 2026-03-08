@@ -21,6 +21,7 @@ interface GameContextType {
   getSellQuote: (assetId: string, qty: number) => TradeQuote;
   buy: (assetId: string, qty: number) => { success: boolean; quote: TradeQuote };
   sell: (assetId: string, qty: number) => { success: boolean; quote: TradeQuote };
+  batchTrades: (fn: (ops: { buy: (id: string, qty: number) => boolean; sell: (id: string, qty: number) => boolean; getState: () => GameState }) => void) => void;
   newGame: (seed?: number) => void;
   switchLocale: () => void;
   t: typeof t;
