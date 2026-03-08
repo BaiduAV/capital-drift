@@ -122,7 +122,7 @@ export default function Dashboard() {
   return (
     <div className="space-y-4">
       <PageHeader
-        title={locale === 'pt-BR' ? 'Mission Control' : 'Mission Control'}
+        title={locale === 'pt-BR' ? 'Visão Geral' : 'Overview'}
         subtitle={narrative}
       >
         <div className="flex items-center gap-2 flex-wrap">
