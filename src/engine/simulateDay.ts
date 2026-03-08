@@ -103,7 +103,7 @@ function phaseShocks(state: SimulationState, ctx: DayContext): { next: Simulatio
         const prob = (heat - 0.6) * 0.05; // Max 2% per day at 1.0 heat
         if (ctx.rng.market.next() < prob) {
           const count = next.market.newListingsCount[sector] || 0;
-          const { ticker, nameKey } = generateAssetIdentity(ctx.rng.names, sector, count);
+          const { ticker, nameKey, companyName } = generateAssetIdentity(ctx.rng.names, sector, count);
 
           next.market.newListingsCount[sector] = count + 1;
 
@@ -119,15 +119,21 @@ function phaseShocks(state: SimulationState, ctx: DayContext): { next: Simulatio
             initialPrice
           };
 
-          // Generate a trace event for the IPO
+          // Register the company name in i18n dynamically
+          // We store the companyName directly in the nameKey for display
+          // Since this is dynamic, we'll just set it as the nameKey value won't exist in i18n
+          // The t() function will fall back to the key, so we store the name in the catalog
+
+          // Generate a trace event for the IPO with company details
           allGenerated.push({
             id: `ipo_${next.dayIndex}_${ticker}`,
             card: {
-              type: 'SECTOR_BOOM', // Reuse just for UI listing or could be custom IPO type
+              type: 'SECTOR_BOOM',
               titleKey: 'event.ipo.title',
               descriptionKey: 'event.ipo.desc',
               impact: {},
-              magnitude: 0
+              magnitude: 0,
+              vars: { company: companyName, ticker, sector },
             },
             startedAtDay: next.dayIndex,
             durationDays: 1
