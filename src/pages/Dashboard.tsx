@@ -46,7 +46,7 @@ export default function Dashboard() {
     }
     for (const ev of r.events) {
       if (ev.type === 'CREDIT_DOWNGRADE') {
-        toast.error(`⚠️ ${t(ev.titleKey)}: ${t(ev.descriptionKey)}`, { duration: 5000 });
+        toast.error(`⚠️ ${t(ev.titleKey, ev.vars)}: ${t(ev.descriptionKey, ev.vars)}`, { duration: 5000 });
       }
     }
   };
@@ -292,7 +292,7 @@ function DayResultCard({ day, locale, formatPct, navigate, t }: {
             </span>
             {day.events.map((e, i) => (
               <div key={i} className="pl-4 text-muted-foreground">
-                <span className="text-foreground">{t(e.titleKey)}</span> — {t(e.descriptionKey)}
+                <span className="text-foreground">{t(e.titleKey, e.vars)}</span> — {t(e.descriptionKey, e.vars)}
               </div>
             ))}
           </div>
@@ -339,7 +339,7 @@ function PeriodResultCard({ period, locale, formatPct, navigate, t }: {
           <div>
             <span className="text-[hsl(var(--terminal-amber))]">{locale === 'pt-BR' ? 'Eventos' : 'Events'}: </span>
             {period.events.map((e, i) => (
-              <span key={i} className="mr-2 text-muted-foreground">{t(e.titleKey)}</span>
+              <span key={i} className="mr-2 text-muted-foreground">{t(e.titleKey, e.vars)}</span>
             ))}
           </div>
         )}

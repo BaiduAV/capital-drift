@@ -68,8 +68,8 @@ export default function History() {
           key: `${dr.dayIndex}-${i}`,
           day: dr.dayIndex,
           regime: dr.regime,
-          title: t(ev.titleKey),
-          description: t(ev.descriptionKey),
+          title: t(ev.titleKey, ev.vars),
+          description: t(ev.descriptionKey, ev.vars),
           type: ev.type,
         }))
       );
