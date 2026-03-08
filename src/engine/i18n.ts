@@ -16,7 +16,7 @@ const translations: Record<Locale, Record<string, string>> = {
     // Assets - ETFs (real index names)
     'asset.bova11': 'ETF Ibovespa', 'asset.divo11': 'ETF Dividendos',
     'asset.teck11': 'ETF Tech Brasil', 'asset.smal11': 'ETF Small Caps',
-    'asset.ivvb11': 'ETF S&P 500 (Dólar)',
+    'asset.usd': 'Dólar (USD/BRL)',
     // Events
     'event.rate_hike.title': 'Juros Sobem',
     'event.rate_hike.desc': 'Banco Central eleva taxa base. Renda fixa se beneficia, bolsa pressiona.',
