@@ -135,6 +135,10 @@ export default function Trade() {
 
   const formatCurrency = (v: number) =>
     new Intl.NumberFormat(locale, { style: 'currency', currency: 'BRL', minimumFractionDigits: 2 }).format(v);
+  const formatCompact = (v: number) =>
+    Math.abs(v) >= 1_000_000
+      ? new Intl.NumberFormat(locale, { style: 'currency', currency: 'BRL', notation: 'compact', maximumFractionDigits: 2 }).format(v)
+      : formatCurrency(v);
   const formatPct = (v: number) => (v >= 0 ? '+' : '') + (v * 100).toFixed(2) + '%';
 
   const quickQtyOptions = useMemo(() => {
@@ -381,7 +385,7 @@ export default function Trade() {
         title={locale === 'pt-BR' ? 'Negociação' : 'Trading'}
         subtitle={locale === 'pt-BR' ? 'Compre e venda ativos.' : 'Buy and sell assets.'}
       >
-        <KPIChip label={locale === 'pt-BR' ? 'Caixa' : 'Cash'} value={formatCurrency(state.cash)} />
+        <KPIChip label={locale === 'pt-BR' ? 'Caixa' : 'Cash'} value={formatCompact(state.cash)} />
       </PageHeader>
 
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-4">

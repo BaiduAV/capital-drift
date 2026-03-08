@@ -34,6 +34,10 @@ export default function Portfolio() {
 
   const formatCurrency = (v: number) =>
     new Intl.NumberFormat(locale, { style: 'currency', currency: 'BRL', minimumFractionDigits: 2 }).format(v);
+  const formatCompact = (v: number) =>
+    Math.abs(v) >= 1_000_000
+      ? new Intl.NumberFormat(locale, { style: 'currency', currency: 'BRL', notation: 'compact', maximumFractionDigits: 2 }).format(v)
+      : formatCurrency(v);
   const formatPct = (v: number) => (v >= 0 ? '+' : '') + (v * 100).toFixed(2) + '%';
 
   const positions = useMemo(() => {
@@ -214,7 +218,7 @@ export default function Portfolio() {
                   align: 'right',
                   render: p => (
                     <div className="flex flex-col items-end font-mono">
-                      <span className="text-xs text-foreground">{formatCurrency(p.marketValue)}</span>
+                      <span className="text-xs text-foreground">{formatCompact(p.marketValue)}</span>
                       <span className="text-[10px] text-muted-foreground">{formatCurrency(p.asset.price)}/un</span>
                     </div>
                   )
@@ -226,7 +230,7 @@ export default function Portfolio() {
                   render: p => (
                     <div className="flex flex-col items-end font-mono">
                       <span className={p.pnl >= 0 ? 'price-up text-xs font-semibold' : 'price-down text-xs font-semibold'}>
-                        {formatCurrency(p.pnl)}
+                        {formatCompact(p.pnl)}
                       </span>
                       <span className={p.pnlPct >= 0 ? 'price-up text-[10px]' : 'price-down text-[10px]'}>
                         {formatPct(p.pnlPct)}
