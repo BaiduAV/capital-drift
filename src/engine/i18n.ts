@@ -81,7 +81,7 @@ const translations: Record<Locale, Record<string, string>> = {
     // ETFs
     'asset.bova11': 'Ibovespa ETF', 'asset.divo11': 'Dividend ETF',
     'asset.teck11': 'Brazil Tech ETF', 'asset.smal11': 'Small Cap ETF',
-    'asset.ivvb11': 'S&P 500 ETF (Dollar)',
+    'asset.usd': 'Dollar (USD/BRL)',
     // Events
     'event.rate_hike.title': 'Rate Hike',
     'event.rate_hike.desc': 'Central bank raises base rate. Fixed income benefits, equities pressured.',
