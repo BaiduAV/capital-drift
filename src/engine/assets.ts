@@ -29,11 +29,15 @@ export function buildAssetCatalog(seed: number): Record<string, AssetDefinition>
   for (const a of assets) ctx.usedTickers.add(a.id);
 
   // ── Stocks (12) — dynamically generated ──
-  const stockSectors: { sector: 'BANCOS' | 'ENERGIA' | 'VAREJO' | 'TECH'; count: number; basePrice: number; priceStep: number }[] = [
+  const stockSectors: { sector: 'BANCOS' | 'ENERGIA' | 'VAREJO' | 'TECH' | 'AGRO' | 'MINERACAO' | 'SAUDE' | 'INDUSTRIA'; count: number; basePrice: number; priceStep: number }[] = [
     { sector: 'BANCOS', count: 3, basePrice: 25, priceStep: 5 },
     { sector: 'ENERGIA', count: 3, basePrice: 20, priceStep: 4 },
     { sector: 'VAREJO', count: 3, basePrice: 15, priceStep: 3 },
     { sector: 'TECH', count: 3, basePrice: 30, priceStep: 10 },
+    { sector: 'AGRO', count: 2, basePrice: 22, priceStep: 6 },
+    { sector: 'MINERACAO', count: 2, basePrice: 28, priceStep: 8 },
+    { sector: 'SAUDE', count: 1, basePrice: 18, priceStep: 0 },
+    { sector: 'INDUSTRIA', count: 1, basePrice: 16, priceStep: 0 },
   ];
 
   for (const { sector, count, basePrice, priceStep } of stockSectors) {
