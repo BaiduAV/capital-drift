@@ -144,7 +144,7 @@ export default function Market() {
                   render: (a) => (
                     <div>
                       <span className="text-foreground font-semibold font-mono">{a.id}</span>
-                      <span className="text-muted-foreground ml-2 hidden sm:inline text-xs">{t(a.def.nameKey)}</span>
+                      <span className="text-muted-foreground ml-2 hidden sm:inline text-xs">{assetName(a.def)}</span>
                       {a.assetState.haltedUntilDay && state.dayIndex < a.assetState.haltedUntilDay && (
                         <span className="ml-2 text-xs text-accent">⏸</span>
                       )}

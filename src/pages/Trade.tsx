@@ -169,7 +169,7 @@ export default function Trade() {
                   <div className="flex items-center justify-between bg-muted/30 rounded-md px-3 py-2">
                     <div>
                       <div className="text-sm font-mono font-bold text-foreground">{assetId}</div>
-                      <div className="text-[10px] text-muted-foreground">{t(selectedDef.nameKey)}</div>
+                      <div className="text-[10px] text-muted-foreground">{assetName(selectedDef)}</div>
                     </div>
                     <div className="text-right">
                       <div className="text-sm font-mono font-semibold text-foreground">{formatCurrency(selectedAsset.price)}</div>

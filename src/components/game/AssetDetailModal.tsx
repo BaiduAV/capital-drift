@@ -41,7 +41,7 @@ export default function AssetDetailModal({ assetId, onClose }: Props) {
         <DialogHeader className="p-4 pb-2">
           <DialogTitle className="font-mono text-base flex items-center gap-2">
             <span className="text-primary">{assetId}</span>
-            <span className="text-sm text-muted-foreground font-normal">{t(def.nameKey)}</span>
+            <span className="text-sm text-muted-foreground font-normal">{assetName(def)}</span>
           </DialogTitle>
           <DialogDescription className="sr-only">
             {locale === 'pt-BR' ? 'Detalhes do ativo' : 'Asset details'}
