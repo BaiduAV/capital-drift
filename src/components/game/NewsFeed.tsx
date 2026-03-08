@@ -1,5 +1,4 @@
 import { useGame } from '@/context/GameContext';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import type { EventCard, EventType } from '@/engine/types';
 
 const eventMeta: Record<EventType, { icon: string; colorClass: string }> = {
@@ -28,43 +27,26 @@ export default function NewsFeed() {
   const { dayResults, t, locale } = useGame();
 
   const items: NewsItem[] = [];
-  for (let i = dayResults.length - 1; i >= 0 && items.length < 8; i--) {
+  for (let i = dayResults.length - 1; i >= 0 && items.length < 12; i--) {
     const dr = dayResults[i];
     for (const ev of dr.events) {
-      if (items.length >= 8) break;
+      if (items.length >= 12) break;
       items.push({ dayIndex: dr.dayIndex, event: ev });
     }
   }
 
   if (items.length === 0) {
     return (
-      <Card className="terminal-card h-full">
-        <CardHeader className="py-2 px-3">
-          <CardTitle className="text-xs font-sans text-muted-foreground">
-            {locale === 'pt-BR' ? 'Notícias' : 'News'}
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="px-3 pb-3">
-          <p className="text-xs text-muted-foreground font-mono">
-            {locale === 'pt-BR' ? 'Nenhum evento recente.' : 'No recent events.'}
-          </p>
-        </CardContent>
-      </Card>
+      <div className="px-3 py-4">
+        <p className="text-xs text-muted-foreground font-mono">
+          {locale === 'pt-BR' ? 'Avance dias para ver notícias do mercado.' : 'Advance days to see market news.'}
+        </p>
+      </div>
     );
   }
 
   return (
-    <Card className="terminal-card h-full">
-      <CardHeader className="py-2 px-3">
-        <CardTitle className="text-xs font-sans text-muted-foreground flex items-center gap-1.5">
-          <span className="relative flex h-2 w-2">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-terminal-green opacity-75" />
-            <span className="relative inline-flex rounded-full h-2 w-2 bg-terminal-green" />
-          </span>
-          {locale === 'pt-BR' ? 'Notícias' : 'News'}
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="px-3 pb-3 space-y-1.5 max-h-[280px] overflow-y-auto scrollbar-terminal">
+    <div className="space-y-1.5 max-h-[280px] overflow-y-auto scrollbar-terminal px-3 py-2">
         {items.map((item, i) => {
           const meta = eventMeta[item.event.type] ?? { icon: '📌', colorClass: 'text-foreground' };
           return (
@@ -98,7 +80,6 @@ export default function NewsFeed() {
             </div>
           );
         })}
-      </CardContent>
-    </Card>
+      </div>
   );
 }
