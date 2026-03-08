@@ -11,7 +11,7 @@ import { useKeyboardShortcuts } from '@/hooks/useKeyboardShortcuts';
 import { generateNarrative } from '@/utils/generateNarrative';
 import { ComposedChart, Area, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, ReferenceLine } from 'recharts';
 import MacroPanel from '@/components/game/MacroPanel';
-import NewsFeed from '@/components/game/NewsFeed';
+import SocialFeed from '@/components/game/SocialFeed';
 import PortfolioHealth from '@/components/game/PortfolioHealth';
 import QuickActions from '@/components/game/QuickActions';
 import DividendCalendar from '@/components/game/DividendCalendar';
@@ -206,8 +206,8 @@ export default function Dashboard() {
           <div className="shrink-0">
             <MacroPanel />
           </div>
-          <SectionCard title={locale === 'pt-BR' ? 'Feed de Notícias' : 'News Feed'} className="flex-1 min-h-0 overflow-hidden" noPadding>
-            <NewsFeed />
+          <SectionCard title={locale === 'pt-BR' ? 'Feed Social' : 'Social Feed'} className="flex-1 min-h-0 overflow-hidden" noPadding>
+            <SocialFeed />
           </SectionCard>
         </div>
       </div>
