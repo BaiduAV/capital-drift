@@ -132,9 +132,13 @@ export default function Dashboard() {
             <Play className="h-3.5 w-3.5" />
             {locale === 'pt-BR' ? 'Avançar Dia' : 'Next Day'}
           </Button>
-          <Button onClick={() => handleFF(7)} variant="secondary" size="sm" className="gap-1.5 font-mono text-xs shadow-md hidden sm:flex">
+          <Button onClick={() => handleFF(7)} variant="secondary" size="sm" className="gap-1.5 font-mono text-xs shadow-md">
             <FastForward className="h-3.5 w-3.5" />
             7d
+          </Button>
+          <Button onClick={() => handleFF(30)} variant="secondary" size="sm" className="gap-1.5 font-mono text-xs shadow-md hidden sm:flex">
+            <FastForward className="h-3.5 w-3.5" />
+            30d
           </Button>
         </div>
       </PageHeader>
