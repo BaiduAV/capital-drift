@@ -80,7 +80,7 @@ export default function Market() {
       {viewTab === 'overview' && (
         <div className="space-y-4 animate-fade-in">
           {Object.entries(heatmapGroups).map(([groupName, groupAssets]) => (
-            <SectionCard key={groupName} title={groupName} className="bg-transparent border-none shadow-none" contentClassName="p-0">
+            <SectionCard key={groupName} title={t(`group.${groupName}`)} className="bg-transparent border-none shadow-none" contentClassName="p-0">
               <div className="flex flex-wrap gap-2">
                 {groupAssets
                   .sort((a, b) => b.assetState.lastReturn - a.assetState.lastReturn)
