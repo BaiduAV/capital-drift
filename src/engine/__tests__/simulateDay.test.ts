@@ -20,7 +20,7 @@ function createMockState(seed: number): SimulationState {
         assetCatalog: {
             'PETR4': { id: 'PETR4', nameKey: 'n/a', class: 'STOCK', sector: 'ENERGIA', corrGroup: 'EQUITY', liquidityRule: 'D0', initialPrice: 35.0 },
             'VALE3': { id: 'VALE3', nameKey: 'n/a', class: 'STOCK', sector: 'MINERACAO', corrGroup: 'EQUITY', liquidityRule: 'D0', initialPrice: 70.0 },
-            'USD': { id: 'USD', nameKey: 'n/a', class: 'ETF', sector: 'NONE', corrGroup: 'EQUITY', liquidityRule: 'D0', initialPrice: 5.0 },
+            'USD': { id: 'USD', nameKey: 'asset.usd', class: 'FX', sector: 'NONE', corrGroup: 'FX', liquidityRule: 'D0', initialPrice: 5.0 },
             'BTC': { id: 'BTC', nameKey: 'n/a', class: 'CRYPTO_MAJOR', sector: 'NONE', corrGroup: 'CRYPTO', liquidityRule: 'D0', initialPrice: 50000.0 },
         },
         macro: {

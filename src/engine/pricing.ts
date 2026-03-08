@@ -52,12 +52,12 @@ export function generateReturns(state: GameState, rng: RNG): Record<string, numb
       }
 
       returns[assetId] = ret;
+    } else if (def.corrGroup === 'FX') {
+      // FX: price tracks USD/BRL exchange rate
+      const fxDrift = MACRO.fxUSDBRL.regimeDrift[regime];
+      const fxNoise = rng.nextGaussian() * MACRO.fxUSDBRL.dailyVol * 0.5;
+      returns[assetId] = fxDrift + fxNoise;
     } else if (def.corrGroup === 'EQUITY') {
-      if (assetId === 'USD') {
-        const fxDrift = MACRO.fxUSDBRL.regimeDrift[regime];
-        const fxNoise = rng.nextGaussian() * MACRO.fxUSDBRL.dailyVol * 0.5;
-        returns[assetId] = fxDrift + fxNoise;
-      } else {
         const sectorBubble = state.market?.sectors?.[def.sector];
 
         const shocks = {

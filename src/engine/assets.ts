@@ -105,11 +105,11 @@ export function buildAssetCatalog(seed: number): Record<string, AssetDefinition>
     });
   }
 
-  // ── FX Hedge (1) — real index ──
+  // ── FX / Forex (1) — Dólar ──
   assets.push(
-    { id: 'IVVB11', nameKey: 'asset.ivvb11', class: 'ETF', sector: 'NONE', corrGroup: 'EQUITY', liquidityRule: 'D0', initialPrice: 50 },
+    { id: 'USD', nameKey: 'asset.usd', class: 'FX', sector: 'NONE', corrGroup: 'FX', liquidityRule: 'D0', initialPrice: 5.0 },
   );
-  ctx.usedTickers.add('IVVB11');
+  ctx.usedTickers.add('USD');
 
   // Assign random dividend yields for stocks and FIIs
   for (const a of assets) {

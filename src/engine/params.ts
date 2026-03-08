@@ -156,6 +156,13 @@ export const DRIFT_VOL: Record<AssetClass, Record<RegimeId, DriftVol>> = {
     CRISIS:          { drift: -0.00220, vol: 0.110 },
     CRYPTO_EUPHORIA: { drift: 0.00350, vol: 0.100 },
   },
+  FX: {
+    CALM:            { drift: 0.00010, vol: 0.008 },
+    BULL:            { drift: -0.00020, vol: 0.009 },
+    BEAR:            { drift: 0.00030, vol: 0.011 },
+    CRISIS:          { drift: 0.00080, vol: 0.018 },
+    CRYPTO_EUPHORIA: { drift: -0.00010, vol: 0.009 },
+  },
 };
 
 // ── D. Correlation ──
