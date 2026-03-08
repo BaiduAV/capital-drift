@@ -46,6 +46,7 @@ export interface AssetState {
   priceHistory: number[]; // last 90 prices
   isBankrupt?: boolean;
   nextDividendDay?: number; // per-asset dividend schedule
+  ipoVolatilityUntilDay?: number; // elevated vol post-listing
 }
 
 export interface Position {
