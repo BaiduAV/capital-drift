@@ -385,7 +385,7 @@ export default function Trade() {
         title={locale === 'pt-BR' ? 'Negociação' : 'Trading'}
         subtitle={locale === 'pt-BR' ? 'Compre e venda ativos.' : 'Buy and sell assets.'}
       >
-        <KPIChip label={locale === 'pt-BR' ? 'Caixa' : 'Cash'} value={formatCurrency(state.cash)} />
+        <KPIChip label={locale === 'pt-BR' ? 'Caixa' : 'Cash'} value={formatCompact(state.cash)} />
       </PageHeader>
 
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-4">

@@ -230,7 +230,7 @@ export default function Portfolio() {
                   render: p => (
                     <div className="flex flex-col items-end font-mono">
                       <span className={p.pnl >= 0 ? 'price-up text-xs font-semibold' : 'price-down text-xs font-semibold'}>
-                        {formatCurrency(p.pnl)}
+                        {formatCompact(p.pnl)}
                       </span>
                       <span className={p.pnlPct >= 0 ? 'price-up text-[10px]' : 'price-down text-[10px]'}>
                         {formatPct(p.pnlPct)}
