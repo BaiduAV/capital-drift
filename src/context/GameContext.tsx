@@ -2,7 +2,7 @@ import React, { createContext, useContext, useState, useCallback, useEffect, typ
 import type { GameState, DayResult, PeriodResult, TradeQuote, MacroState } from '@/engine/types';
 import { createGameState } from '@/engine/init';
 import { simulateDay } from '@/engine/simulateDay';
-import { simulatePeriod } from '@/engine/simulatePeriod';
+
 import { quoteBuy, quoteSell, executeBuy, executeSell } from '@/engine/trading';
 import { computeEquity } from '@/engine/invariants';
 import { saveGame, loadGame, deleteSave, saveLocale, loadLocale } from '@/engine/persistence';
