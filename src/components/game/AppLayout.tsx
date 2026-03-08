@@ -5,6 +5,7 @@ import { useGame } from '@/context/GameContext';
 import {
   LayoutDashboard,
   TrendingUp,
+  TrendingDown,
   Briefcase,
   ArrowLeftRight,
   Clock,
@@ -18,13 +19,26 @@ import {
   Trophy,
   Sun,
   Moon,
+  Smile,
+  Rocket,
+  ShieldAlert,
+  type LucideIcon,
 } from 'lucide-react';
+import type { RegimeId } from '@/engine/types';
 import { Button } from '@/components/ui/button';
 import { KPIChip } from '@/components/ui/KPIChip';
 import { cn } from '@/lib/utils';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import OnboardingTutorial, { openTutorial } from '@/components/game/OnboardingTutorial';
 import { loadTheme, saveTheme, type AppTheme } from '@/engine/persistence';
+
+const REGIME_ICON: Record<RegimeId, LucideIcon> = {
+  CALM: Smile,
+  BULL: TrendingUp,
+  BEAR: TrendingDown,
+  CRISIS: ShieldAlert,
+  CRYPTO_EUPHORIA: Rocket,
+};
 
 const navItems = [
   { path: '/', icon: LayoutDashboard, labelEn: 'Dashboard', labelPt: 'Painel' },
@@ -198,9 +212,12 @@ export default function AppLayout() {
             >
               <Menu className="h-5 w-5" />
             </Button>
-            <span className={`regime-badge regime-${state.regime} shrink-0`}>
-              {t(`regime.${state.regime}`)}
-            </span>
+            {(() => { const RegimeIcon = REGIME_ICON[state.regime]; return (
+              <span className={`regime-badge regime-${state.regime} shrink-0 inline-flex items-center gap-1`}>
+                <RegimeIcon className="h-3.5 w-3.5" />
+                {t(`regime.${state.regime}`)}
+              </span>
+            ); })()}
             <span className="text-xs text-muted-foreground font-mono shrink-0">
               {locale === 'pt-BR' ? 'DIA' : 'DAY'} {state.dayIndex}
             </span>
