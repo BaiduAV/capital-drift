@@ -42,7 +42,7 @@ const REGIME_ICON: Record<RegimeId, LucideIcon> = {
 
 const navItems = [
   { path: '/', icon: LayoutDashboard, labelEn: 'Dashboard', labelPt: 'Painel' },
-  { path: '/market', icon: TrendingUpIcon, labelEn: 'Market', labelPt: 'Mercado' },
+  { path: '/market', icon: TrendingUp, labelEn: 'Market', labelPt: 'Mercado' },
   { path: '/portfolio', icon: Briefcase, labelEn: 'Portfolio', labelPt: 'Carteira' },
   { path: '/trade', icon: ArrowLeftRight, labelEn: 'Trade', labelPt: 'Negociar' },
   { path: '/history', icon: Clock, labelEn: 'History', labelPt: 'Histórico' },
