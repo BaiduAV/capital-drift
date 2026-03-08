@@ -10,6 +10,7 @@ import { useNavigate } from 'react-router-dom';
 import { useKeyboardShortcuts } from '@/hooks/useKeyboardShortcuts';
 import { generateNarrative } from '@/utils/generateNarrative';
 import { ComposedChart, Area, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, ReferenceLine } from 'recharts';
+import { playRegimeSound } from '@/engine/audio';
 import MacroPanel from '@/components/game/MacroPanel';
 import SocialFeed from '@/components/game/SocialFeed';
 import PortfolioHealth from '@/components/game/PortfolioHealth';
@@ -40,6 +41,7 @@ export default function Dashboard() {
 
   const showDayNotifications = (r: DayResult) => {
     if (r.previousRegime !== r.regime) {
+      playRegimeSound(r.regime);
       toast.warning(`⚡ Regime: ${t(`regime.${r.previousRegime}`)} → ${t(`regime.${r.regime}`)}`, { duration: 5000 });
     }
     if (r.dividendsPaid > 0 && r.metrics.dividendDetails.length > 0) {
