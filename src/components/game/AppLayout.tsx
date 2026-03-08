@@ -39,7 +39,20 @@ export default function AppLayout() {
   const { state, locale, equity, switchLocale, newGame, t } = useGame();
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [theme, setTheme] = useState<AppTheme>(loadTheme);
   const location = useLocation();
+
+  // Apply theme class to document
+  useEffect(() => {
+    document.documentElement.classList.remove('dark', 'light');
+    document.documentElement.classList.add(theme);
+  }, [theme]);
+
+  const toggleTheme = useCallback(() => {
+    const next: AppTheme = theme === 'dark' ? 'light' : 'dark';
+    setTheme(next);
+    saveTheme(next);
+  }, [theme]);
 
   // Close mobile menu on navigation
   useEffect(() => {
