@@ -14,11 +14,13 @@ import {
   ChevronRight,
   Menu,
   X,
+  HelpCircle,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { KPIChip } from '@/components/ui/KPIChip';
 import { cn } from '@/lib/utils';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import OnboardingTutorial, { openTutorial } from '@/components/game/OnboardingTutorial';
 
 const navItems = [
   { path: '/', icon: LayoutDashboard, labelEn: 'Dashboard', labelPt: 'Painel' },
@@ -65,6 +67,15 @@ export default function AppLayout() {
       </nav>
 
       <div className="border-t border-sidebar-border p-2 space-y-1">
+        <Button
+          variant="ghost"
+          size="sm"
+          className="w-full justify-start gap-2 text-xs text-muted-foreground hover:text-foreground"
+          onClick={openTutorial}
+        >
+          <HelpCircle className="h-3.5 w-3.5" />
+          {(!collapsed || mobileOpen) && <span>{locale === 'pt-BR' ? 'Tutorial' : 'Tutorial'}</span>}
+        </Button>
         <Button
           variant="ghost"
           size="sm"
@@ -195,6 +206,8 @@ export default function AppLayout() {
           <Outlet />
         </main>
       </div>
+
+      <OnboardingTutorial />
     </div>
   );
 }
