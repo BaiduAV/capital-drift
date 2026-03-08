@@ -54,37 +54,17 @@ export function GameProvider({ children }: { children: ReactNode }) {
 
   const equity = computeEquity(state);
 
-  const unlockAchievements = useCallback((newState: GameState, ids: AchievementId[]) => {
-    if (ids.length === 0) return;
-    for (const id of ids) {
-      newState.achievements = { ...newState.achievements, [id]: { unlockedAtDay: newState.dayIndex } };
-      const def = (await import('@/engine/achievements')).ACHIEVEMENT_DEFS.find(d => d.id === id);
-      // We can't use dynamic import here — use the already imported ACHIEVEMENT_DEFS
-    }
-  }, []);
-
-  const notifyAchievements = useCallback((ids: AchievementId[], dayIndex: number) => {
-    for (const id of ids) {
-      const def = ACHIEVEMENT_DEFS_MAP[id];
-      if (def) {
-        toast.success(`${def.icon} ${t(def.titleKey)}`, { description: t(def.descKey) });
-      }
-    }
-  }, []);
-
   const advanceDay = useCallback(() => {
     const stateCopy = structuredClone(state);
     setPrevMacro({ ...stateCopy.macro });
     const result = simulateDay(stateCopy);
     const newState = result.state as GameState;
-    // Check achievements
     const newAch = checkAchievements(newState, result, stateCopy);
     for (const id of newAch) {
       newState.achievements = { ...newState.achievements, [id]: { unlockedAtDay: newState.dayIndex } };
     }
     setState(newState);
     setDayResults(prev => [...prev.slice(-99), result]);
-    // Notify after state update
     for (const id of newAch) {
       const def = ACHIEVEMENT_DEFS.find(d => d.id === id);
       if (def) toast.success(`${def.icon} ${t(def.titleKey)}`, { description: t(def.descKey) });
