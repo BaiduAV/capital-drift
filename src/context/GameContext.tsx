@@ -78,12 +78,23 @@ export function GameProvider({ children }: { children: ReactNode }) {
     // Run day-by-day so we can collect DayResults for the NewsFeed
     const collectedResults: DayResult[] = [];
     let current = stateCopy;
+    const allNewAch = new Set<AchievementId>();
     for (let i = 0; i < days; i++) {
+      const prev = current;
       const result = simulateDay(current);
-      collectedResults.push(result);
       current = result.state as GameState;
+      const newAch = checkAchievements(current, result, prev);
+      for (const id of newAch) {
+        current.achievements = { ...current.achievements, [id]: { unlockedAtDay: current.dayIndex } };
+        allNewAch.add(id);
+      }
+      collectedResults.push(result);
     }
     setState(current);
+    for (const id of allNewAch) {
+      const def = ACHIEVEMENT_DEFS.find(d => d.id === id);
+      if (def) toast.success(`${def.icon} ${t(def.titleKey)}`, { description: t(def.descKey) });
+    }
     setDayResults(prev => [...prev, ...collectedResults].slice(-100));
     // Build PeriodResult from collected results
     const startEquity = computeEquity(stateCopy);
