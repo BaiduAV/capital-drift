@@ -135,6 +135,10 @@ export default function Trade() {
 
   const formatCurrency = (v: number) =>
     new Intl.NumberFormat(locale, { style: 'currency', currency: 'BRL', minimumFractionDigits: 2 }).format(v);
+  const formatCompact = (v: number) =>
+    Math.abs(v) >= 1_000_000
+      ? new Intl.NumberFormat(locale, { style: 'currency', currency: 'BRL', notation: 'compact', maximumFractionDigits: 2 }).format(v)
+      : formatCurrency(v);
   const formatPct = (v: number) => (v >= 0 ? '+' : '') + (v * 100).toFixed(2) + '%';
 
   const quickQtyOptions = useMemo(() => {
