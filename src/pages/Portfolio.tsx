@@ -218,7 +218,7 @@ export default function Portfolio() {
                   align: 'right',
                   render: p => (
                     <div className="flex flex-col items-end font-mono">
-                      <span className="text-xs text-foreground">{formatCurrency(p.marketValue)}</span>
+                      <span className="text-xs text-foreground">{formatCompact(p.marketValue)}</span>
                       <span className="text-[10px] text-muted-foreground">{formatCurrency(p.asset.price)}/un</span>
                     </div>
                   )
