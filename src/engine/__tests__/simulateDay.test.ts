@@ -14,7 +14,7 @@ function createMockState(seed: number): SimulationState {
         assets: {
             'PETR4': { price: 35.0, lastReturn: 0, haltedUntilDay: null, priceHistory: [35.0] },
             'VALE3': { price: 70.0, lastReturn: 0, haltedUntilDay: null, priceHistory: [70.0] },
-            'USD': { price: 5.0, lastReturn: 0, haltedUntilDay: null, priceHistory: [5.0] },
+            'USD': { price: 5.0, lastReturn: 0, haltedUntilDay: null, priceHistory: [5.0] },  
             'BTC': { price: 50000.0, lastReturn: 0, haltedUntilDay: null, priceHistory: [50000.0] }
         },
         assetCatalog: {
