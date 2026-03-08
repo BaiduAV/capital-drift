@@ -32,9 +32,17 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip
 import OnboardingTutorial, { openTutorial } from '@/components/game/OnboardingTutorial';
 import { loadTheme, saveTheme, type AppTheme } from '@/engine/persistence';
 
+const REGIME_ICON: Record<RegimeId, LucideIcon> = {
+  CALM: Smile,
+  BULL: TrendingUp,
+  BEAR: TrendingDown,
+  CRISIS: ShieldAlert,
+  CRYPTO_EUPHORIA: Rocket,
+};
+
 const navItems = [
   { path: '/', icon: LayoutDashboard, labelEn: 'Dashboard', labelPt: 'Painel' },
-  { path: '/market', icon: TrendingUp, labelEn: 'Market', labelPt: 'Mercado' },
+  { path: '/market', icon: TrendingUpIcon, labelEn: 'Market', labelPt: 'Mercado' },
   { path: '/portfolio', icon: Briefcase, labelEn: 'Portfolio', labelPt: 'Carteira' },
   { path: '/trade', icon: ArrowLeftRight, labelEn: 'Trade', labelPt: 'Negociar' },
   { path: '/history', icon: Clock, labelEn: 'History', labelPt: 'Histórico' },
