@@ -3,8 +3,10 @@ import { useGame } from '@/context/GameContext';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
 import { Button } from '@/components/ui/button';
-import { AlertTriangle, ShieldAlert } from 'lucide-react';
+import { AlertTriangle, ShieldAlert, Lightbulb } from 'lucide-react';
 import AssetDetailModal from '@/components/game/AssetDetailModal';
+import RebalancePanel from '@/components/game/RebalancePanel';
+import { generateRecommendations } from '@/engine/recommendations';
 import { INITIAL_CASH } from '@/engine/params';
 
 // Design System
