@@ -70,6 +70,7 @@ function generateSingleEvent(state: GameState, rng: RNG): EventCard | null {
   const impact: Record<string, number> = {};
   let macroImpact: EventCard['macroImpact'];
   let magnitude = 0;
+  let vars: Record<string, string> | undefined;
 
   switch (picked) {
     case 'RATE_HIKE': {
