@@ -174,7 +174,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
   }, [locale]);
 
   return (
-    <GameContext.Provider value={{ state, dayResults, locale, equity, prevMacro, advanceDay, fastForward, getBuyQuote, getSellQuote, buy, sell, batchTrades, newGame, switchLocale, t }}>
+    <GameContext.Provider value={{ state, dayResults, locale, equity, prevMacro, advanceDay, fastForward, getBuyQuote, getSellQuote, buy, sell, batchTrades, reserveIPO, newGame, switchLocale, t }}>
       {children}
     </GameContext.Provider>
   );
