@@ -15,6 +15,7 @@ import {
   Menu,
   X,
   HelpCircle,
+  Trophy,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { KPIChip } from '@/components/ui/KPIChip';
