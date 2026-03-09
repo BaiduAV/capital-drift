@@ -184,4 +184,19 @@
   .trade-flash-sell {
     animation: trade-flash-red 1.2s ease-out;
   }
+
+  /* Safe area for bottom nav */
+  .safe-area-bottom {
+    padding-bottom: env(safe-area-inset-bottom, 0);
+  }
+
+  /* Pulse success animation for trade execution */
+  @keyframes pulse-success {
+    0% { box-shadow: 0 0 0 0 hsl(var(--terminal-green) / 0.4); }
+    70% { box-shadow: 0 0 0 8px hsl(var(--terminal-green) / 0); }
+    100% { box-shadow: 0 0 0 0 hsl(var(--terminal-green) / 0); }
+  }
+  .pulse-success {
+    animation: pulse-success 0.8s ease-out;
+  }
 }

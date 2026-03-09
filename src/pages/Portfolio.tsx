@@ -274,6 +274,8 @@ export default function Portfolio() {
           </SectionCard>
         </div>
       </div>
+      </>
+      )}
 
       <AssetDetailModal assetId={selectedAsset} onClose={() => setSelectedAsset(null)} />
     </div>

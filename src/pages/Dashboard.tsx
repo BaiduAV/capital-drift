@@ -335,12 +335,20 @@ function DayResultCard({ day, locale, formatPct, navigate, t }: {
   );
 }
 
-function PeriodResultCard({ period, locale, formatPct, navigate, t }: {
+function PeriodResultCard({ period, locale, formatPct, navigate, t, onDismiss, narrative }: {
   period: PeriodResult; locale: string; formatPct: (v: number) => string;
   navigate: (path: string) => void; t: (key: string, vars?: Record<string, string | number>) => string;
+  onDismiss: () => void; narrative?: string;
 }) {
   return (
-    <Card className="terminal-card animate-fade-in">
+    <Card className="terminal-card animate-fade-in relative">
+      <button
+        onClick={onDismiss}
+        className="absolute top-2 right-2 text-muted-foreground hover:text-foreground transition-colors"
+        aria-label={locale === 'pt-BR' ? 'Fechar resumo' : 'Close summary'}
+      >
+        <X className="h-4 w-4" />
+      </button>
       <CardHeader className="py-2 px-4">
         <CardTitle className="text-sm font-sans">
           {locale === 'pt-BR'
@@ -349,6 +357,11 @@ function PeriodResultCard({ period, locale, formatPct, navigate, t }: {
         </CardTitle>
       </CardHeader>
       <CardContent className="px-4 pb-3 space-y-2 text-xs font-mono">
+        {narrative && (
+          <p className="text-[11px] text-muted-foreground italic border-l-2 border-primary/30 pl-2 mb-2">
+            {narrative}
+          </p>
+        )}
         <div className="flex gap-6">
           <div>
             <span className="text-muted-foreground">{locale === 'pt-BR' ? 'Retorno' : 'Return'}: </span>
