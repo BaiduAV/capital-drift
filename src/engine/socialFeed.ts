@@ -87,7 +87,7 @@ const INFLUENCERS: Influencer[] = [
     handle: 'felipecripto',
     displayName: 'Felipe Crypto',
     avatarEmoji: '🚀',
-    specialty: ['CRYPTO_HACK', 'CRYPTO_EUPHORIA_EVENT', 'CRYPTO_RUG_PULL'],
+    specialty: ['CRYPTO_HACK', 'CRYPTO_EUPHORIA_EVENT', 'CRYPTO_RUG_PULL', 'FLASH_CRASH'],
     tone: 'hype',
   },
   {
