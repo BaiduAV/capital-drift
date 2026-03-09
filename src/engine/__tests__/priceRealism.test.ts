@@ -26,7 +26,7 @@ function createFullState(seed: number): SimulationState {
       'USD': { id: 'USD', nameKey: 'asset.usd', class: 'FX', sector: 'NONE', corrGroup: 'FX', liquidityRule: 'D0', initialPrice: 5.0 },
       'BTC': { id: 'BTC', nameKey: 'n/a', class: 'CRYPTO_MAJOR', sector: 'NONE', corrGroup: 'CRYPTO', liquidityRule: 'D0', initialPrice: 50000.0 },
       'DOGE': { id: 'DOGE', nameKey: 'n/a', class: 'CRYPTO_ALT', sector: 'NONE', corrGroup: 'CRYPTO', liquidityRule: 'D0', initialPrice: 0.30 },
-      'CDB110': { id: 'CDB110', nameKey: 'n/a', class: 'RF_POS', sector: 'NONE', corrGroup: 'FIXED_INCOME', liquidityRule: 'D1', initialPrice: 1000.0 },
+      'CDB110': { id: 'CDB110', nameKey: 'n/a', class: 'RF_POS', sector: 'NONE', corrGroup: 'FIXED_INCOME', liquidityRule: 'D0', initialPrice: 1000.0 },
       'XPLG11': { id: 'XPLG11', nameKey: 'n/a', class: 'FII', sector: 'BRICK', corrGroup: 'EQUITY', liquidityRule: 'D0', initialPrice: 95.0 },
     },
     macro: {
