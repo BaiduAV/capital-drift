@@ -285,6 +285,7 @@ export default function AppLayout() {
         </footer>
       </div>
 
+      <BottomNav />
       <OnboardingTutorial />
 
       {/* New Game Dialog */}
