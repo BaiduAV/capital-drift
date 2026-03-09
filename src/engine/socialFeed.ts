@@ -48,7 +48,7 @@ const MEDIA_CHANNELS: MediaChannel[] = [
     handle: 'CoinDeskBR',
     displayName: 'CoinDesk Brasil',
     avatarEmoji: '₿',
-    coverage: ['CRYPTO_HACK', 'CRYPTO_EUPHORIA_EVENT', 'CRYPTO_RUG_PULL'],
+    coverage: ['CRYPTO_HACK', 'CRYPTO_EUPHORIA_EVENT', 'CRYPTO_RUG_PULL', 'FLASH_CRASH'],
   },
   {
     handle: 'ExameBiz',
