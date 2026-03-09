@@ -601,6 +601,20 @@ const TEMPLATES_EN: Record<EventType, TemplateSet> = {
     },
     sentiment: 'bearish',
   },
+  FLASH_CRASH: {
+    media: [
+      '⚡ FLASH CRASH: Crypto market melts in minutes. Alts lose up to 80% of value.',
+      '⚡ Flash crash: cascading liquidations sweep the crypto market. Total chaos.',
+      '⚡ BREAKING: Crypto flash crash. Exchanges halted, alts in free fall.',
+    ],
+    reactions: {
+      felipecripto: [
+        'This is INSANE. Never seen a flash crash like this. Leveraged traders got wiped. 😱',
+        'Brutal flash crash. Stay calm and wait for the dust to settle. Do NOT buy yet! ⚠️',
+      ],
+    },
+    sentiment: 'bearish',
+  },
   CREDIT_DOWNGRADE: {
     media: [
       '⚠️ Rating agency downgrades credit issuer. Corporate bonds under pressure.',
