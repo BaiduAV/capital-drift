@@ -2,7 +2,7 @@
 
 import type { GameState, AssetState } from './types';
 import { buildAssetCatalog } from './assets';
-import { MACRO, INITIAL_CASH, INITIAL_REGIME, DIVIDENDS } from './params';
+import { MACRO, INITIAL_CASH, INITIAL_REGIME, DIVIDENDS, MARGIN_CALL } from './params';
 import { createRNG } from './rng';
 import { initDividendSchedules } from './dividends';
 
@@ -51,6 +51,10 @@ export function createGameState(seed: number): GameState {
     },
     ipoPipeline: [],
     achievements: {},
+    marginCallSettings: {
+      drawdownThreshold: MARGIN_CALL.drawdownThreshold,
+      recoveryTarget: MARGIN_CALL.recoveryTarget,
+    },
   };
 
   // Initialize per-asset dividend schedules

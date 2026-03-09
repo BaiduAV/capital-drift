@@ -30,12 +30,14 @@ export function checkAndExecuteMarginCall(state: SimulationState): MarginCallRes
 
   const drawdown = (peak - equity) / peak;
 
-  if (drawdown < MARGIN_CALL.drawdownThreshold) {
+  const { drawdownThreshold, recoveryTarget } = state.marginCallSettings ?? MARGIN_CALL;
+
+  if (drawdown < drawdownThreshold) {
     return { triggered: false, totalLiquidated: 0, assetsLiquidated: [], drawdownPct: drawdown };
   }
 
   // Target equity to reach recovery level
-  const targetEquity = peak * (1 - MARGIN_CALL.recoveryTarget);
+  const targetEquity = peak * (1 - recoveryTarget);
   const deficit = targetEquity - equity;
 
   if (deficit <= 0) {

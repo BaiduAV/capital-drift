@@ -47,6 +47,7 @@ export function loadGame(): GameState | null {
     if (!state.achievements) state.achievements = {};
     if (!Array.isArray(state.ipoPipeline)) state.ipoPipeline = [];
     if (!state.market) state.market = { sectors: {}, newListingsCount: {} };
+    if (!state.marginCallSettings) state.marginCallSettings = { drawdownThreshold: 0.50, recoveryTarget: 0.40 };
     return state;
   } catch {
     return null;

@@ -26,6 +26,7 @@ import {
   Smile,
   Rocket,
   ShieldAlert,
+  Settings,
   type LucideIcon,
 } from 'lucide-react';
 import type { RegimeId } from '@/engine/types';
@@ -36,6 +37,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip
 import OnboardingTutorial, { openTutorial } from '@/components/game/OnboardingTutorial';
 import BottomNav from '@/components/game/BottomNav';
 import { loadTheme, saveTheme, type AppTheme } from '@/engine/persistence';
+import { Slider } from '@/components/ui/slider';
 
 const REGIME_ICON: Record<RegimeId, LucideIcon> = {
   CALM: Smile,
@@ -55,12 +57,15 @@ const navItems = [
 ];
 
 export default function AppLayout() {
-  const { state, locale, equity, switchLocale, newGame, t } = useGame();
+  const { state, locale, equity, switchLocale, newGame, updateMarginCallSettings, t } = useGame();
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [theme, setTheme] = useState<AppTheme>(loadTheme);
   const [newGameOpen, setNewGameOpen] = useState(false);
+  const [settingsOpen, setSettingsOpen] = useState(false);
   const [seedInput, setSeedInput] = useState('');
+  const [mcThreshold, setMcThreshold] = useState(() => Math.round(state.marginCallSettings.drawdownThreshold * 100));
+  const [mcRecovery, setMcRecovery] = useState(() => Math.round(state.marginCallSettings.recoveryTarget * 100));
   const location = useLocation();
 
   // Apply theme class to document
@@ -134,6 +139,15 @@ export default function AppLayout() {
         >
           {theme === 'dark' ? <Sun className="h-3.5 w-3.5" /> : <Moon className="h-3.5 w-3.5" />}
           {(!collapsed || mobileOpen) && <span>{theme === 'dark' ? (locale === 'pt-BR' ? 'Tema Claro' : 'Light Mode') : (locale === 'pt-BR' ? 'Tema Escuro' : 'Dark Mode')}</span>}
+        </Button>
+        <Button
+          variant="ghost"
+          size="sm"
+          className="w-full justify-start gap-2 text-xs text-muted-foreground hover:text-foreground"
+          onClick={() => setSettingsOpen(true)}
+        >
+          <Settings className="h-3.5 w-3.5" />
+          {(!collapsed || mobileOpen) && <span>{locale === 'pt-BR' ? 'Configurações' : 'Settings'}</span>}
         </Button>
         <Button
           variant="ghost"
@@ -329,6 +343,75 @@ export default function AppLayout() {
             </Button>
             <Button size="sm" variant="destructive" onClick={handleNewGame}>
               {locale === 'pt-BR' ? 'Iniciar' : 'Start'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Settings Dialog */}
+      <Dialog open={settingsOpen} onOpenChange={setSettingsOpen}>
+        <DialogContent className="sm:max-w-sm">
+          <DialogHeader>
+            <DialogTitle className="font-sans">
+              {locale === 'pt-BR' ? 'Configurações' : 'Settings'}
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-5 py-2">
+            <div className="space-y-3">
+              <h4 className="text-xs font-mono font-semibold text-muted-foreground uppercase tracking-wider">
+                Margin Call
+              </h4>
+              <div className="space-y-1.5">
+                <Label className="text-xs font-mono flex justify-between">
+                  <span>{locale === 'pt-BR' ? 'Gatilho (Drawdown)' : 'Trigger (Drawdown)'}</span>
+                  <span className="text-primary">{mcThreshold}%</span>
+                </Label>
+                <Slider
+                  value={[mcThreshold]}
+                  onValueChange={([v]) => setMcThreshold(v)}
+                  min={10}
+                  max={90}
+                  step={5}
+                />
+                <p className="text-[10px] text-muted-foreground/70">
+                  {locale === 'pt-BR'
+                    ? 'Liquidação forçada quando drawdown atingir este nível.'
+                    : 'Forced liquidation triggers at this drawdown level.'}
+                </p>
+              </div>
+              <div className="space-y-1.5">
+                <Label className="text-xs font-mono flex justify-between">
+                  <span>{locale === 'pt-BR' ? 'Alvo de Recuperação' : 'Recovery Target'}</span>
+                  <span className="text-primary">{mcRecovery}%</span>
+                </Label>
+                <Slider
+                  value={[mcRecovery]}
+                  onValueChange={([v]) => setMcRecovery(v)}
+                  min={5}
+                  max={mcThreshold - 5}
+                  step={5}
+                />
+                <p className="text-[10px] text-muted-foreground/70">
+                  {locale === 'pt-BR'
+                    ? 'Venda forçada até drawdown reduzir a este nível.'
+                    : 'Forced selling stops when drawdown reaches this level.'}
+                </p>
+              </div>
+            </div>
+          </div>
+          <DialogFooter className="gap-2 sm:gap-0">
+            <Button variant="ghost" size="sm" onClick={() => setSettingsOpen(false)}>
+              {locale === 'pt-BR' ? 'Cancelar' : 'Cancel'}
+            </Button>
+            <Button size="sm" onClick={() => {
+              updateMarginCallSettings({
+                drawdownThreshold: mcThreshold / 100,
+                recoveryTarget: mcRecovery / 100,
+              });
+              setSettingsOpen(false);
+              toast.success(locale === 'pt-BR' ? 'Configurações salvas!' : 'Settings saved!');
+            }}>
+              {locale === 'pt-BR' ? 'Salvar' : 'Save'}
             </Button>
           </DialogFooter>
         </DialogContent>

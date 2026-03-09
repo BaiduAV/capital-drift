@@ -46,6 +46,7 @@ function createFullState(seed: number): SimulationState {
     market: { sectors: {}, newListingsCount: {} },
     ipoPipeline: [],
     achievements: {},
+    marginCallSettings: { drawdownThreshold: 0.50, recoveryTarget: 0.40 },
   };
 }
 

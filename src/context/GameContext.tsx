@@ -27,6 +27,7 @@ interface GameContextType {
   reserveIPO: (ticker: string, qty: number) => boolean;
   newGame: (seed?: number) => void;
   switchLocale: () => void;
+  updateMarginCallSettings: (settings: { drawdownThreshold: number; recoveryTarget: number }) => void;
   t: typeof t;
 }
 
@@ -201,8 +202,12 @@ export function GameProvider({ children }: { children: ReactNode }) {
     saveLocale(next);
   }, [locale]);
 
+  const updateMarginCallSettings = useCallback((settings: { drawdownThreshold: number; recoveryTarget: number }) => {
+    setState(prev => ({ ...prev, marginCallSettings: settings }));
+  }, []);
+
   return (
-    <GameContext.Provider value={{ state, dayResults, locale, equity, prevMacro, advanceDay, fastForward, getBuyQuote, getSellQuote, buy, sell, batchTrades, reserveIPO, newGame, switchLocale, t }}>
+    <GameContext.Provider value={{ state, dayResults, locale, equity, prevMacro, advanceDay, fastForward, getBuyQuote, getSellQuote, buy, sell, batchTrades, reserveIPO, newGame, switchLocale, updateMarginCallSettings, t }}>
       {children}
     </GameContext.Provider>
   );
