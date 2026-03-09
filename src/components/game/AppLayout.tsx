@@ -34,6 +34,7 @@ import { KPIChip } from '@/components/ui/KPIChip';
 import { cn } from '@/lib/utils';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import OnboardingTutorial, { openTutorial } from '@/components/game/OnboardingTutorial';
+import BottomNav from '@/components/game/BottomNav';
 import { loadTheme, saveTheme, type AppTheme } from '@/engine/persistence';
 
 const REGIME_ICON: Record<RegimeId, LucideIcon> = {
