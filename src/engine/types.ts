@@ -76,6 +76,13 @@ export interface CalendarState {
   nextStockPayDay: number;
 }
 
+export interface TaxState {
+  totalIRPaid: number;
+  totalIOFPaid: number;
+  accumulatedLosses: Partial<Record<string, number>>;
+  monthlySales: Record<number, number>;
+}
+
 export interface GameState {
   dayIndex: number;
   cash: number;
@@ -97,6 +104,7 @@ export interface GameState {
   ipoPipeline: IPOPipelineEntry[];
   achievements: Record<string, { unlockedAtDay: number }>;
   marginCallSettings: { drawdownThreshold: number; recoveryTarget: number };
+  taxState?: TaxState;
 }
 
 export interface IPOPipelineEntry {
