@@ -60,6 +60,7 @@
     --background: 220 14% 95%;
     --foreground: 220 25% 12%;
 
+    /* Improved muted-foreground contrast */
     --card: 0 0% 100%;
     --card-foreground: 220 25% 12%;
 
@@ -73,7 +74,7 @@
     --secondary-foreground: 220 20% 25%;
 
     --muted: 220 12% 91%;
-    --muted-foreground: 220 12% 40%;
+    --muted-foreground: 220 12% 35%;
 
     --accent: 35 80% 45%;
     --accent-foreground: 0 0% 100%;
@@ -182,5 +183,20 @@
   }
   .trade-flash-sell {
     animation: trade-flash-red 1.2s ease-out;
+  }
+
+  /* Safe area for bottom nav */
+  .safe-area-bottom {
+    padding-bottom: env(safe-area-inset-bottom, 0);
+  }
+
+  /* Pulse success animation for trade execution */
+  @keyframes pulse-success {
+    0% { box-shadow: 0 0 0 0 hsl(var(--terminal-green) / 0.4); }
+    70% { box-shadow: 0 0 0 8px hsl(var(--terminal-green) / 0); }
+    100% { box-shadow: 0 0 0 0 hsl(var(--terminal-green) / 0); }
+  }
+  .pulse-success {
+    animation: pulse-success 0.8s ease-out;
   }
 }

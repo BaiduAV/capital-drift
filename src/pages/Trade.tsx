@@ -25,6 +25,7 @@ import { PageHeader } from '@/components/ui/PageHeader';
 import { SectionCard } from '@/components/ui/SectionCard';
 import { KPIChip } from '@/components/ui/KPIChip';
 import { Sparkline } from '@/components/ui/Sparkline';
+import ContextualTip from '@/components/game/ContextualTip';
 
 type ClassFilter = 'ALL' | 'STOCK' | 'FII' | 'ETF' | 'RF' | 'CRYPTO' | 'FX';
 
@@ -104,23 +105,29 @@ export default function Trade() {
 
   const [ipoReserveQty, setIpoReserveQty] = useState<Record<string, string>>({});
 
+  const fmtCompact = (v: number) =>
+    Math.abs(v) >= 1_000_000
+      ? new Intl.NumberFormat(locale, { style: 'currency', currency: 'BRL', notation: 'compact', maximumFractionDigits: 2 }).format(v)
+      : new Intl.NumberFormat(locale, { style: 'currency', currency: 'BRL', minimumFractionDigits: 2 }).format(v);
+
   const handleExecute = useCallback(() => {
     if (!assetId || qty <= 0) return;
     const result = side === 'buy' ? buy(assetId, qty) : sell(assetId, qty);
     if (result.success) {
+      const newEquity = Object.entries(state.portfolio).reduce((sum, [id, pos]) => sum + pos.quantity * state.assets[id].price, 0) + state.cash;
       toast.success(
         locale === 'pt-BR'
-          ? `${side === 'buy' ? 'Compra' : 'Venda'} de ${qty}× ${assetId} executada!`
-          : `${side === 'buy' ? 'Bought' : 'Sold'} ${qty}× ${assetId}!`
+          ? `${side === 'buy' ? 'Compra' : 'Venda'} de ${qty}× ${assetId} executada! Patrimônio: ${fmtCompact(newEquity)}`
+          : `${side === 'buy' ? 'Bought' : 'Sold'} ${qty}× ${assetId}! Equity: ${fmtCompact(newEquity)}`
       );
       setFlashId({ id: assetId, side });
-      setTimeout(() => setFlashId(null), 1200);
+      setTimeout(() => setFlashId(null), 1500);
       setQuantity('');
       if (isMobile) setMobileDrawerOpen(false);
     } else {
       toast.error(result.quote.reason ? t(result.quote.reason) : 'Trade failed');
     }
-  }, [assetId, qty, side, buy, sell, locale, t, isMobile]);
+  }, [assetId, qty, side, buy, sell, locale, t, isMobile, state.portfolio, state.assets, state.cash, fmtCompact]);
 
   const handleTradeClick = () => {
     if (liveQuote && liveQuote.canExecute) {
@@ -266,7 +273,7 @@ export default function Trade() {
               {locale === 'pt-BR' ? 'Quantidade' : 'Quantity'}
             </label>
             <div className="flex items-center gap-1.5 mt-1">
-              <Button variant="outline" size="icon" className="h-9 w-9 shrink-0" onClick={() => setQuantity(String(Math.max(0, qty - 1)))}>
+              <Button variant="outline" size="icon" className="h-9 w-9 shrink-0" onClick={() => setQuantity(String(Math.max(0, qty - 1)))} aria-label={locale === 'pt-BR' ? 'Diminuir quantidade' : 'Decrease quantity'}>
                 <span className="text-sm font-mono font-bold">−</span>
               </Button>
               <Input
@@ -277,7 +284,7 @@ export default function Trade() {
                 className="text-center text-sm font-mono h-9 flex-1"
                 placeholder="0"
               />
-              <Button variant="outline" size="icon" className="h-9 w-9 shrink-0" onClick={() => setQuantity(String(qty + 1))}>
+              <Button variant="outline" size="icon" className="h-9 w-9 shrink-0" onClick={() => setQuantity(String(qty + 1))} aria-label={locale === 'pt-BR' ? 'Aumentar quantidade' : 'Increase quantity'}>
                 <span className="text-sm font-mono font-bold">+</span>
               </Button>
             </div>
@@ -387,6 +394,11 @@ export default function Trade() {
       >
         <KPIChip label={locale === 'pt-BR' ? 'Caixa' : 'Cash'} value={formatCompact(state.cash)} />
       </PageHeader>
+
+      <ContextualTip
+        id="trade-quick-qty"
+        message={locale === 'pt-BR' ? '💡 Use os botões 25%, 50%, 75%, MAX para definir quantidade rapidamente.' : '💡 Use the 25%, 50%, 75%, MAX buttons to set quantity quickly.'}
+      />
 
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-4">
         {/* Left: Asset List */}

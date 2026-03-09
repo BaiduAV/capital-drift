@@ -1,73 +1,113 @@
 
 
-# Plano de Melhoria de UX — Capital Drift
+# UI Macroeconômica Imersiva — Plano de Implementação
 
-## Diagnóstico Atual
+## Escopo
 
-A aplicação já possui uma base sólida: design system consistente, layout responsivo, sidebar colapsável, atalhos de teclado, tema dark/light, tooltips, e feedback sonoro. Após análise das 7 páginas e da sessão do usuário (mobile, 384px), identifiquei as seguintes áreas de melhoria:
+7 tarefas que adicionam camada imersiva ao Dashboard sem alterar a engine. Tudo consome dados já existentes em `GameState` (macro, regime, events, history, portfolio).
 
-## Melhorias Propostas
+## Dados disponíveis na engine (sem mudanças)
 
-### 1. Onboarding Contextual por Página
-Atualmente o tutorial é genérico. Adicionar **dicas contextuais inline** (pequenos tooltips ou banners dismissíveis) na primeira visita a cada página:
-- Dashboard: "Pressione N para avançar um dia"
-- Market: "Clique em um ativo para ver detalhes"
-- Trade: "Use os botões % para definir quantidade rapidamente"
-- Armazenar quais dicas já foram vistas em `localStorage`.
+- `state.macro.baseRateAnnual` / `state.macro.inflationAnnual` — SELIC e IPCA
+- `state.regime` — regime atual
+- `state.history.equity[]` / `state.history.cdiAccumulated[]` / `state.history.drawdown[]`
+- `dayResults[]` — array de DayResult com events, regime changes
+- `state.portfolio` / `state.assets` / `state.cash` — posições
 
-### 2. Feedback Visual de Trades (Flash + Toast Melhorado)
-- Na lista de ativos do Trade, após executar uma ordem, o ativo já recebe um flash mas ele é sutil. Melhorar com uma **animação de pulse** mais visível e um **confetti micro** no botão de execução para trades de sucesso.
-- No toast de confirmação, incluir o **impacto no patrimônio** (ex: "Compra executada! Patrimônio: R$ 5.230").
+**Dados não existentes que precisam ser derivados (sem mudar engine):**
+- USD/BRL: derivar de regime (simulado, não existe na engine). Alternativa: omitir ou criar valor cosmético baseado em regime.
+- Risk Index: calcular no frontend a partir de regime + drawdown + volatility.
+- Patrimônio real (ajustado inflação): calcular no frontend acumulando inflação diária do histórico.
+- Narrativa: if/else puro no frontend.
 
-### 3. Empty States Informativos
-Várias telas mostram estados vazios genéricos. Melhorar:
-- **Portfolio vazio**: ilustração + CTA "Ir para o Mercado" (já existe parcialmente no Dashboard, mas não no Portfolio).
-- **Histórico sem dados**: explicar que é preciso avançar dias.
-- **Conquistas**: mostrar progresso para a próxima conquista mais próxima.
+## Arquivos a criar
 
-### 4. Navegação Mobile Aprimorada
-O usuário está em mobile (384px). Melhorias:
-- **Bottom navigation bar** fixa com os 4 itens principais (Dashboard, Mercado, Negociar, Carteira) em vez de depender do hamburger menu.
-- Manter o sidebar para itens secundários (Histórico, Conquistas, Config).
-- Botão flutuante "Avançar Dia" acessível em qualquer página mobile.
+| Arquivo | Tarefa |
+|---|---|
+| `src/components/game/MacroPanel.tsx` | T1 — Painel macro no topo |
+| `src/components/game/NewsFeed.tsx` | T2 — Eventos como manchetes |
+| `src/components/game/PortfolioHealth.tsx` | T4 — Score de saúde |
+| `src/components/game/QuickActions.tsx` | T6 — Botões de estratégia |
+| `src/utils/generateNarrative.ts` | T5 — Gerador de narrativa |
 
-### 5. Transições e Micro-animações
-- Adicionar **transitions suaves** entre tabs (fade-in já existe, mas sem slide).
-- **Skeleton loaders** no chart enquanto dados são calculados (perceptível em FF 30d).
-- Animação de **contagem** nos StatCards ao mudar valor (count-up effect).
-
-### 6. Acessibilidade e Legibilidade
-- Aumentar contraste dos textos `text-muted-foreground` em tema light (alguns ficam pouco legíveis).
-- Adicionar `aria-label` nos botões de ação que só têm ícone (vários botões no Trade).
-- Focus ring visível para navegação por teclado nos cards clicáveis.
-
-### 7. Resumo Pós Fast-Forward
-Quando o jogador avança 30 dias, o `PeriodResultCard` mostra dados mas some ao próximo clique. Melhorar:
-- Manter o resultado visível até ser explicitamente dispensado (botão X).
-- Adicionar **mini-narrativa** no resultado do período (reutilizar `generateNarrative`).
-- Highlight dos eventos mais impactantes com ícones.
-
-## Arquivos Impactados
+## Arquivos a editar
 
 | Arquivo | Mudança |
 |---|---|
-| `src/components/game/BottomNav.tsx` | **Novo** — Bottom navigation para mobile |
-| `src/components/game/ContextualTip.tsx` | **Novo** — Componente de dica contextual dismissível |
-| `src/components/game/AppLayout.tsx` | Integrar BottomNav no mobile, ajustar padding do main |
-| `src/pages/Dashboard.tsx` | PeriodResult persistente, dica contextual, animação de contagem nos stats |
-| `src/pages/Trade.tsx` | Feedback visual melhorado, aria-labels, dica contextual |
-| `src/pages/Portfolio.tsx` | Empty state com CTA, dica contextual |
-| `src/pages/Achievements.tsx` | Mostrar progresso para próxima conquista |
-| `src/index.css` | Novas animações (pulse-success, count-up), ajustes de contraste light mode |
-| `src/engine/persistence.ts` | Salvar/carregar dicas vistas |
+| `src/pages/Dashboard.tsx` | T7 — Novo layout integrando MacroPanel, Narrative, NewsFeed, PortfolioHealth, QuickActions + T3 gráfico melhorado |
+| `src/context/GameContext.tsx` | Expor `previousDayMacro` para comparação de setas ↑↓ no MacroPanel |
+| `src/index.css` | Adicionar classes de animação fade-in para NewsFeed |
 
-## Prioridade de Implementação
+## Implementação por tarefa
 
-1. **Bottom Nav mobile** — maior impacto na navegação mobile
-2. **Feedback visual de trades** — melhora o loop principal do jogo
-3. **Resumo pós FF persistente** — evita perda de informação
-4. **Empty states** — melhora primeira impressão
-5. **Dicas contextuais** — reduz curva de aprendizado
-6. **Micro-animações** — polish
-7. **Acessibilidade** — contraste e aria-labels
+### T1 — MacroPanel.tsx
+- Grid responsivo: 6 colunas desktop, 3 mobile
+- Itens: SELIC, CDI (= SELIC/252 diário), IPCA, Regime, Drawdown atual, vs CDI
+- Cada item: valor + seta comparando `state.macro` atual vs valor do dia anterior (armazenar `prevMacro` no GameContext ao avançar dia)
+- Regime badge com cores já definidas no CSS (`.regime-CALM`, `.regime-BULL`, etc.)
+- Omitir USD/BRL (não existe na engine). Substituir por "Risk Index" = f(regime, drawdown, vol) calculado inline
+
+### T2 — NewsFeed.tsx
+- Input: `dayResults` (últimos 10)
+- Mapear `EventCard.type` para ícone + headline amigável + cor
+- Mapeamento hardcoded: `RATE_HIKE → 📈 "BC sobe juros"`, etc.
+- Card list vertical, max 8 items, com `animate-fadeIn` CSS
+- Mostrar dia do evento + regime badge
+
+### T3 — Gráfico patrimônio melhorado (dentro do Dashboard)
+- Adicionar linha "Patrimônio Real" = equity[i] / (inflação acumulada desde dia 0)
+- Calcular inflação acumulada: produto de (1 + inflDiária) — derivar de `state.macro.inflationAnnual / 252` por dia. Problema: não temos histórico de inflação diária. Alternativa pragmática: usar inflação atual para ajustar todo o histórico (simplificação aceitável para MVP).
+- Colorir área do gráfico: verde acima do pico, vermelho abaixo
+- Label "Drawdown atual: -X%"
+- Usar recharts ComposedChart existente, adicionar mais uma Line
+
+### T4 — PortfolioHealth.tsx
+- Liquidez: `state.cash / (equity / 6)` → meses de reserva
+- Diversificação: contar classes distintas, Herfindahl index
+- Drawdown: penalizar drawdown > 10%
+- Score 0-100 com barra colorida (Progress component)
+- Labels: 70+ Saudável, 40-69 Moderado, <40 Arriscado
+
+### T5 — generateNarrative.ts
+- If/else baseado em: regime, último evento, drawdown, inflação, SELIC
+- Retorna string PT-BR ou EN dependendo do locale passado
+- ~15 templates cobrindo combinações principais
+- Ex: regime=CRISIS + drawdown>10% → "A crise aprofunda as perdas. Considere ativos defensivos."
+
+### T6 — QuickActions.tsx
+- 3 botões: Defensivo / Balanceado / Agressivo
+- Cada botão executa trades automáticos:
+  - Defensivo: vende stocks/crypto, compra RF_POS
+  - Balanceado: distribui igualmente entre classes
+  - Agressivo: vende RF, compra stocks/crypto
+- Usa `buy`/`sell` do GameContext
+- Confirma antes de executar
+- Mostra resumo após execução
+
+### T7 — Layout do Dashboard
+Reestruturar o Dashboard:
+```text
+┌──────────────────────────────────┐
+│         MacroPanel (6 cols)       │
+├──────────────────────────────────┤
+│     Narrative (1-2 frases)       │
+├────────────────────┬─────────────┤
+│  Equity Chart      │  NewsFeed   │
+│  (nominal + real)  │  (últimos)  │
+│  + drawdown label  │             │
+├────────────────────┴─────────────┤
+│  Action Bar (play/FF buttons)    │
+├──────────────┬───────────────────┤
+│ PortfolioHealth │  QuickActions  │
+├──────────────┴───────────────────┤
+│  Day/Period Result (existing)    │
+│  Recent History ticker           │
+└──────────────────────────────────┘
+```
+Mobile: tudo em coluna única, NewsFeed abaixo do gráfico.
+
+### GameContext changes
+- Adicionar `prevMacro: MacroState | null` ao state tracking
+- No `advanceDay`, salvar macro antes de simular: `setPrevMacro({...state.macro})`
+- Expor `prevMacro` no context para MacroPanel comparar valores
 

@@ -3,7 +3,7 @@ import { useGame } from '@/context/GameContext';
 import { INITIAL_CASH } from '@/engine/params';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Play, FastForward, AlertTriangle, TrendingUp, TrendingDown, Keyboard } from 'lucide-react';
+import { Play, FastForward, AlertTriangle, TrendingUp, TrendingDown, Keyboard, X } from 'lucide-react';
 import { toast } from 'sonner';
 import type { DayResult, PeriodResult } from '@/engine/types';
 import { useNavigate } from 'react-router-dom';
@@ -17,6 +17,7 @@ import PortfolioHealth from '@/components/game/PortfolioHealth';
 import QuickActions from '@/components/game/QuickActions';
 import DividendCalendar from '@/components/game/DividendCalendar';
 import RebalancePanel from '@/components/game/RebalancePanel';
+import ContextualTip from '@/components/game/ContextualTip';
 
 // New Design System imports
 import { PageHeader } from '@/components/ui/PageHeader';
@@ -123,6 +124,10 @@ export default function Dashboard() {
 
   return (
     <div className="space-y-4">
+      <ContextualTip
+        id="dashboard-advance"
+        message={locale === 'pt-BR' ? '💡 Pressione N para avançar um dia ou F para avançar 7 dias.' : '💡 Press N to advance one day or F for 7 days.'}
+      />
       <PageHeader
         title={locale === 'pt-BR' ? 'Visão Geral' : 'Overview'}
         subtitle={narrative}
@@ -254,8 +259,25 @@ export default function Dashboard() {
       {/* Day Result */}
       {lastDay && <DayResultCard day={lastDay} locale={locale} formatPct={formatPct} navigate={navigate} t={t} />}
 
-      {/* Period Result */}
-      {lastPeriod && <PeriodResultCard period={lastPeriod} locale={locale} formatPct={formatPct} navigate={navigate} t={t} />}
+      {/* Period Result — persistent until dismissed */}
+      {lastPeriod && (
+        <PeriodResultCard
+          period={lastPeriod}
+          locale={locale}
+          formatPct={formatPct}
+          navigate={navigate}
+          t={t}
+          onDismiss={() => setLastPeriod(null)}
+          narrative={generateNarrative({
+            regime: state.regime,
+            lastEvents: lastPeriod.events,
+            drawdown: peak > 0 ? (peak - equity) / peak : 0,
+            inflationAnnual: state.macro.inflationAnnual,
+            baseRateAnnual: state.macro.baseRateAnnual,
+            locale,
+          })}
+        />
+      )}
 
       {/* Recent history ticker */}
       {dayResults.length > 0 && (
@@ -317,12 +339,20 @@ function DayResultCard({ day, locale, formatPct, navigate, t }: {
   );
 }
 
-function PeriodResultCard({ period, locale, formatPct, navigate, t }: {
+function PeriodResultCard({ period, locale, formatPct, navigate, t, onDismiss, narrative }: {
   period: PeriodResult; locale: string; formatPct: (v: number) => string;
   navigate: (path: string) => void; t: (key: string, vars?: Record<string, string | number>) => string;
+  onDismiss: () => void; narrative?: string;
 }) {
   return (
-    <Card className="terminal-card animate-fade-in">
+    <Card className="terminal-card animate-fade-in relative">
+      <button
+        onClick={onDismiss}
+        className="absolute top-2 right-2 text-muted-foreground hover:text-foreground transition-colors"
+        aria-label={locale === 'pt-BR' ? 'Fechar resumo' : 'Close summary'}
+      >
+        <X className="h-4 w-4" />
+      </button>
       <CardHeader className="py-2 px-4">
         <CardTitle className="text-sm font-sans">
           {locale === 'pt-BR'
@@ -331,6 +361,11 @@ function PeriodResultCard({ period, locale, formatPct, navigate, t }: {
         </CardTitle>
       </CardHeader>
       <CardContent className="px-4 pb-3 space-y-2 text-xs font-mono">
+        {narrative && (
+          <p className="text-[11px] text-muted-foreground italic border-l-2 border-primary/30 pl-2 mb-2">
+            {narrative}
+          </p>
+        )}
         <div className="flex gap-6">
           <div>
             <span className="text-muted-foreground">{locale === 'pt-BR' ? 'Retorno' : 'Return'}: </span>

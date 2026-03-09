@@ -3,11 +3,14 @@ import { useGame } from '@/context/GameContext';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
 import { Button } from '@/components/ui/button';
-import { AlertTriangle, ShieldAlert, Lightbulb } from 'lucide-react';
+import { AlertTriangle, ShieldAlert, Lightbulb, Briefcase } from 'lucide-react';
 import AssetDetailModal from '@/components/game/AssetDetailModal';
 import RebalancePanel from '@/components/game/RebalancePanel';
 import { generateRecommendations } from '@/engine/recommendations';
 import { INITIAL_CASH } from '@/engine/params';
+import { useNavigate } from 'react-router-dom';
+import ContextualTip from '@/components/game/ContextualTip';
+import { EmptyState } from '@/components/ui/EmptyState';
 
 // Design System
 import { PageHeader } from '@/components/ui/PageHeader';
@@ -31,6 +34,7 @@ const CLASS_COLORS: Record<string, string> = {
 export default function Portfolio() {
   const { state, locale, equity, t } = useGame();
   const [selectedAsset, setSelectedAsset] = useState<string | null>(null);
+  const navigate = useNavigate();
 
   const formatCurrency = (v: number) =>
     new Intl.NumberFormat(locale, { style: 'currency', currency: 'BRL', minimumFractionDigits: 2 }).format(v);
@@ -104,6 +108,20 @@ export default function Portfolio() {
           <KPIChip label={locale === 'pt-BR' ? 'Caixa' : 'Cash'} value={`${(cashWeight * 100).toFixed(1)}%`} />
         </div>
       </PageHeader>
+
+      {positions.length === 0 ? (
+        <EmptyState
+          icon={<Briefcase className="h-12 w-12" />}
+          message={locale === 'pt-BR' ? 'Sua carteira está vazia' : 'Your portfolio is empty'}
+          description={locale === 'pt-BR' ? 'Vá para o Mercado para comprar seus primeiros ativos e começar a investir.' : 'Go to the Market to buy your first assets and start investing.'}
+          action={<Button size="sm" onClick={() => navigate('/market')}>{locale === 'pt-BR' ? 'Ir para Mercado' : 'Go to Market'}</Button>}
+        />
+      ) : (
+      <>
+      <ContextualTip
+        id="portfolio-click-detail"
+        message={locale === 'pt-BR' ? '💡 Clique em uma posição para ver detalhes e histórico do ativo.' : '💡 Click a position to see asset details and history.'}
+      />
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         {/* Left Col: Risco & Macro Allocation */}
@@ -256,6 +274,8 @@ export default function Portfolio() {
           </SectionCard>
         </div>
       </div>
+      </>
+      )}
 
       <AssetDetailModal assetId={selectedAsset} onClose={() => setSelectedAsset(null)} />
     </div>
