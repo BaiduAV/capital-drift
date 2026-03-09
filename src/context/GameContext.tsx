@@ -27,6 +27,7 @@ interface GameContextType {
   reserveIPO: (ticker: string, qty: number) => boolean;
   newGame: (seed?: number) => void;
   switchLocale: () => void;
+  updateMarginCallSettings: (settings: { drawdownThreshold: number; recoveryTarget: number }) => void;
   t: typeof t;
 }
 
