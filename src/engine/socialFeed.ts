@@ -306,6 +306,18 @@ const TEMPLATES_PT: Record<EventType, TemplateSet> = {
     },
     sentiment: 'bearish',
   },
+  MARGIN_CALL: {
+    media: [
+      '🚨 MARGIN CALL: Corretora força liquidação de posições. Drawdown crítico atingido.',
+      '🚨 Investidor recebe margin call. Posições sendo vendidas compulsoriamente.',
+    ],
+    reactions: {
+      naborges: [
+        'Margin call é o pesadelo de todo investidor. Diversificação e controle de risco, pessoal! 🛡️',
+      ],
+    },
+    sentiment: 'bearish',
+  },
   CREDIT_DOWNGRADE: {
     media: [
       '⚠️ Agência rebaixa nota de crédito de emissor. Debêntures sob pressão.',
