@@ -57,12 +57,15 @@ const navItems = [
 ];
 
 export default function AppLayout() {
-  const { state, locale, equity, switchLocale, newGame, t } = useGame();
+  const { state, locale, equity, switchLocale, newGame, updateMarginCallSettings, t } = useGame();
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [theme, setTheme] = useState<AppTheme>(loadTheme);
   const [newGameOpen, setNewGameOpen] = useState(false);
+  const [settingsOpen, setSettingsOpen] = useState(false);
   const [seedInput, setSeedInput] = useState('');
+  const [mcThreshold, setMcThreshold] = useState(() => Math.round(state.marginCallSettings.drawdownThreshold * 100));
+  const [mcRecovery, setMcRecovery] = useState(() => Math.round(state.marginCallSettings.recoveryTarget * 100));
   const location = useLocation();
 
   // Apply theme class to document
