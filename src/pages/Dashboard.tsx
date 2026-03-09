@@ -124,6 +124,10 @@ export default function Dashboard() {
 
   return (
     <div className="space-y-4">
+      <ContextualTip
+        id="dashboard-advance"
+        message={locale === 'pt-BR' ? '💡 Pressione N para avançar um dia ou F para avançar 7 dias.' : '💡 Press N to advance one day or F for 7 days.'}
+      />
       <PageHeader
         title={locale === 'pt-BR' ? 'Visão Geral' : 'Overview'}
         subtitle={narrative}
