@@ -122,11 +122,11 @@ export const DRIFT_VOL: Record<AssetClass, Record<RegimeId, DriftVol>> = {
     CRYPTO_EUPHORIA: { drift: 0.00042, vol: 0.0011 },
   },
   STOCK: {
-    CALM:            { drift: 0.00035, vol: 0.012 },
-    BULL:            { drift: 0.00075, vol: 0.013 },
+    CALM:            { drift: 0.00020, vol: 0.012 },
+    BULL:            { drift: 0.00045, vol: 0.013 },
     BEAR:            { drift: -0.00040, vol: 0.015 },
     CRISIS:          { drift: -0.00120, vol: 0.025 },
-    CRYPTO_EUPHORIA: { drift: 0.00060, vol: 0.014 },
+    CRYPTO_EUPHORIA: { drift: 0.00040, vol: 0.014 },
   },
   ETF: {
     CALM:            { drift: 0.00030, vol: 0.010 },

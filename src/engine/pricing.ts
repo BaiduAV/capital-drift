@@ -17,11 +17,14 @@ export function generateReturns(state: GameState, rng: RNG): Record<string, numb
   // For simplicity since we don't have the T-1 macro state here cleanly without passing it,
   // we proxy the "delta" as the drift + current level deviation. We can just use the current levels 
   // scaled reasonably for the formulas, or rely on macro.riskIndex directly.
+  // Scale level deviations to daily-appropriate magnitudes (basis points, not percentages)
+  // Without scaling, riskOn=0.65 * beta=0.8 = 52% daily return — absurd.
+  const MACRO_DAILY_SCALE = 0.002;
   const macroDelta = {
-    selic: (state.macro.baseRateAnnual - 0.10), // relative to 10%
-    fx: (state.macro.fxUSDBRL - 5.0) / 5.0, // relative to 5.0
-    riskOn: 1.0 - state.macro.riskIndex,
-    commodity: state.macro.activityAnnual * 2.0 // proxy
+    selic: (state.macro.baseRateAnnual - 0.10) * MACRO_DAILY_SCALE,
+    fx: ((state.macro.fxUSDBRL - 5.0) / 5.0) * MACRO_DAILY_SCALE,
+    riskOn: (1.0 - state.macro.riskIndex) * MACRO_DAILY_SCALE,
+    commodity: (state.macro.activityAnnual * 2.0) * MACRO_DAILY_SCALE
   };
 
   const returns: Record<string, number> = {};
