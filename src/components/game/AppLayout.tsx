@@ -37,6 +37,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip
 import OnboardingTutorial, { openTutorial } from '@/components/game/OnboardingTutorial';
 import BottomNav from '@/components/game/BottomNav';
 import { loadTheme, saveTheme, type AppTheme } from '@/engine/persistence';
+import { Slider } from '@/components/ui/slider';
 
 const REGIME_ICON: Record<RegimeId, LucideIcon> = {
   CALM: Smile,
