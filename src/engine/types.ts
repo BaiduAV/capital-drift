@@ -203,4 +203,17 @@ export interface TradeQuote {
   spread: number;
   canExecute: boolean;
   reason?: string; // i18n key if can't execute
+  // Tax fields (sell only)
+  taxBreakdown?: {
+    capitalGain: number;
+    irRate: number;
+    irAmount: number;
+    iofRate: number;
+    iofAmount: number;
+    totalTax: number;
+    netAfterTax: number;
+    isExempt: boolean;
+    exemptionReason?: string;
+    lossOffset: number;
+  };
 }
