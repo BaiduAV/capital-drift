@@ -52,6 +52,7 @@ export interface AssetState {
 export interface Position {
   quantity: number;
   avgPrice: number;
+  avgPurchaseDay?: number; // weighted average purchase day for tax holding period
 }
 
 export interface CreditWatchState {
