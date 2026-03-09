@@ -164,6 +164,8 @@ const translations: Record<Locale, Record<string, string>> = {
     'event.sector_crash.desc': 'Bubble bursts and sector suffers severe collapse.',
     'event.flash_crash.title': 'Crypto Flash Crash ⚡',
     'event.flash_crash.desc': 'Flash crash drops crypto alts between -40% and -80% in a single day.',
+    'event.margin_call.title': '🚨 Margin Call!',
+    'event.margin_call.desc': 'Drawdown of {drawdown}% hit threshold. Positions liquidated: R$ {liquidated}.',
     'event.ipo.title': 'IPO: {company}',
     'event.ipo.desc': '{company} ({ticker}) listed on the exchange in {sector} sector.',
     'event.ipo.announced.title': 'IPO Announced: {company}',
