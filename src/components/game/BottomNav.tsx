@@ -25,7 +25,7 @@ export default function BottomNav() {
   const startTimeRef = useRef(0);
   const triggeredRef = useRef(false);
 
-  const handleAdvance = () => {
+  const handleAdvance = useCallback(() => {
     const r = advanceDay();
     if (r.previousRegime !== r.regime) {
       playRegimeSound(r.regime);
@@ -36,7 +36,7 @@ export default function BottomNav() {
         toast.success(`💰 ${d.assetId}: +${new Intl.NumberFormat(locale, { style: 'currency', currency: 'BRL' }).format(d.amount)}`, { duration: 4000 });
       }
     }
-  };
+  }, [advanceDay, locale, t]);
 
   const handleFastForward = useCallback(() => {
     const r = fastForward(7);
@@ -48,6 +48,9 @@ export default function BottomNav() {
     );
   }, [fastForward, locale]);
 
+  const handleAdvanceRef = useRef(handleAdvance);
+  handleAdvanceRef.current = handleAdvance;
+
   const animateProgress = useCallback(() => {
     const elapsed = Date.now() - startTimeRef.current;
     const progress = Math.min((elapsed / LONG_PRESS_DURATION) * 100, 100);
@@ -55,7 +58,6 @@ export default function BottomNav() {
 
     if (progress >= 100 && !triggeredRef.current) {
       triggeredRef.current = true;
-      // Haptic feedback via Vibration API
       if (navigator.vibrate) navigator.vibrate(50);
       handleFastForward();
       setIsHolding(false);
@@ -81,8 +83,7 @@ export default function BottomNav() {
     animRef.current = null;
 
     if (!triggeredRef.current) {
-      // Short tap — advance 1 day
-      handleAdvance();
+      handleAdvanceRef.current();
     }
 
     setIsHolding(false);
