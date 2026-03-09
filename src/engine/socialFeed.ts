@@ -627,6 +627,18 @@ const TEMPLATES_EN: Record<EventType, TemplateSet> = {
     },
     sentiment: 'bearish',
   },
+  MARGIN_CALL: {
+    media: [
+      '🚨 MARGIN CALL: Broker forces position liquidation. Critical drawdown reached.',
+      '🚨 Investor receives margin call. Positions being forcibly sold.',
+    ],
+    reactions: {
+      naborges: [
+        'Margin call is every investor\'s nightmare. Diversification and risk control, people! 🛡️',
+      ],
+    },
+    sentiment: 'bearish',
+  },
   CREDIT_DOWNGRADE: {
     media: [
       '⚠️ Rating agency downgrades credit issuer. Corporate bonds under pressure.',
