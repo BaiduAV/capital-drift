@@ -143,6 +143,15 @@ export default function AppLayout() {
         <Button
           variant="ghost"
           size="sm"
+          className="w-full justify-start gap-2 text-xs text-muted-foreground hover:text-foreground"
+          onClick={() => setSettingsOpen(true)}
+        >
+          <Settings className="h-3.5 w-3.5" />
+          {(!collapsed || mobileOpen) && <span>{locale === 'pt-BR' ? 'Configurações' : 'Settings'}</span>}
+        </Button>
+        <Button
+          variant="ghost"
+          size="sm"
           className="w-full justify-start gap-2 text-xs text-muted-foreground hover:text-destructive"
           onClick={() => { setSeedInput(''); setNewGameOpen(true); }}
         >
