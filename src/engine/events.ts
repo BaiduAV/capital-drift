@@ -227,7 +227,7 @@ function generateSingleEvent(state: GameState, rng: RNG): EventCard | null {
     CRYPTO_HACK: 'crypto_hack', CRYPTO_EUPHORIA_EVENT: 'crypto_euphoria',
     CRYPTO_RUG_PULL: 'crypto_rug_pull', CREDIT_DOWNGRADE: 'credit_downgrade',
     FX_SHOCK: 'fx_shock', FISCAL_STRESS: 'fiscal_stress', COMMODITY_BOOM: 'commodity_boom',
-    SECTOR_CRASH: 'sector_crash',
+    SECTOR_CRASH: 'sector_crash', FLASH_CRASH: 'flash_crash',
     IPO_ANNOUNCED: 'ipo.announced', IPO_BOOKBUILDING: 'ipo.bookbuilding', IPO_LISTED: 'ipo.listed',
   };
 

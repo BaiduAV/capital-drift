@@ -12,6 +12,7 @@ const eventMeta: Record<EventType, { icon: string; colorClass: string }> = {
   CRYPTO_HACK:            { icon: '🔓', colorClass: 'text-terminal-red' },
   CRYPTO_EUPHORIA_EVENT:  { icon: '🎉', colorClass: 'text-terminal-amber' },
   CRYPTO_RUG_PULL:        { icon: '💀', colorClass: 'text-terminal-red' },
+  FLASH_CRASH:            { icon: '⚡', colorClass: 'text-terminal-red' },
   CREDIT_DOWNGRADE:       { icon: '⚠️', colorClass: 'text-terminal-amber' },
   FX_SHOCK:               { icon: '💵', colorClass: 'text-terminal-red' },
   FISCAL_STRESS:          { icon: '🏛️', colorClass: 'text-terminal-red' },
