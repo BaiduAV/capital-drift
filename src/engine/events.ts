@@ -207,6 +207,17 @@ function generateSingleEvent(state: GameState, rng: RNG): EventCard | null {
       vars = { sector };
       break;
     }
+    case 'FLASH_CRASH': {
+      // Flash crash: all crypto alts drop -40% to -80%, majors take a smaller hit
+      for (const [id, def] of Object.entries(state.assetCatalog)) {
+        if (def.class === 'CRYPTO_ALT') impact[id] = randRange(rng, EVENT_IMPACTS.flashCrash.altShock as [number, number]);
+        if (def.class === 'CRYPTO_MAJOR') impact[id] = randRange(rng, EVENT_IMPACTS.flashCrash.majorShock as [number, number]);
+      }
+      const riskD = randRange(rng, EVENT_IMPACTS.flashCrash.riskDelta as [number, number]);
+      macroImpact = { riskDelta: riskD };
+      magnitude = 0.60;
+      break;
+    }
   }
 
   const typeToKey: Record<EventType, string> = {
