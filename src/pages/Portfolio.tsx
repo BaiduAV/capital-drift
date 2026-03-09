@@ -109,6 +109,20 @@ export default function Portfolio() {
         </div>
       </PageHeader>
 
+      {positions.length === 0 ? (
+        <EmptyState
+          icon={<Briefcase className="h-12 w-12" />}
+          message={locale === 'pt-BR' ? 'Sua carteira está vazia' : 'Your portfolio is empty'}
+          description={locale === 'pt-BR' ? 'Vá para o Mercado para comprar seus primeiros ativos e começar a investir.' : 'Go to the Market to buy your first assets and start investing.'}
+          action={<Button size="sm" onClick={() => navigate('/market')}>{locale === 'pt-BR' ? 'Ir para Mercado' : 'Go to Market'}</Button>}
+        />
+      ) : (
+      <>
+      <ContextualTip
+        id="portfolio-click-detail"
+        message={locale === 'pt-BR' ? '💡 Clique em uma posição para ver detalhes e histórico do ativo.' : '💡 Click a position to see asset details and history.'}
+      />
+
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         {/* Left Col: Risco & Macro Allocation */}
         <div className="space-y-4 lg:col-span-1">
