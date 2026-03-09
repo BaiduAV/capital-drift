@@ -45,6 +45,8 @@ export function loadGame(): GameState | null {
     if (state.macro.activityAnnual === undefined) state.macro.activityAnnual = 0.02;
     if (state.macro.riskIndex === undefined) state.macro.riskIndex = 0.35;
     if (!state.achievements) state.achievements = {};
+    if (!Array.isArray(state.ipoPipeline)) state.ipoPipeline = [];
+    if (!state.market) state.market = { sectors: {}, newListingsCount: {} };
     return state;
   } catch {
     return null;
