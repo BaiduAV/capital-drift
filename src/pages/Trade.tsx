@@ -108,19 +108,20 @@ export default function Trade() {
     if (!assetId || qty <= 0) return;
     const result = side === 'buy' ? buy(assetId, qty) : sell(assetId, qty);
     if (result.success) {
+      const newEquity = Object.entries(state.portfolio).reduce((sum, [id, pos]) => sum + pos.quantity * state.assets[id].price, 0) + state.cash;
       toast.success(
         locale === 'pt-BR'
-          ? `${side === 'buy' ? 'Compra' : 'Venda'} de ${qty}× ${assetId} executada!`
-          : `${side === 'buy' ? 'Bought' : 'Sold'} ${qty}× ${assetId}!`
+          ? `${side === 'buy' ? 'Compra' : 'Venda'} de ${qty}× ${assetId} executada! Patrimônio: ${formatCompact(newEquity)}`
+          : `${side === 'buy' ? 'Bought' : 'Sold'} ${qty}× ${assetId}! Equity: ${formatCompact(newEquity)}`
       );
       setFlashId({ id: assetId, side });
-      setTimeout(() => setFlashId(null), 1200);
+      setTimeout(() => setFlashId(null), 1500);
       setQuantity('');
       if (isMobile) setMobileDrawerOpen(false);
     } else {
       toast.error(result.quote.reason ? t(result.quote.reason) : 'Trade failed');
     }
-  }, [assetId, qty, side, buy, sell, locale, t, isMobile]);
+  }, [assetId, qty, side, buy, sell, locale, t, isMobile, state.portfolio, state.assets, state.cash, formatCompact]);
 
   const handleTradeClick = () => {
     if (liveQuote && liveQuote.canExecute) {
