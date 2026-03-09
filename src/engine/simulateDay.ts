@@ -12,6 +12,7 @@ import { rollEvents, applyEventMacro, mergeEventImpacts } from './events';
 import { processCreditWatchAndDefaults } from './credit';
 import { applyDividendsAndDistributions } from './dividends';
 import { checkInvariants, computeEquity } from './invariants';
+import { checkAndExecuteMarginCall } from './marginCall';
 import { IPO } from './params';
 
 export interface SimulateDayOptions {
