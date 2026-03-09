@@ -105,6 +105,11 @@ export default function Trade() {
 
   const [ipoReserveQty, setIpoReserveQty] = useState<Record<string, string>>({});
 
+  const fmtCompact = (v: number) =>
+    Math.abs(v) >= 1_000_000
+      ? new Intl.NumberFormat(locale, { style: 'currency', currency: 'BRL', notation: 'compact', maximumFractionDigits: 2 }).format(v)
+      : new Intl.NumberFormat(locale, { style: 'currency', currency: 'BRL', minimumFractionDigits: 2 }).format(v);
+
   const handleExecute = useCallback(() => {
     if (!assetId || qty <= 0) return;
     const result = side === 'buy' ? buy(assetId, qty) : sell(assetId, qty);
@@ -112,8 +117,8 @@ export default function Trade() {
       const newEquity = Object.entries(state.portfolio).reduce((sum, [id, pos]) => sum + pos.quantity * state.assets[id].price, 0) + state.cash;
       toast.success(
         locale === 'pt-BR'
-          ? `${side === 'buy' ? 'Compra' : 'Venda'} de ${qty}× ${assetId} executada! Patrimônio: ${formatCompact(newEquity)}`
-          : `${side === 'buy' ? 'Bought' : 'Sold'} ${qty}× ${assetId}! Equity: ${formatCompact(newEquity)}`
+          ? `${side === 'buy' ? 'Compra' : 'Venda'} de ${qty}× ${assetId} executada! Patrimônio: ${fmtCompact(newEquity)}`
+          : `${side === 'buy' ? 'Bought' : 'Sold'} ${qty}× ${assetId}! Equity: ${fmtCompact(newEquity)}`
       );
       setFlashId({ id: assetId, side });
       setTimeout(() => setFlashId(null), 1500);
@@ -122,7 +127,7 @@ export default function Trade() {
     } else {
       toast.error(result.quote.reason ? t(result.quote.reason) : 'Trade failed');
     }
-  }, [assetId, qty, side, buy, sell, locale, t, isMobile, state.portfolio, state.assets, state.cash, formatCompact]);
+  }, [assetId, qty, side, buy, sell, locale, t, isMobile, state.portfolio, state.assets, state.cash, fmtCompact]);
 
   const handleTradeClick = () => {
     if (liveQuote && liveQuote.canExecute) {
