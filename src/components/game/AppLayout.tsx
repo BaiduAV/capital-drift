@@ -266,8 +266,8 @@ export default function AppLayout() {
           </div>
         </header>
 
-        {/* Page content */}
-        <main className="flex-1 overflow-auto p-3 sm:p-4 scrollbar-terminal">
+        {/* Page content — extra bottom padding on mobile for BottomNav */}
+        <main className="flex-1 overflow-auto p-3 sm:p-4 pb-20 md:pb-4 scrollbar-terminal">
           <Outlet />
         </main>
 
