@@ -39,6 +39,7 @@ function generateSingleEvent(state: GameState, rng: RNG): EventCard | null {
     ['CRYPTO_HACK', regime === 'CRISIS' ? 2 : 0.5],
     ['CRYPTO_EUPHORIA_EVENT', regime === 'CRYPTO_EUPHORIA' ? 4 : 0.3],
     ['CRYPTO_RUG_PULL', 0.15],
+    ['FLASH_CRASH', 0.03], // Very rare ~0.03 base weight
     ['CREDIT_DOWNGRADE', regime === 'CRISIS' ? 2 : 0.5],
     ['FX_SHOCK', regime === 'CRISIS' ? 3 : regime === 'BEAR' ? 2 : 0.5],
     ['FISCAL_STRESS', regime === 'CRISIS' ? 3 : regime === 'BEAR' ? 2 : 0.3],
