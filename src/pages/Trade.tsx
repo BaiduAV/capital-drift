@@ -25,6 +25,7 @@ import { PageHeader } from '@/components/ui/PageHeader';
 import { SectionCard } from '@/components/ui/SectionCard';
 import { KPIChip } from '@/components/ui/KPIChip';
 import { Sparkline } from '@/components/ui/Sparkline';
+import ContextualTip from '@/components/game/ContextualTip';
 
 type ClassFilter = 'ALL' | 'STOCK' | 'FII' | 'ETF' | 'RF' | 'CRYPTO' | 'FX';
 
