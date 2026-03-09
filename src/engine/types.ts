@@ -95,6 +95,7 @@ export interface GameState {
   };
   ipoPipeline: IPOPipelineEntry[];
   achievements: Record<string, { unlockedAtDay: number }>;
+  marginCallSettings: { drawdownThreshold: number; recoveryTarget: number };
 }
 
 export interface IPOPipelineEntry {

@@ -51,6 +51,10 @@ export function createGameState(seed: number): GameState {
     },
     ipoPipeline: [],
     achievements: {},
+    marginCallSettings: {
+      drawdownThreshold: MARGIN_CALL.drawdownThreshold,
+      recoveryTarget: MARGIN_CALL.recoveryTarget,
+    },
   };
 
   // Initialize per-asset dividend schedules
