@@ -292,6 +292,20 @@ const TEMPLATES_PT: Record<EventType, TemplateSet> = {
     },
     sentiment: 'bearish',
   },
+  FLASH_CRASH: {
+    media: [
+      '⚡ FLASH CRASH: Mercado cripto derrete em minutos. Alts perdem até 80% do valor.',
+      '⚡ Crash relâmpago: liquidações em cascata varrem o mercado cripto. Caos total.',
+      '⚡ URGENTE: Flash crash cripto. Exchanges suspensas, alts em queda livre.',
+    ],
+    reactions: {
+      felipecripto: [
+        'Isso é LOUCURA. Flash crash assim eu nunca vi. Quem tava alavancado perdeu TUDO. 😱',
+        'Flash crash brutal. Momento de ficar quieto e esperar a poeira baixar. NÃO comprem ainda! ⚠️',
+      ],
+    },
+    sentiment: 'bearish',
+  },
   CREDIT_DOWNGRADE: {
     media: [
       '⚠️ Agência rebaixa nota de crédito de emissor. Debêntures sob pressão.',
