@@ -268,7 +268,7 @@ export default function Trade() {
               {locale === 'pt-BR' ? 'Quantidade' : 'Quantity'}
             </label>
             <div className="flex items-center gap-1.5 mt-1">
-              <Button variant="outline" size="icon" className="h-9 w-9 shrink-0" onClick={() => setQuantity(String(Math.max(0, qty - 1)))}>
+              <Button variant="outline" size="icon" className="h-9 w-9 shrink-0" onClick={() => setQuantity(String(Math.max(0, qty - 1)))} aria-label={locale === 'pt-BR' ? 'Diminuir quantidade' : 'Decrease quantity'}>
                 <span className="text-sm font-mono font-bold">−</span>
               </Button>
               <Input
