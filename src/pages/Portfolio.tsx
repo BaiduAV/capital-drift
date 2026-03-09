@@ -34,6 +34,7 @@ const CLASS_COLORS: Record<string, string> = {
 export default function Portfolio() {
   const { state, locale, equity, t } = useGame();
   const [selectedAsset, setSelectedAsset] = useState<string | null>(null);
+  const navigate = useNavigate();
 
   const formatCurrency = (v: number) =>
     new Intl.NumberFormat(locale, { style: 'currency', currency: 'BRL', minimumFractionDigits: 2 }).format(v);
