@@ -255,13 +255,22 @@ export default function Trade() {
               {(() => {
                 const pnl = (selectedAsset.price - position.avgPrice) * position.quantity;
                 const pnlPct = (selectedAsset.price / position.avgPrice - 1);
+                const holdingDays = Math.max(0, state.dayIndex - (position.avgPurchaseDay ?? state.dayIndex));
                 return (
-                  <div className="flex justify-between mt-0.5">
-                    <span className="text-muted-foreground">P&L</span>
-                    <span className={pnl >= 0 ? 'price-up' : 'price-down'}>
-                      {formatCurrency(pnl)} ({formatPct(pnlPct)})
-                    </span>
-                  </div>
+                  <>
+                    <div className="flex justify-between mt-0.5">
+                      <span className="text-muted-foreground">P&L</span>
+                      <span className={pnl >= 0 ? 'price-up' : 'price-down'}>
+                        {formatCurrency(pnl)} ({formatPct(pnlPct)})
+                      </span>
+                    </div>
+                    {holdingDays > 0 && (
+                      <div className="flex justify-between mt-0.5">
+                        <span className="text-muted-foreground">{t('tax.holding_days')}</span>
+                        <span className="text-foreground">{holdingDays}d</span>
+                      </div>
+                    )}
+                  </>
                 );
               })()}
             </div>
@@ -337,13 +346,67 @@ export default function Trade() {
                 <span>{side === 'buy' ? (locale === 'pt-BR' ? 'Custo total' : 'Total cost') : (locale === 'pt-BR' ? 'Valor líquido' : 'Net proceeds')}</span>
                 <span>{formatCurrency(liveQuote.totalCost)}</span>
               </div>
+
+              {/* Tax breakdown (sell only) */}
+              {side === 'sell' && liveQuote.taxBreakdown && (
+                <div className="border-t border-border/30 pt-1.5 space-y-1">
+                  {liveQuote.taxBreakdown.capitalGain !== 0 && (
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">{t('tax.capital_gain')}</span>
+                      <span className={liveQuote.taxBreakdown.capitalGain >= 0 ? 'price-up' : 'price-down'}>
+                        {formatCurrency(liveQuote.taxBreakdown.capitalGain)}
+                      </span>
+                    </div>
+                  )}
+                  {liveQuote.taxBreakdown.isExempt && liveQuote.taxBreakdown.exemptionReason && (
+                    <div className="flex items-center gap-1 text-[10px] text-[hsl(var(--terminal-green))]">
+                      ✓ {t(liveQuote.taxBreakdown.exemptionReason)}
+                    </div>
+                  )}
+                  {liveQuote.taxBreakdown.irAmount > 0.01 && (
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">
+                        {t('tax.ir')} ({(liveQuote.taxBreakdown.irRate * 100).toFixed(1)}%)
+                      </span>
+                      <span className="text-[hsl(var(--terminal-red))]">
+                        −{formatCurrency(liveQuote.taxBreakdown.irAmount)}
+                      </span>
+                    </div>
+                  )}
+                  {liveQuote.taxBreakdown.iofAmount > 0.01 && (
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">
+                        {t('tax.iof')} ({(liveQuote.taxBreakdown.iofRate * 100).toFixed(0)}%)
+                      </span>
+                      <span className="text-[hsl(var(--terminal-red))]">
+                        −{formatCurrency(liveQuote.taxBreakdown.iofAmount)}
+                      </span>
+                    </div>
+                  )}
+                  {liveQuote.taxBreakdown.lossOffset > 0.01 && (
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">{t('tax.loss_offset')}</span>
+                      <span className="text-[hsl(var(--terminal-green))]">
+                        +{formatCurrency(liveQuote.taxBreakdown.lossOffset)}
+                      </span>
+                    </div>
+                  )}
+                  {liveQuote.taxBreakdown.totalTax > 0.01 && (
+                    <div className="flex justify-between font-semibold text-foreground">
+                      <span>{t('tax.net_after_tax')}</span>
+                      <span>{formatCurrency(liveQuote.taxBreakdown.netAfterTax)}</span>
+                    </div>
+                  )}
+                </div>
+              )}
+
               <div className="flex justify-between">
                 <span className="text-muted-foreground">{locale === 'pt-BR' ? 'Caixa após' : 'Cash after'}</span>
                 <span className={
-                  (side === 'buy' ? state.cash - liveQuote.totalCost : state.cash + liveQuote.totalCost) < 0
+                  (side === 'buy' ? state.cash - liveQuote.totalCost : state.cash + (liveQuote.taxBreakdown?.netAfterTax ?? liveQuote.totalCost)) < 0
                     ? 'text-destructive' : 'text-foreground'
                 }>
-                  {formatCurrency(side === 'buy' ? state.cash - liveQuote.totalCost : state.cash + liveQuote.totalCost)}
+                  {formatCurrency(side === 'buy' ? state.cash - liveQuote.totalCost : state.cash + (liveQuote.taxBreakdown?.netAfterTax ?? liveQuote.totalCost))}
                 </span>
               </div>
               {!liveQuote.canExecute && liveQuote.reason && (
@@ -644,10 +707,21 @@ export default function Trade() {
                       <span className="text-muted-foreground">{side === 'buy' ? (locale === 'pt-BR' ? 'Custo total' : 'Total cost') : (locale === 'pt-BR' ? 'Valor líquido' : 'Net proceeds')}</span>
                       <span className="text-foreground">{formatCurrency(liveQuote.totalCost)}</span>
                     </div>
+                    {side === 'sell' && liveQuote.taxBreakdown && liveQuote.taxBreakdown.totalTax > 0.01 && (
+                      <div className="flex justify-between text-[hsl(var(--terminal-red))]">
+                        <span>{t('tax.total_tax')}</span>
+                        <span>−{formatCurrency(liveQuote.taxBreakdown.totalTax)}</span>
+                      </div>
+                    )}
+                    {side === 'sell' && liveQuote.taxBreakdown && liveQuote.taxBreakdown.isExempt && liveQuote.taxBreakdown.exemptionReason && (
+                      <div className="text-[10px] text-[hsl(var(--terminal-green))]">
+                        ✓ {t(liveQuote.taxBreakdown.exemptionReason)}
+                      </div>
+                    )}
                     <div className="flex justify-between">
                       <span className="text-muted-foreground">{locale === 'pt-BR' ? 'Caixa após' : 'Cash after'}</span>
                       <span className="text-foreground">
-                        {formatCurrency(side === 'buy' ? state.cash - liveQuote.totalCost : state.cash + liveQuote.totalCost)}
+                        {formatCurrency(side === 'buy' ? state.cash - liveQuote.totalCost : state.cash + (liveQuote.taxBreakdown?.netAfterTax ?? liveQuote.totalCost))}
                       </span>
                     </div>
                   </>

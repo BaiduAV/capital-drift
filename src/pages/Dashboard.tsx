@@ -18,6 +18,7 @@ import QuickActions from '@/components/game/QuickActions';
 import DividendCalendar from '@/components/game/DividendCalendar';
 import RebalancePanel from '@/components/game/RebalancePanel';
 import ContextualTip from '@/components/game/ContextualTip';
+import FiscalSummary from '@/components/game/FiscalSummary';
 
 // New Design System imports
 import { PageHeader } from '@/components/ui/PageHeader';
@@ -251,6 +252,7 @@ export default function Dashboard() {
         </SectionCard>
         <div className="flex flex-col gap-3">
           <RebalancePanel />
+          <FiscalSummary />
           <DividendCalendar />
           <PortfolioHealth />
         </div>

@@ -2,6 +2,7 @@
 
 import type { GameState, TradeQuote } from './types';
 import { COSTS } from './params';
+import { calculateSellTax, applyTaxOnSell } from './taxes';
 
 export function quoteBuy(state: GameState, assetId: string, quantity: number): TradeQuote {
   if (quantity <= 0) {
@@ -77,16 +78,37 @@ export function quoteSell(state: GameState, assetId: string, quantity: number): 
   const unitPrice = asset.price * (1 - spreadRate);
   const subtotal = unitPrice * quantity;
   const fees = subtotal * feeRate;
-  const totalCost = subtotal - fees; // net proceeds
+  const totalCost = subtotal - fees; // net proceeds before tax
 
-  return { assetId, quantity, unitPrice, totalCost, fees, spread: spreadRate, canExecute: true };
+  // Calculate tax estimate
+  const taxResult = calculateSellTax(state, assetId, quantity, unitPrice);
+
+  return {
+    assetId, quantity, unitPrice, totalCost, fees, spread: spreadRate, canExecute: true,
+    taxBreakdown: {
+      capitalGain: taxResult.capitalGain,
+      irRate: taxResult.irRate,
+      irAmount: taxResult.irAmount,
+      iofRate: taxResult.iofRate,
+      iofAmount: taxResult.iofAmount,
+      totalTax: taxResult.totalTax,
+      netAfterTax: totalCost - taxResult.totalTax,
+      isExempt: taxResult.isExempt,
+      exemptionReason: taxResult.exemptionReason,
+      lossOffset: taxResult.lossOffset,
+    },
+  };
 }
 
 export function executeBuy(state: GameState, quote: TradeQuote): boolean {
   if (!quote.canExecute) return false;
   state.cash -= quote.totalCost;
-  const pos = state.portfolio[quote.assetId] ?? { quantity: 0, avgPrice: 0 };
+  const pos = state.portfolio[quote.assetId] ?? { quantity: 0, avgPrice: 0, avgPurchaseDay: state.dayIndex };
   const totalQty = pos.quantity + quote.quantity;
+  // Update weighted average purchase day
+  pos.avgPurchaseDay = totalQty > 0
+    ? ((pos.avgPurchaseDay ?? state.dayIndex) * pos.quantity + state.dayIndex * quote.quantity) / totalQty
+    : state.dayIndex;
   pos.avgPrice = totalQty > 0
     ? (pos.avgPrice * pos.quantity + quote.unitPrice * quote.quantity) / totalQty
     : 0;
@@ -97,7 +119,9 @@ export function executeBuy(state: GameState, quote: TradeQuote): boolean {
 
 export function executeSell(state: GameState, quote: TradeQuote): boolean {
   if (!quote.canExecute) return false;
-  state.cash += quote.totalCost;
+  // Apply tax (deducts from cash and updates taxState)
+  applyTaxOnSell(state, quote.assetId, quote.quantity, quote.unitPrice);
+  state.cash += quote.totalCost; // net proceeds before tax (tax already deducted by applyTaxOnSell)
   const pos = state.portfolio[quote.assetId]!;
   pos.quantity -= quote.quantity;
   if (pos.quantity <= 0) {

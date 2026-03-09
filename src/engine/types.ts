@@ -52,6 +52,7 @@ export interface AssetState {
 export interface Position {
   quantity: number;
   avgPrice: number;
+  avgPurchaseDay?: number; // weighted average purchase day for tax holding period
 }
 
 export interface CreditWatchState {
@@ -75,6 +76,13 @@ export interface CalendarState {
   nextStockPayDay: number;
 }
 
+export interface TaxState {
+  totalIRPaid: number;
+  totalIOFPaid: number;
+  accumulatedLosses: Partial<Record<string, number>>;
+  monthlySales: Record<number, number>;
+}
+
 export interface GameState {
   dayIndex: number;
   cash: number;
@@ -96,6 +104,7 @@ export interface GameState {
   ipoPipeline: IPOPipelineEntry[];
   achievements: Record<string, { unlockedAtDay: number }>;
   marginCallSettings: { drawdownThreshold: number; recoveryTarget: number };
+  taxState?: TaxState;
 }
 
 export interface IPOPipelineEntry {
@@ -194,4 +203,17 @@ export interface TradeQuote {
   spread: number;
   canExecute: boolean;
   reason?: string; // i18n key if can't execute
+  // Tax fields (sell only)
+  taxBreakdown?: {
+    capitalGain: number;
+    irRate: number;
+    irAmount: number;
+    iofRate: number;
+    iofAmount: number;
+    totalTax: number;
+    netAfterTax: number;
+    isExempt: boolean;
+    exemptionReason?: string;
+    lossOffset: number;
+  };
 }
