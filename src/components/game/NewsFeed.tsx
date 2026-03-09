@@ -20,6 +20,7 @@ const eventMeta: Record<EventType, { icon: string; colorClass: string }> = {
   IPO_ANNOUNCED:          { icon: '📋', colorClass: 'text-terminal-amber' },
   IPO_BOOKBUILDING:       { icon: '📊', colorClass: 'text-terminal-amber' },
   IPO_LISTED:             { icon: '🏦', colorClass: 'text-terminal-green' },
+  MARGIN_CALL:            { icon: '🚨', colorClass: 'text-terminal-red' },
 };
 
 interface NewsItem {

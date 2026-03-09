@@ -239,6 +239,12 @@ export const IPO = {
   popRange: { low: -0.05, high: 0.20 },
 };
 
+// ── L. Margin Call ──
+export const MARGIN_CALL = {
+  drawdownThreshold: 0.50, // trigger at 50% drawdown from peak
+  recoveryTarget: 0.40,    // sell until drawdown is reduced to 40%
+};
+
 // ── J. Macro-to-pricing tilt coefficients ──
 export const MACRO_TILT = {
   equityActivityCoeff: 0.008,   // positive activity boosts equity

@@ -306,6 +306,18 @@ const TEMPLATES_PT: Record<EventType, TemplateSet> = {
     },
     sentiment: 'bearish',
   },
+  MARGIN_CALL: {
+    media: [
+      '🚨 MARGIN CALL: Corretora força liquidação de posições. Drawdown crítico atingido.',
+      '🚨 Investidor recebe margin call. Posições sendo vendidas compulsoriamente.',
+    ],
+    reactions: {
+      naborges: [
+        'Margin call é o pesadelo de todo investidor. Diversificação e controle de risco, pessoal! 🛡️',
+      ],
+    },
+    sentiment: 'bearish',
+  },
   CREDIT_DOWNGRADE: {
     media: [
       '⚠️ Agência rebaixa nota de crédito de emissor. Debêntures sob pressão.',
@@ -611,6 +623,18 @@ const TEMPLATES_EN: Record<EventType, TemplateSet> = {
       felipecripto: [
         'This is INSANE. Never seen a flash crash like this. Leveraged traders got wiped. 😱',
         'Brutal flash crash. Stay calm and wait for the dust to settle. Do NOT buy yet! ⚠️',
+      ],
+    },
+    sentiment: 'bearish',
+  },
+  MARGIN_CALL: {
+    media: [
+      '🚨 MARGIN CALL: Broker forces position liquidation. Critical drawdown reached.',
+      '🚨 Investor receives margin call. Positions being forcibly sold.',
+    ],
+    reactions: {
+      naborges: [
+        'Margin call is every investor\'s nightmare. Diversification and risk control, people! 🛡️',
       ],
     },
     sentiment: 'bearish',

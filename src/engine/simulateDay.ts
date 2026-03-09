@@ -12,6 +12,7 @@ import { rollEvents, applyEventMacro, mergeEventImpacts } from './events';
 import { processCreditWatchAndDefaults } from './credit';
 import { applyDividendsAndDistributions } from './dividends';
 import { checkInvariants, computeEquity } from './invariants';
+import { checkAndExecuteMarginCall } from './marginCall';
 import { IPO } from './params';
 
 export interface SimulateDayOptions {
@@ -328,6 +329,22 @@ function phaseAccountingAndMetrics(
   // 11b. Apply bankruptcies
   for (const [id, a] of Object.entries(next.assets)) {
     maybeBankruptAsset(id, a, next, ctx.rng.market);
+  }
+
+  // 11c. Margin call check
+  const marginResult = checkAndExecuteMarginCall(next);
+  if (marginResult.triggered && marginResult.event) {
+    const mcEvent: PersistentEvent = {
+      id: `margin_call_${next.dayIndex}`,
+      card: marginResult.event,
+      startedAtDay: next.dayIndex,
+      durationDays: 1,
+    };
+    generatedEvents.push(mcEvent);
+    next.events.active.push(mcEvent);
+    // Recalculate equity after forced liquidation
+    const equityAfterMC = computeEquity(next);
+    next.history.equity[next.history.equity.length - 1] = equityAfterMC;
   }
 
   // Invariants checking
