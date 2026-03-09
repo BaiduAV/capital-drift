@@ -389,6 +389,11 @@ export default function Trade() {
         <KPIChip label={locale === 'pt-BR' ? 'Caixa' : 'Cash'} value={formatCompact(state.cash)} />
       </PageHeader>
 
+      <ContextualTip
+        id="trade-quick-qty"
+        message={locale === 'pt-BR' ? '💡 Use os botões 25%, 50%, 75%, MAX para definir quantidade rapidamente.' : '💡 Use the 25%, 50%, 75%, MAX buttons to set quantity quickly.'}
+      />
+
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-4">
         {/* Left: Asset List */}
         <div className="lg:col-span-3 space-y-3">
