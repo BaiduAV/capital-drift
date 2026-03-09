@@ -596,7 +596,7 @@ export default function Trade() {
       {isMobile && assetId && !mobileDrawerOpen && (
         <button
           onClick={() => setMobileDrawerOpen(true)}
-          className="fixed bottom-6 right-6 z-40 h-14 w-14 rounded-full bg-primary text-primary-foreground shadow-lg flex items-center justify-center hover:bg-primary/90 transition-colors"
+          className="fixed bottom-[8.5rem] right-4 z-40 h-14 w-14 rounded-full bg-primary text-primary-foreground shadow-lg flex items-center justify-center hover:bg-primary/90 transition-colors md:bottom-6 md:right-6"
           aria-label={locale === 'pt-BR' ? 'Abrir ordem' : 'Open order'}
         >
           <ShoppingCart className="h-6 w-6" />
