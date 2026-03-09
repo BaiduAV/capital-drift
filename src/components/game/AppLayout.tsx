@@ -26,6 +26,7 @@ import {
   Smile,
   Rocket,
   ShieldAlert,
+  Settings,
   type LucideIcon,
 } from 'lucide-react';
 import type { RegimeId } from '@/engine/types';
