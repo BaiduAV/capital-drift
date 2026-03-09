@@ -3,7 +3,7 @@ import { useGame } from '@/context/GameContext';
 import { INITIAL_CASH } from '@/engine/params';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Play, FastForward, AlertTriangle, TrendingUp, TrendingDown, Keyboard } from 'lucide-react';
+import { Play, FastForward, AlertTriangle, TrendingUp, TrendingDown, Keyboard, X } from 'lucide-react';
 import { toast } from 'sonner';
 import type { DayResult, PeriodResult } from '@/engine/types';
 import { useNavigate } from 'react-router-dom';
@@ -17,6 +17,7 @@ import PortfolioHealth from '@/components/game/PortfolioHealth';
 import QuickActions from '@/components/game/QuickActions';
 import DividendCalendar from '@/components/game/DividendCalendar';
 import RebalancePanel from '@/components/game/RebalancePanel';
+import ContextualTip from '@/components/game/ContextualTip';
 
 // New Design System imports
 import { PageHeader } from '@/components/ui/PageHeader';
