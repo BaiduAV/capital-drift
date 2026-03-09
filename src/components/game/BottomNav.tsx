@@ -55,6 +55,8 @@ export default function BottomNav() {
 
     if (progress >= 100 && !triggeredRef.current) {
       triggeredRef.current = true;
+      // Haptic feedback via Vibration API
+      if (navigator.vibrate) navigator.vibrate(50);
       handleFastForward();
       setIsHolding(false);
       setHoldProgress(0);
