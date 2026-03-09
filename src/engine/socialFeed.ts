@@ -48,7 +48,7 @@ const MEDIA_CHANNELS: MediaChannel[] = [
     handle: 'CoinDeskBR',
     displayName: 'CoinDesk Brasil',
     avatarEmoji: '₿',
-    coverage: ['CRYPTO_HACK', 'CRYPTO_EUPHORIA_EVENT', 'CRYPTO_RUG_PULL'],
+    coverage: ['CRYPTO_HACK', 'CRYPTO_EUPHORIA_EVENT', 'CRYPTO_RUG_PULL', 'FLASH_CRASH'],
   },
   {
     handle: 'ExameBiz',
@@ -87,7 +87,7 @@ const INFLUENCERS: Influencer[] = [
     handle: 'felipecripto',
     displayName: 'Felipe Crypto',
     avatarEmoji: '🚀',
-    specialty: ['CRYPTO_HACK', 'CRYPTO_EUPHORIA_EVENT', 'CRYPTO_RUG_PULL'],
+    specialty: ['CRYPTO_HACK', 'CRYPTO_EUPHORIA_EVENT', 'CRYPTO_RUG_PULL', 'FLASH_CRASH'],
     tone: 'hype',
   },
   {
@@ -288,6 +288,20 @@ const TEMPLATES_PT: Record<EventType, TemplateSet> = {
       felipecripto: [
         'Triste, mas previsível. DYOR, galera! Nunca coloquem tudo em um token só. Diversifiquem! 🧠',
         'Mais um rug pull... É por isso que eu só recomendo BTC e ETH pra quem tá começando. O resto é cassino. 🎰',
+      ],
+    },
+    sentiment: 'bearish',
+  },
+  FLASH_CRASH: {
+    media: [
+      '⚡ FLASH CRASH: Mercado cripto derrete em minutos. Alts perdem até 80% do valor.',
+      '⚡ Crash relâmpago: liquidações em cascata varrem o mercado cripto. Caos total.',
+      '⚡ URGENTE: Flash crash cripto. Exchanges suspensas, alts em queda livre.',
+    ],
+    reactions: {
+      felipecripto: [
+        'Isso é LOUCURA. Flash crash assim eu nunca vi. Quem tava alavancado perdeu TUDO. 😱',
+        'Flash crash brutal. Momento de ficar quieto e esperar a poeira baixar. NÃO comprem ainda! ⚠️',
       ],
     },
     sentiment: 'bearish',
@@ -583,6 +597,20 @@ const TEMPLATES_EN: Record<EventType, TemplateSet> = {
       felipecripto: [
         'Sad but predictable. DYOR, folks! Never put everything in one token. Diversify! 🧠',
         'Another rug pull... That\'s why I only recommend BTC and ETH for beginners. The rest is a casino. 🎰',
+      ],
+    },
+    sentiment: 'bearish',
+  },
+  FLASH_CRASH: {
+    media: [
+      '⚡ FLASH CRASH: Crypto market melts in minutes. Alts lose up to 80% of value.',
+      '⚡ Flash crash: cascading liquidations sweep the crypto market. Total chaos.',
+      '⚡ BREAKING: Crypto flash crash. Exchanges halted, alts in free fall.',
+    ],
+    reactions: {
+      felipecripto: [
+        'This is INSANE. Never seen a flash crash like this. Leveraged traders got wiped. 😱',
+        'Brutal flash crash. Stay calm and wait for the dust to settle. Do NOT buy yet! ⚠️',
       ],
     },
     sentiment: 'bearish',

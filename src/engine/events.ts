@@ -39,6 +39,7 @@ function generateSingleEvent(state: GameState, rng: RNG): EventCard | null {
     ['CRYPTO_HACK', regime === 'CRISIS' ? 2 : 0.5],
     ['CRYPTO_EUPHORIA_EVENT', regime === 'CRYPTO_EUPHORIA' ? 4 : 0.3],
     ['CRYPTO_RUG_PULL', 0.15],
+    ['FLASH_CRASH', 0.03], // Very rare ~0.03 base weight
     ['CREDIT_DOWNGRADE', regime === 'CRISIS' ? 2 : 0.5],
     ['FX_SHOCK', regime === 'CRISIS' ? 3 : regime === 'BEAR' ? 2 : 0.5],
     ['FISCAL_STRESS', regime === 'CRISIS' ? 3 : regime === 'BEAR' ? 2 : 0.3],
@@ -206,6 +207,17 @@ function generateSingleEvent(state: GameState, rng: RNG): EventCard | null {
       vars = { sector };
       break;
     }
+    case 'FLASH_CRASH': {
+      // Flash crash: all crypto alts drop -40% to -80%, majors take a smaller hit
+      for (const [id, def] of Object.entries(state.assetCatalog)) {
+        if (def.class === 'CRYPTO_ALT') impact[id] = randRange(rng, EVENT_IMPACTS.flashCrash.altShock as [number, number]);
+        if (def.class === 'CRYPTO_MAJOR') impact[id] = randRange(rng, EVENT_IMPACTS.flashCrash.majorShock as [number, number]);
+      }
+      const riskD = randRange(rng, EVENT_IMPACTS.flashCrash.riskDelta as [number, number]);
+      macroImpact = { riskDelta: riskD };
+      magnitude = 0.60;
+      break;
+    }
   }
 
   const typeToKey: Record<EventType, string> = {
@@ -215,7 +227,7 @@ function generateSingleEvent(state: GameState, rng: RNG): EventCard | null {
     CRYPTO_HACK: 'crypto_hack', CRYPTO_EUPHORIA_EVENT: 'crypto_euphoria',
     CRYPTO_RUG_PULL: 'crypto_rug_pull', CREDIT_DOWNGRADE: 'credit_downgrade',
     FX_SHOCK: 'fx_shock', FISCAL_STRESS: 'fiscal_stress', COMMODITY_BOOM: 'commodity_boom',
-    SECTOR_CRASH: 'sector_crash',
+    SECTOR_CRASH: 'sector_crash', FLASH_CRASH: 'flash_crash',
     IPO_ANNOUNCED: 'ipo.announced', IPO_BOOKBUILDING: 'ipo.bookbuilding', IPO_LISTED: 'ipo.listed',
   };
 
