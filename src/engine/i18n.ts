@@ -254,6 +254,21 @@ const translations: Record<Locale, Record<string, string>> = {
     'achievements.progress': '{unlocked} of {total}',
     'achievements.unlocked_at': 'Unlocked on day {day}',
     'achievements.locked': '???',
+    // Tax
+    'tax.ir': 'Income Tax',
+    'tax.iof': 'IOF',
+    'tax.capital_gain': 'Capital gain',
+    'tax.total_tax': 'Total taxes',
+    'tax.net_after_tax': 'Net after IR/IOF',
+    'tax.exempt_20k': 'Exempt (sales ≤ R$ 20k/month)',
+    'tax.exempt_35k': 'Exempt (sales ≤ R$ 35k/month)',
+    'tax.holding_days': 'Holding days',
+    'tax.loss_offset': 'Loss offset',
+    'tax.accumulated_loss': 'Accumulated loss',
+    'tax.fiscal_summary': 'Tax Summary',
+    'tax.ir_paid': 'Total IR paid',
+    'tax.iof_paid': 'Total IOF paid',
+    'tax.rate': 'Rate',
   },
 };
 
