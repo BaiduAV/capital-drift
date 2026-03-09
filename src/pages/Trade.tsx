@@ -255,13 +255,22 @@ export default function Trade() {
               {(() => {
                 const pnl = (selectedAsset.price - position.avgPrice) * position.quantity;
                 const pnlPct = (selectedAsset.price / position.avgPrice - 1);
+                const holdingDays = Math.max(0, state.dayIndex - (position.avgPurchaseDay ?? state.dayIndex));
                 return (
-                  <div className="flex justify-between mt-0.5">
-                    <span className="text-muted-foreground">P&L</span>
-                    <span className={pnl >= 0 ? 'price-up' : 'price-down'}>
-                      {formatCurrency(pnl)} ({formatPct(pnlPct)})
-                    </span>
-                  </div>
+                  <>
+                    <div className="flex justify-between mt-0.5">
+                      <span className="text-muted-foreground">P&L</span>
+                      <span className={pnl >= 0 ? 'price-up' : 'price-down'}>
+                        {formatCurrency(pnl)} ({formatPct(pnlPct)})
+                      </span>
+                    </div>
+                    {holdingDays > 0 && (
+                      <div className="flex justify-between mt-0.5">
+                        <span className="text-muted-foreground">{t('tax.holding_days')}</span>
+                        <span className="text-foreground">{holdingDays}d</span>
+                      </div>
+                    )}
+                  </>
                 );
               })()}
             </div>
