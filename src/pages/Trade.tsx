@@ -707,10 +707,21 @@ export default function Trade() {
                       <span className="text-muted-foreground">{side === 'buy' ? (locale === 'pt-BR' ? 'Custo total' : 'Total cost') : (locale === 'pt-BR' ? 'Valor líquido' : 'Net proceeds')}</span>
                       <span className="text-foreground">{formatCurrency(liveQuote.totalCost)}</span>
                     </div>
+                    {side === 'sell' && liveQuote.taxBreakdown && liveQuote.taxBreakdown.totalTax > 0.01 && (
+                      <div className="flex justify-between text-[hsl(var(--terminal-red))]">
+                        <span>{t('tax.total_tax')}</span>
+                        <span>−{formatCurrency(liveQuote.taxBreakdown.totalTax)}</span>
+                      </div>
+                    )}
+                    {side === 'sell' && liveQuote.taxBreakdown && liveQuote.taxBreakdown.isExempt && liveQuote.taxBreakdown.exemptionReason && (
+                      <div className="text-[10px] text-[hsl(var(--terminal-green))]">
+                        ✓ {t(liveQuote.taxBreakdown.exemptionReason)}
+                      </div>
+                    )}
                     <div className="flex justify-between">
                       <span className="text-muted-foreground">{locale === 'pt-BR' ? 'Caixa após' : 'Cash after'}</span>
                       <span className="text-foreground">
-                        {formatCurrency(side === 'buy' ? state.cash - liveQuote.totalCost : state.cash + liveQuote.totalCost)}
+                        {formatCurrency(side === 'buy' ? state.cash - liveQuote.totalCost : state.cash + (liveQuote.taxBreakdown?.netAfterTax ?? liveQuote.totalCost))}
                       </span>
                     </div>
                   </>
