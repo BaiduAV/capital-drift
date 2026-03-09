@@ -3,11 +3,14 @@ import { useGame } from '@/context/GameContext';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
 import { Button } from '@/components/ui/button';
-import { AlertTriangle, ShieldAlert, Lightbulb } from 'lucide-react';
+import { AlertTriangle, ShieldAlert, Lightbulb, Briefcase } from 'lucide-react';
 import AssetDetailModal from '@/components/game/AssetDetailModal';
 import RebalancePanel from '@/components/game/RebalancePanel';
 import { generateRecommendations } from '@/engine/recommendations';
 import { INITIAL_CASH } from '@/engine/params';
+import { useNavigate } from 'react-router-dom';
+import ContextualTip from '@/components/game/ContextualTip';
+import { EmptyState } from '@/components/ui/EmptyState';
 
 // Design System
 import { PageHeader } from '@/components/ui/PageHeader';
