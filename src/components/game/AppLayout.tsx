@@ -347,6 +347,75 @@ export default function AppLayout() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Settings Dialog */}
+      <Dialog open={settingsOpen} onOpenChange={setSettingsOpen}>
+        <DialogContent className="sm:max-w-sm">
+          <DialogHeader>
+            <DialogTitle className="font-sans">
+              {locale === 'pt-BR' ? 'Configurações' : 'Settings'}
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-5 py-2">
+            <div className="space-y-3">
+              <h4 className="text-xs font-mono font-semibold text-muted-foreground uppercase tracking-wider">
+                Margin Call
+              </h4>
+              <div className="space-y-1.5">
+                <Label className="text-xs font-mono flex justify-between">
+                  <span>{locale === 'pt-BR' ? 'Gatilho (Drawdown)' : 'Trigger (Drawdown)'}</span>
+                  <span className="text-primary">{mcThreshold}%</span>
+                </Label>
+                <Slider
+                  value={[mcThreshold]}
+                  onValueChange={([v]) => setMcThreshold(v)}
+                  min={10}
+                  max={90}
+                  step={5}
+                />
+                <p className="text-[10px] text-muted-foreground/70">
+                  {locale === 'pt-BR'
+                    ? 'Liquidação forçada quando drawdown atingir este nível.'
+                    : 'Forced liquidation triggers at this drawdown level.'}
+                </p>
+              </div>
+              <div className="space-y-1.5">
+                <Label className="text-xs font-mono flex justify-between">
+                  <span>{locale === 'pt-BR' ? 'Alvo de Recuperação' : 'Recovery Target'}</span>
+                  <span className="text-primary">{mcRecovery}%</span>
+                </Label>
+                <Slider
+                  value={[mcRecovery]}
+                  onValueChange={([v]) => setMcRecovery(v)}
+                  min={5}
+                  max={mcThreshold - 5}
+                  step={5}
+                />
+                <p className="text-[10px] text-muted-foreground/70">
+                  {locale === 'pt-BR'
+                    ? 'Venda forçada até drawdown reduzir a este nível.'
+                    : 'Forced selling stops when drawdown reaches this level.'}
+                </p>
+              </div>
+            </div>
+          </div>
+          <DialogFooter className="gap-2 sm:gap-0">
+            <Button variant="ghost" size="sm" onClick={() => setSettingsOpen(false)}>
+              {locale === 'pt-BR' ? 'Cancelar' : 'Cancel'}
+            </Button>
+            <Button size="sm" onClick={() => {
+              updateMarginCallSettings({
+                drawdownThreshold: mcThreshold / 100,
+                recoveryTarget: mcRecovery / 100,
+              });
+              setSettingsOpen(false);
+              toast.success(locale === 'pt-BR' ? 'Configurações salvas!' : 'Settings saved!');
+            }}>
+              {locale === 'pt-BR' ? 'Salvar' : 'Save'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
