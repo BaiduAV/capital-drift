@@ -212,6 +212,7 @@ export const EVENT_IMPACTS = {
   cryptoHack: { majorShock: [-0.10, -0.03], altShock: [-0.18, -0.06] },
   cryptoEuphoria: { altShock: [0.05, 0.20] },
   cryptoRugPull: { targetShock: [-0.80, -0.40] },
+  flashCrash: { altShock: [-0.80, -0.40], majorShock: [-0.15, -0.05], riskDelta: [0.03, 0.08] },
   fxShock: { fxDelta: [0.03, 0.10], riskDelta: [0.02, 0.06], equityShock: [-0.02, -0.005] },
   fiscalStress: { riskDelta: [0.04, 0.10], rateDelta: [0.002, 0.008], activityDelta: [-0.005, -0.001], equityShock: [-0.015, -0.005] },
   commodityBoom: { activityDelta: [0.002, 0.008], fxDelta: [-0.05, -0.01], riskDelta: [-0.03, -0.01], equityShock: [0.005, 0.02] },
