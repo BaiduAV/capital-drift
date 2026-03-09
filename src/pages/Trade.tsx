@@ -279,7 +279,7 @@ export default function Trade() {
                 className="text-center text-sm font-mono h-9 flex-1"
                 placeholder="0"
               />
-              <Button variant="outline" size="icon" className="h-9 w-9 shrink-0" onClick={() => setQuantity(String(qty + 1))}>
+              <Button variant="outline" size="icon" className="h-9 w-9 shrink-0" onClick={() => setQuantity(String(qty + 1))} aria-label={locale === 'pt-BR' ? 'Aumentar quantidade' : 'Increase quantity'}>
                 <span className="text-sm font-mono font-bold">+</span>
               </Button>
             </div>
