@@ -255,8 +255,25 @@ export default function Dashboard() {
       {/* Day Result */}
       {lastDay && <DayResultCard day={lastDay} locale={locale} formatPct={formatPct} navigate={navigate} t={t} />}
 
-      {/* Period Result */}
-      {lastPeriod && <PeriodResultCard period={lastPeriod} locale={locale} formatPct={formatPct} navigate={navigate} t={t} />}
+      {/* Period Result — persistent until dismissed */}
+      {lastPeriod && (
+        <PeriodResultCard
+          period={lastPeriod}
+          locale={locale}
+          formatPct={formatPct}
+          navigate={navigate}
+          t={t}
+          onDismiss={() => setLastPeriod(null)}
+          narrative={generateNarrative({
+            regime: state.regime,
+            lastEvents: lastPeriod.events,
+            drawdown: peak > 0 ? (peak - equity) / peak : 0,
+            inflationAnnual: state.macro.inflationAnnual,
+            baseRateAnnual: state.macro.baseRateAnnual,
+            locale,
+          })}
+        />
+      )}
 
       {/* Recent history ticker */}
       {dayResults.length > 0 && (
