@@ -133,6 +133,7 @@ export default function OnboardingTutorial() {
           <button
             onClick={handleClose}
             className="absolute top-3 right-3 text-muted-foreground hover:text-foreground transition-colors z-10"
+            aria-label={isPt ? 'Fechar tutorial' : 'Close tutorial'}
           >
             <X className="h-4 w-4" />
           </button>
