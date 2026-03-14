@@ -278,7 +278,7 @@ export default function Trade() {
 
           {/* Quantity input + quick buttons */}
           <div>
-            <label className="text-[10px] text-muted-foreground uppercase font-semibold tracking-wider">
+            <label htmlFor="trade-quantity" className="text-[10px] text-muted-foreground uppercase font-semibold tracking-wider">
               {locale === 'pt-BR' ? 'Quantidade' : 'Quantity'}
             </label>
             <div className="flex items-center gap-1.5 mt-1">
@@ -286,6 +286,7 @@ export default function Trade() {
                 <span className="text-sm font-mono font-bold">−</span>
               </Button>
               <Input
+                id="trade-quantity"
                 type="number"
                 min={1}
                 value={quantity}
@@ -524,6 +525,7 @@ export default function Trade() {
                               onChange={e => setIpoReserveQty(prev => ({ ...prev, [ipo.ticker]: e.target.value }))}
                               className="w-20 h-7 text-[10px] font-mono text-center"
                               placeholder={String(Math.min(10, maxQty))}
+                              aria-label={locale === 'pt-BR' ? `Quantidade de reserva para ${ipo.ticker}` : `Reservation quantity for ${ipo.ticker}`}
                             />
                             <Button
                               size="sm"
@@ -560,6 +562,7 @@ export default function Trade() {
                 <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
                 <Input
                   placeholder={locale === 'pt-BR' ? 'Buscar...' : 'Search...'}
+                  aria-label={locale === 'pt-BR' ? 'Buscar ativos' : 'Search assets'}
                   value={searchQuery}
                   onChange={e => setSearchQuery(e.target.value)}
                   className="h-7 pl-7 text-xs font-mono"
