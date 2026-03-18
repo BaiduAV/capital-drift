@@ -557,12 +557,13 @@ export default function Trade() {
             noPadding
             action={
               <div className="relative w-48">
-                <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+                <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" aria-hidden="true" />
                 <Input
                   placeholder={locale === 'pt-BR' ? 'Buscar...' : 'Search...'}
                   value={searchQuery}
                   onChange={e => setSearchQuery(e.target.value)}
                   className="h-7 pl-7 text-xs font-mono"
+                  aria-label={locale === 'pt-BR' ? 'Buscar ativos' : 'Search assets'}
                 />
               </div>
             }
@@ -663,7 +664,7 @@ export default function Trade() {
             <DrawerHeader className="flex items-center justify-between pb-2">
               <DrawerTitle className="font-mono text-sm">{locale === 'pt-BR' ? 'Ordem' : 'Order'}</DrawerTitle>
               <DrawerClose asChild>
-                <Button variant="ghost" size="icon" className="h-7 w-7">
+                <Button variant="ghost" size="icon" className="h-7 w-7" aria-label={locale === 'pt-BR' ? 'Fechar ordem' : 'Close order'}>
                   <X className="h-4 w-4" />
                 </Button>
               </DrawerClose>
