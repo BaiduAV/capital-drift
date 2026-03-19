@@ -86,7 +86,7 @@ function pickUniqueName(pool: string[], ctx: NamingContext): string {
 }
 
 function makeUniqueTicker(base: string, suffix: string, ctx: NamingContext): string {
-    let ticker = `${base}${suffix}`;
+    const ticker = `${base}${suffix}`;
     if (!ctx.usedTickers.has(ticker)) {
         ctx.usedTickers.add(ticker);
         return ticker;
