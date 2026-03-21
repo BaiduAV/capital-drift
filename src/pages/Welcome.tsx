@@ -91,6 +91,7 @@ export default function Welcome() {
               value={seed}
               onChange={e => setSeed(e.target.value)}
               className="text-xs font-mono flex-1"
+              aria-label={locale === 'pt-BR' ? 'Seed' : 'Seed'}
             />
             <Button onClick={handleNewGame} variant={hasSave ? 'secondary' : 'default'} className="gap-2 font-mono shrink-0">
               <RotateCcw className="h-4 w-4" />
