@@ -189,6 +189,7 @@ export default function Market() {
                       variant="ghost"
                       size="icon"
                       className="h-6 w-6 text-muted-foreground hover:text-primary shrink-0"
+                      aria-label={locale === 'pt-BR' ? `Negociar ${a.id}` : `Trade ${a.id}`}
                       onClick={(e) => { e.stopPropagation(); navigate(`/trade?asset=${a.id}`); }}
                       disabled={!!(a.assetState.haltedUntilDay && state.dayIndex < a.assetState.haltedUntilDay)}
                     >
