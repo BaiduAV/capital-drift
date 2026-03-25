@@ -19,12 +19,14 @@ function PostCard({
   interactions,
   onLike,
   onRepost,
+  locale,
 }: {
   post: SocialPost;
   index: number;
   interactions: PostInteractions;
   onLike: (id: string) => void;
   onRepost: (id: string) => void;
+  locale: string;
 }) {
   const sentimentBorder =
     post.accountType === 'influencer'
@@ -76,7 +78,7 @@ function PostCard({
 
           {/* Engagement bar — interactive */}
           <div className="flex items-center gap-4 mt-1.5">
-            <span className="flex items-center gap-1 text-[10px] text-muted-foreground/60 hover:text-[hsl(var(--terminal-cyan))] transition-colors cursor-default">
+            <span className="flex items-center gap-1 text-[10px] text-muted-foreground/60 hover:text-[hsl(var(--terminal-cyan))] transition-colors cursor-default" aria-label={locale === 'pt-BR' ? `${post.engagement.replies} respostas` : `${post.engagement.replies} replies`}>
               <MessageCircle className="h-3 w-3" />
               {formatCount(post.engagement.replies)}
             </span>
@@ -87,6 +89,8 @@ function PostCard({
                   ? 'text-[hsl(var(--terminal-green))]'
                   : 'text-muted-foreground/60 hover:text-[hsl(var(--terminal-green))]'
               }`}
+              aria-label={locale === 'pt-BR' ? 'Repostar' : 'Repost'}
+              title={locale === 'pt-BR' ? 'Repostar' : 'Repost'}
             >
               <Repeat2 className="h-3 w-3" />
               {formatCount(repostCount)}
@@ -98,6 +102,8 @@ function PostCard({
                   ? 'text-[hsl(var(--terminal-red))]'
                   : 'text-muted-foreground/60 hover:text-[hsl(var(--terminal-red))]'
               }`}
+              aria-label={locale === 'pt-BR' ? 'Curtir' : 'Like'}
+              title={locale === 'pt-BR' ? 'Curtir' : 'Like'}
             >
               <Heart className={`h-3 w-3 ${interactions.liked ? 'fill-current' : ''}`} />
               {formatCount(likeCount)}
@@ -156,6 +162,7 @@ export default function SocialFeed() {
           interactions={interactions[post.id] ?? DEFAULT_INTERACTION}
           onLike={handleLike}
           onRepost={handleRepost}
+          locale={locale}
         />
       ))}
     </div>
