@@ -663,7 +663,12 @@ export default function Trade() {
             <DrawerHeader className="flex items-center justify-between pb-2">
               <DrawerTitle className="font-mono text-sm">{locale === 'pt-BR' ? 'Ordem' : 'Order'}</DrawerTitle>
               <DrawerClose asChild>
-                <Button variant="ghost" size="icon" className="h-7 w-7">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-7 w-7"
+                  aria-label={locale === 'pt-BR' ? 'Fechar ordem' : 'Close order'}
+                >
                   <X className="h-4 w-4" />
                 </Button>
               </DrawerClose>
