@@ -290,6 +290,7 @@ export default function Trade() {
                 min={1}
                 value={quantity}
                 onChange={e => setQuantity(e.target.value)}
+                aria-label={locale === 'pt-BR' ? 'Quantidade para negociar' : 'Quantity to trade'}
                 className="text-center text-sm font-mono h-9 flex-1"
                 placeholder="0"
               />
@@ -522,6 +523,7 @@ export default function Trade() {
                               max={maxQty}
                               value={ipoReserveQty[ipo.ticker] || ''}
                               onChange={e => setIpoReserveQty(prev => ({ ...prev, [ipo.ticker]: e.target.value }))}
+                              aria-label={locale === 'pt-BR' ? `Quantidade para reservar de ${ipo.ticker}` : `Quantity to reserve for ${ipo.ticker}`}
                               className="w-20 h-7 text-[10px] font-mono text-center"
                               placeholder={String(Math.min(10, maxQty))}
                             />
