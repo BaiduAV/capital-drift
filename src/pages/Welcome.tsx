@@ -88,6 +88,7 @@ export default function Welcome() {
             <Input
               type="number"
               placeholder={locale === 'pt-BR' ? 'Seed (opcional)' : 'Seed (optional)'}
+              aria-label={locale === 'pt-BR' ? 'Seed do jogo' : 'Game seed'}
               value={seed}
               onChange={e => setSeed(e.target.value)}
               className="text-xs font-mono flex-1"
