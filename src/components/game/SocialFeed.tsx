@@ -19,12 +19,14 @@ function PostCard({
   interactions,
   onLike,
   onRepost,
+  locale,
 }: {
   post: SocialPost;
   index: number;
   interactions: PostInteractions;
   onLike: (id: string) => void;
   onRepost: (id: string) => void;
+  locale: string;
 }) {
   const sentimentBorder =
     post.accountType === 'influencer'
@@ -89,6 +91,11 @@ function PostCard({
               }`}
             >
               <Repeat2 className="h-3 w-3" />
+              <span className="sr-only">
+                {interactions.reposted
+                  ? (locale === 'pt-BR' ? 'Desfazer repost' : 'Undo repost')
+                  : (locale === 'pt-BR' ? 'Repostar' : 'Repost')}
+              </span>
               {formatCount(repostCount)}
             </button>
             <button
@@ -100,6 +107,11 @@ function PostCard({
               }`}
             >
               <Heart className={`h-3 w-3 ${interactions.liked ? 'fill-current' : ''}`} />
+              <span className="sr-only">
+                {interactions.liked
+                  ? (locale === 'pt-BR' ? 'Descurtir' : 'Unlike')
+                  : (locale === 'pt-BR' ? 'Curtir' : 'Like')}
+              </span>
               {formatCount(likeCount)}
             </button>
           </div>
@@ -156,6 +168,7 @@ export default function SocialFeed() {
           interactions={interactions[post.id] ?? DEFAULT_INTERACTION}
           onLike={handleLike}
           onRepost={handleRepost}
+          locale={locale}
         />
       ))}
     </div>

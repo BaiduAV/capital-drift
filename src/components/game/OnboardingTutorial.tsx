@@ -133,6 +133,7 @@ export default function OnboardingTutorial() {
           <button
             onClick={handleClose}
             className="absolute top-3 right-3 text-muted-foreground hover:text-foreground transition-colors z-10"
+            aria-label={isPt ? 'Fechar tutorial' : 'Close tutorial'}
           >
             <X className="h-4 w-4" />
           </button>
@@ -177,6 +178,7 @@ export default function OnboardingTutorial() {
                   <button
                     key={i}
                     onClick={() => setStep(i)}
+                    aria-label={isPt ? `Ir para etapa ${i + 1}` : `Go to step ${i + 1}`}
                     className={`h-1.5 rounded-full transition-all duration-200 ${
                       i === step ? 'w-4 bg-primary' : 'w-1.5 bg-muted-foreground/30 hover:bg-muted-foreground/50'
                     }`}
