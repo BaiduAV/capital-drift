@@ -294,6 +294,7 @@ export default function AppLayout() {
               toast.success(locale === 'pt-BR' ? 'Seed copiada!' : 'Seed copied!');
             }}
           >
+            <span className="sr-only">{locale === 'pt-BR' ? 'Copiar seed' : 'Copy seed'}</span>
             seed #{state.seed}
           </button>
         </footer>
