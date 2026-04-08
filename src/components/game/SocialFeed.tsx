@@ -19,12 +19,14 @@ function PostCard({
   interactions,
   onLike,
   onRepost,
+  locale,
 }: {
   post: SocialPost;
   index: number;
   interactions: PostInteractions;
   onLike: (id: string) => void;
   onRepost: (id: string) => void;
+  locale: string;
 }) {
   const sentimentBorder =
     post.accountType === 'influencer'
@@ -75,10 +77,13 @@ function PostCard({
           </p>
 
           {/* Engagement bar — interactive */}
-          <div className="flex items-center gap-4 mt-1.5">
-            <span className="flex items-center gap-1 text-[10px] text-muted-foreground/60 hover:text-[hsl(var(--terminal-cyan))] transition-colors cursor-default">
-              <MessageCircle className="h-3 w-3" />
-              {formatCount(post.engagement.replies)}
+          <div className="flex items-center gap-4 mt-1.5" role="group" aria-label={locale === 'pt-BR' ? 'Engajamento' : 'Engagement'}>
+            <span
+              className="flex items-center gap-1 text-[10px] text-muted-foreground/60 hover:text-[hsl(var(--terminal-cyan))] transition-colors cursor-default"
+            >
+              <MessageCircle className="h-3 w-3" aria-hidden="true" />
+              <span className="sr-only">{locale === 'pt-BR' ? `${post.engagement.replies} respostas` : `${post.engagement.replies} replies`}</span>
+              <span aria-hidden="true">{formatCount(post.engagement.replies)}</span>
             </span>
             <button
               onClick={() => onRepost(post.id)}
@@ -87,9 +92,10 @@ function PostCard({
                   ? 'text-[hsl(var(--terminal-green))]'
                   : 'text-muted-foreground/60 hover:text-[hsl(var(--terminal-green))]'
               }`}
+              aria-label={locale === 'pt-BR' ? `Repostar, ${repostCount} reposts` : `Repost, ${repostCount} reposts`}
             >
-              <Repeat2 className="h-3 w-3" />
-              {formatCount(repostCount)}
+              <Repeat2 className="h-3 w-3" aria-hidden="true" />
+              <span aria-hidden="true">{formatCount(repostCount)}</span>
             </button>
             <button
               onClick={() => onLike(post.id)}
@@ -98,9 +104,10 @@ function PostCard({
                   ? 'text-[hsl(var(--terminal-red))]'
                   : 'text-muted-foreground/60 hover:text-[hsl(var(--terminal-red))]'
               }`}
+              aria-label={locale === 'pt-BR' ? `Curtir, ${likeCount} curtidas` : `Like, ${likeCount} likes`}
             >
-              <Heart className={`h-3 w-3 ${interactions.liked ? 'fill-current' : ''}`} />
-              {formatCount(likeCount)}
+              <Heart className={`h-3 w-3 ${interactions.liked ? 'fill-current' : ''}`} aria-hidden="true" />
+              <span aria-hidden="true">{formatCount(likeCount)}</span>
             </button>
           </div>
         </div>
@@ -156,6 +163,7 @@ export default function SocialFeed() {
           interactions={interactions[post.id] ?? DEFAULT_INTERACTION}
           onLike={handleLike}
           onRepost={handleRepost}
+          locale={locale}
         />
       ))}
     </div>
