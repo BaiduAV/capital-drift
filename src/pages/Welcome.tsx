@@ -87,6 +87,7 @@ export default function Welcome() {
           <div className="flex gap-2">
             <Input
               type="number"
+              aria-label={locale === 'pt-BR' ? 'Seed do jogo (opcional)' : 'Game seed (optional)'}
               placeholder={locale === 'pt-BR' ? 'Seed (opcional)' : 'Seed (optional)'}
               value={seed}
               onChange={e => setSeed(e.target.value)}
