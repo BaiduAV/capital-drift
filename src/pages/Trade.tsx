@@ -287,6 +287,7 @@ export default function Trade() {
               </Button>
               <Input
                 type="number"
+                aria-label={locale === 'pt-BR' ? 'Quantidade' : 'Quantity'}
                 min={1}
                 value={quantity}
                 onChange={e => setQuantity(e.target.value)}
@@ -518,6 +519,7 @@ export default function Trade() {
                           <div className="flex items-center gap-1.5">
                             <Input
                               type="number"
+                              aria-label={locale === 'pt-BR' ? `Quantidade para reservar ${ipo.ticker}` : `Quantity to reserve ${ipo.ticker}`}
                               min={1}
                               max={maxQty}
                               value={ipoReserveQty[ipo.ticker] || ''}
@@ -559,6 +561,7 @@ export default function Trade() {
               <div className="relative w-48">
                 <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
                 <Input
+                  aria-label={locale === 'pt-BR' ? 'Buscar ativos' : 'Search assets'}
                   placeholder={locale === 'pt-BR' ? 'Buscar...' : 'Search...'}
                   value={searchQuery}
                   onChange={e => setSearchQuery(e.target.value)}
