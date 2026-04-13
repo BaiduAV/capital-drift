@@ -288,6 +288,7 @@ export default function AppLayout() {
         {/* Footer with seed */}
         <footer className="flex items-center justify-center border-t border-border/50 px-3 py-1.5 bg-card/50">
           <button
+            aria-label={locale === 'pt-BR' ? 'Copiar seed' : 'Copy seed'}
             className="text-[10px] text-muted-foreground/50 font-mono hover:text-muted-foreground transition-colors cursor-pointer"
             onClick={() => {
               navigator.clipboard.writeText(String(state.seed));

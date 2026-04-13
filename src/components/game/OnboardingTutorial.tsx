@@ -131,6 +131,7 @@ export default function OnboardingTutorial() {
 
           {/* Close button */}
           <button
+            aria-label={locale === 'pt-BR' ? 'Fechar tutorial' : 'Close tutorial'}
             onClick={handleClose}
             className="absolute top-3 right-3 text-muted-foreground hover:text-foreground transition-colors z-10"
           >

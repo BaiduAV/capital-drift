@@ -81,6 +81,7 @@ function PostCard({
               {formatCount(post.engagement.replies)}
             </span>
             <button
+              aria-label={locale === 'pt-BR' ? 'Repostar' : 'Repost'}
               onClick={() => onRepost(post.id)}
               className={`flex items-center gap-1 text-[10px] transition-all duration-200 cursor-pointer hover:scale-110 active:scale-95 ${
                 interactions.reposted
@@ -92,6 +93,7 @@ function PostCard({
               {formatCount(repostCount)}
             </button>
             <button
+              aria-label={locale === 'pt-BR' ? 'Curtir' : 'Like'}
               onClick={() => onLike(post.id)}
               className={`flex items-center gap-1 text-[10px] transition-all duration-200 cursor-pointer hover:scale-110 active:scale-95 ${
                 interactions.liked
