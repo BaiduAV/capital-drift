@@ -26,6 +26,7 @@ function PostCard({
   onLike: (id: string) => void;
   onRepost: (id: string) => void;
 }) {
+  const { locale } = useGame();
   const sentimentBorder =
     post.accountType === 'influencer'
       ? post.sentiment === 'bullish'
@@ -87,6 +88,7 @@ function PostCard({
                   ? 'text-[hsl(var(--terminal-green))]'
                   : 'text-muted-foreground/60 hover:text-[hsl(var(--terminal-green))]'
               }`}
+              aria-label={locale === 'pt-BR' ? `Repostar, ${repostCount} reposts` : `Repost, ${repostCount} reposts`}
             >
               <Repeat2 className="h-3 w-3" />
               {formatCount(repostCount)}
@@ -98,6 +100,7 @@ function PostCard({
                   ? 'text-[hsl(var(--terminal-red))]'
                   : 'text-muted-foreground/60 hover:text-[hsl(var(--terminal-red))]'
               }`}
+              aria-label={locale === 'pt-BR' ? `Curtir, ${likeCount} curtidas` : `Like, ${likeCount} likes`}
             >
               <Heart className={`h-3 w-3 ${interactions.liked ? 'fill-current' : ''}`} />
               {formatCount(likeCount)}

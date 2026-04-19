@@ -1,3 +1,4 @@
 ## 2024-05-18 - Avoid Runtime Errors on Locales
 **Learning:** Do not commit lockfiles (e.g. `pnpm-lock.yaml`) during a small UI change. Keep PRs focused.
 **Action:** Always verify if `locale` logic is robust.
+## 2026-04-19 - Adding aria-label to buttons with text content\n**Learning:** When adding `aria-label` to elements that already contain visible dynamic text (like a count or a seed number), the `aria-label` MUST include that dynamic data. Otherwise, the `aria-label` completely overrides the element's text content in the Accessibility Tree, effectively hiding the dynamic data from screen readers.\n**Action:** Always include the dynamic text/variables inside the `aria-label` string when patching buttons that aren't purely icon-only, or use `aria-labelledby`/`<span className="sr-only">`.
