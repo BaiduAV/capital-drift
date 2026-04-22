@@ -290,6 +290,7 @@ export default function Trade() {
                 min={1}
                 value={quantity}
                 onChange={e => setQuantity(e.target.value)}
+                aria-label={locale === 'pt-BR' ? 'Quantidade' : 'Quantity'}
                 className="text-center text-sm font-mono h-9 flex-1"
                 placeholder="0"
               />
@@ -522,6 +523,7 @@ export default function Trade() {
                               max={maxQty}
                               value={ipoReserveQty[ipo.ticker] || ''}
                               onChange={e => setIpoReserveQty(prev => ({ ...prev, [ipo.ticker]: e.target.value }))}
+                              aria-label={locale === 'pt-BR' ? `Quantidade de reserva para ${ipo.ticker}` : `Reservation quantity for ${ipo.ticker}`}
                               className="w-20 h-7 text-[10px] font-mono text-center"
                               placeholder={String(Math.min(10, maxQty))}
                             />
@@ -560,6 +562,7 @@ export default function Trade() {
                 <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
                 <Input
                   placeholder={locale === 'pt-BR' ? 'Buscar...' : 'Search...'}
+                  aria-label={locale === 'pt-BR' ? 'Buscar ativos' : 'Search assets'}
                   value={searchQuery}
                   onChange={e => setSearchQuery(e.target.value)}
                   className="h-7 pl-7 text-xs font-mono"
