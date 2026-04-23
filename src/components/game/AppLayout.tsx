@@ -293,6 +293,7 @@ export default function AppLayout() {
               navigator.clipboard.writeText(String(state.seed));
               toast.success(locale === 'pt-BR' ? 'Seed copiada!' : 'Seed copied!');
             }}
+            aria-label={locale === 'pt-BR' ? `Copiar seed ${state.seed}` : `Copy seed ${state.seed}`}
           >
             seed #{state.seed}
           </button>
