@@ -288,11 +288,16 @@ export default function AppLayout() {
         {/* Footer with seed */}
         <footer className="flex items-center justify-center border-t border-border/50 px-3 py-1.5 bg-card/50">
           <button
-            className="text-[10px] text-muted-foreground/50 font-mono hover:text-muted-foreground transition-colors cursor-pointer"
+            className="text-[10px] text-muted-foreground/50 font-mono hover:text-muted-foreground transition-colors cursor-pointer rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background"
             onClick={() => {
               navigator.clipboard.writeText(String(state.seed));
               toast.success(locale === 'pt-BR' ? 'Seed copiada!' : 'Seed copied!');
             }}
+            aria-label={
+              locale === 'pt-BR'
+                ? `Copiar seed do jogo. Seed atual: ${state.seed}.`
+                : `Copy game seed. Current seed: ${state.seed}.`
+            }
           >
             seed #{state.seed}
           </button>
