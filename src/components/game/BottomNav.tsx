@@ -139,9 +139,15 @@ export default function BottomNav() {
           onPointerUp={endHold}
           onPointerLeave={cancelHold}
           onPointerCancel={cancelHold}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              endHold();
+            }
+          }}
           onContextMenu={(e) => e.preventDefault()}
           className={cn(
-            'relative h-12 w-12 rounded-full bg-primary text-primary-foreground shadow-lg flex items-center justify-center transition-transform select-none touch-none',
+            'relative h-12 w-12 rounded-full bg-primary text-primary-foreground shadow-lg flex items-center justify-center transition-transform select-none touch-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background',
             isHolding ? 'scale-110' : 'active:scale-95'
           )}
           aria-label={locale === 'pt-BR' ? 'Toque: avançar dia / Segure: avançar 7 dias' : 'Tap: advance day / Hold: advance 7 days'}
