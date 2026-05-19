@@ -82,22 +82,24 @@ function PostCard({
             </span>
             <button
               onClick={() => onRepost(post.id)}
-              className={`flex items-center gap-1 text-[10px] transition-all duration-200 cursor-pointer hover:scale-110 active:scale-95 ${
+              className={`flex items-center gap-1 text-[10px] transition-all duration-200 cursor-pointer hover:scale-110 active:scale-95 rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[hsl(var(--terminal-green))] focus-visible:ring-offset-1 focus-visible:ring-offset-background ${
                 interactions.reposted
                   ? 'text-[hsl(var(--terminal-green))]'
                   : 'text-muted-foreground/60 hover:text-[hsl(var(--terminal-green))]'
               }`}
+              aria-label={interactions.reposted ? `Undo repost, current reposts ${repostCount}` : `Repost, current reposts ${repostCount}`}
             >
               <Repeat2 className="h-3 w-3" />
               {formatCount(repostCount)}
             </button>
             <button
               onClick={() => onLike(post.id)}
-              className={`flex items-center gap-1 text-[10px] transition-all duration-200 cursor-pointer hover:scale-110 active:scale-95 ${
+              className={`flex items-center gap-1 text-[10px] transition-all duration-200 cursor-pointer hover:scale-110 active:scale-95 rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[hsl(var(--terminal-red))] focus-visible:ring-offset-1 focus-visible:ring-offset-background ${
                 interactions.liked
                   ? 'text-[hsl(var(--terminal-red))]'
                   : 'text-muted-foreground/60 hover:text-[hsl(var(--terminal-red))]'
               }`}
+              aria-label={interactions.liked ? `Unlike, current likes ${likeCount}` : `Like, current likes ${likeCount}`}
             >
               <Heart className={`h-3 w-3 ${interactions.liked ? 'fill-current' : ''}`} />
               {formatCount(likeCount)}
