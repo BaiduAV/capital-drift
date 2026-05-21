@@ -80,10 +80,19 @@ export default function DividendCalendar() {
       ) : (
         <div className="divide-y divide-border/30 max-h-[280px] overflow-auto scrollbar-terminal">
           {upcoming.map(d => (
-            <div
+                        <div
               key={d.assetId}
+              role="button"
+              tabIndex={0}
               onClick={() => navigate(`/trade?asset=${d.assetId}`)}
-              className="flex items-center justify-between px-4 py-2 cursor-pointer hover:bg-muted/40 transition-colors"
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  navigate(`/trade?asset=${d.assetId}`);
+                }
+              }}
+              aria-label={`${d.assetId} - ${d.name}. ${locale === \'pt-BR\' ? \'Em\' : \'In\'} ${d.daysUntil === 0 ? (locale === \'pt-BR\' ? \'Hoje\' : \'Today\') : d.daysUntil === 1 ? (locale === \'pt-BR\' ? \'Amanhã\' : \'Tomorrow\') : `${d.daysUntil} ${locale === \'pt-BR\' ? \'dias\' : \'days\'}`}. ${d.isOwned && d.estimatedAmount != null ? `${locale === \'pt-BR\' ? \'Valor estimado\' : \'Estimated amount\'}: ${formatCurrency(d.estimatedAmount)}` : `${locale === \'pt-BR\' ? \'Yield estimado\' : \'Estimated yield\'}: ${d.estimatedYield}`}`}
+              className="flex items-center justify-between px-4 py-2 cursor-pointer hover:bg-muted/40 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background"
             >
               <div className="min-w-0">
                 <div className="flex items-center gap-2">
