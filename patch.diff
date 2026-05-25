@@ -1,0 +1,53 @@
+--- src/components/game/OnboardingTutorial.tsx
++++ src/components/game/OnboardingTutorial.tsx
+@@ -129,18 +129,20 @@
+           <div className="h-1 bg-muted">
+             <div
+               className="h-full bg-primary transition-all duration-300"
+               style={{ width: `${((step + 1) / steps.length) * 100}%` }}
+             />
+           </div>
+
+           {/* Close button */}
+           <button
+             onClick={handleClose}
+-            className="absolute top-3 right-3 text-muted-foreground hover:text-foreground transition-colors z-10"
++            className="absolute top-3 right-3 text-muted-foreground hover:text-foreground transition-colors z-10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background rounded-sm"
++            aria-label={isPt ? 'Fechar tutorial' : 'Close tutorial'}
+           >
+             <X className="h-4 w-4" />
+           </button>
+
+           {/* Content */}
+           <div className="p-6 space-y-4">
+             {/* Icon + Step counter */}
+@@ -168,17 +170,23 @@
+               <Button
+                 variant="ghost"
+                 size="sm"
+                 className="text-xs font-mono gap-1"
+                 onClick={handlePrev}
+                 disabled={step === 0}
+               >
+                 <ChevronLeft className="h-3.5 w-3.5" />
+                 {isPt ? 'Anterior' : 'Previous'}
+               </Button>
+
+-              <div className="flex gap-1">
++              <div
++                className="flex gap-1"
++                role="tablist"
++                aria-label={isPt ? 'Progresso do tutorial' : 'Tutorial progress'}
++              >
+                 {steps.map((_, i) => (
+                   <button
+                     key={i}
++                    role="tab"
++                    aria-selected={i === step}
++                    aria-label={isPt ? `Ir para o passo ${i + 1} de ${steps.length}` : `Go to step ${i + 1} of ${steps.length}`}
+                     onClick={() => setStep(i)}
+-                    className={`h-1.5 rounded-full transition-all duration-200 ${
++                    className={`h-1.5 rounded-full transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-1 focus-visible:ring-offset-background ${
+                       i === step ? 'w-4 bg-primary' : 'w-1.5 bg-muted-foreground/30 hover:bg-muted-foreground/50'
+                     }`}
+                   />
