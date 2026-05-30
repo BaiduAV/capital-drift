@@ -96,8 +96,16 @@ export default function Market() {
                     return (
                       <div
                         key={a.id}
-                        className={`w-24 p-2 rounded-md border text-center cursor-pointer transition-colors hover:brightness-110 ${colorClass} ${halted ? 'opacity-50' : ''}`}
+                        role="button"
+                        tabIndex={0}
+                        className={`w-24 p-2 rounded-md border text-center cursor-pointer transition-colors hover:brightness-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background ${colorClass} ${halted ? 'opacity-50' : ''}`}
                         onClick={() => setSelectedAsset(a.id)}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter' || e.key === ' ') {
+                            e.preventDefault();
+                            setSelectedAsset(a.id);
+                          }
+                        }}
                       >
                         <div className="text-xs font-mono font-bold text-foreground truncate">{a.id}</div>
                         <div className="text-[10px] font-mono text-foreground/80 mt-1">{formatPrice(a.assetState.price)}</div>
