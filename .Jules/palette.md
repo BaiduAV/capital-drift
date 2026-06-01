@@ -1,3 +1,3 @@
-## 2024-05-18 - Avoid Runtime Errors on Locales
-**Learning:** Do not commit lockfiles (e.g. `pnpm-lock.yaml`) during a small UI change. Keep PRs focused.
-**Action:** Always verify if `locale` logic is robust.
+## 2026-06-01 - Adding ARIA labels to Icon-only Buttons
+**Learning:** In React components like `Market` and `Trade` that use Lucide icons inside unlabelled buttons, standard semantic meaning is lost for screen readers. Using conditional localization logic (`aria-label={locale === 'pt-BR' ? '...' : '...'}`) perfectly matches the app's internationalization pattern.
+**Action:** When creating or modifying interactive elements containing only icons or visual indicators, always include an `aria-label` attribute and utilize the existing localization logic to ensure the labels are translated properly for all users.
