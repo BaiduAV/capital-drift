@@ -82,8 +82,17 @@ export default function DividendCalendar() {
           {upcoming.map(d => (
             <div
               key={d.assetId}
+              role="button"
+              tabIndex={0}
+              aria-label={locale === 'pt-BR' ? `Ver detalhes de ${d.assetId}` : `View details for ${d.assetId}`}
               onClick={() => navigate(`/trade?asset=${d.assetId}`)}
-              className="flex items-center justify-between px-4 py-2 cursor-pointer hover:bg-muted/40 transition-colors"
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  navigate(`/trade?asset=${d.assetId}`);
+                }
+              }}
+              className="flex items-center justify-between px-4 py-2 cursor-pointer hover:bg-muted/40 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background"
             >
               <div className="min-w-0">
                 <div className="flex items-center gap-2">
