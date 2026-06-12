@@ -82,9 +82,20 @@ export default function DividendCalendar() {
           {upcoming.map(d => (
             <div
               key={d.assetId}
+              role="button"
+              tabIndex={0}
               onClick={() => navigate(`/trade?asset=${d.assetId}`)}
-              className="flex items-center justify-between px-4 py-2 cursor-pointer hover:bg-muted/40 transition-colors"
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  navigate(`/trade?asset=${d.assetId}`);
+                }
+              }}
+              className="flex items-center justify-between px-4 py-2 cursor-pointer hover:bg-muted/40 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background"
             >
+              <span className="sr-only">
+                {locale === 'pt-BR' ? `Negociar ativo ${d.assetId}` : `Trade asset ${d.assetId}`}
+              </span>
               <div className="min-w-0">
                 <div className="flex items-center gap-2">
                   <span className="text-xs font-mono font-bold text-foreground">{d.assetId}</span>
