@@ -1,3 +1,3 @@
-## 2024-05-18 - Avoid Runtime Errors on Locales
-**Learning:** Do not commit lockfiles (e.g. `pnpm-lock.yaml`) during a small UI change. Keep PRs focused.
-**Action:** Always verify if `locale` logic is robust.
+## 2024-06-14 - Improve Keyboard Accessibility and Context for Social Feed Buttons
+**Learning:** Icon-only buttons in complex lists often miss critical accessibility attributes like `aria-label`, `title`, and `aria-pressed`, rendering them opaque to screen readers. Relying purely on color shifts for focus state is also insufficient. Using standard Tailwind focus classes (`focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background`) ensures consistent, high-visibility keyboard navigation out-of-the-box.
+**Action:** Always apply `aria-label` (localized), `title`, and explicit `focus-visible` classes to icon-only interactive elements. Use `aria-pressed` for toggle states like 'Like' or 'Repost'. Ensure `locale` is passed down if the component itself doesn't pull it from a context hook.
