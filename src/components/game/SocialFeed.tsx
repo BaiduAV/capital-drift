@@ -19,12 +19,14 @@ function PostCard({
   interactions,
   onLike,
   onRepost,
+  locale,
 }: {
   post: SocialPost;
   index: number;
   interactions: PostInteractions;
   onLike: (id: string) => void;
   onRepost: (id: string) => void;
+  locale: string;
 }) {
   const sentimentBorder =
     post.accountType === 'influencer'
@@ -76,30 +78,40 @@ function PostCard({
 
           {/* Engagement bar — interactive */}
           <div className="flex items-center gap-4 mt-1.5">
-            <span className="flex items-center gap-1 text-[10px] text-muted-foreground/60 hover:text-[hsl(var(--terminal-cyan))] transition-colors cursor-default">
-              <MessageCircle className="h-3 w-3" />
+            <span
+              className="flex items-center gap-1 text-[10px] text-muted-foreground/60 hover:text-[hsl(var(--terminal-cyan))] transition-colors cursor-default"
+              title={locale === 'pt-BR' ? 'Respostas' : 'Replies'}
+              aria-label={locale === 'pt-BR' ? `${formatCount(post.engagement.replies)} respostas` : `${formatCount(post.engagement.replies)} replies`}
+            >
+              <MessageCircle className="h-3 w-3" aria-hidden="true" />
               {formatCount(post.engagement.replies)}
             </span>
             <button
               onClick={() => onRepost(post.id)}
-              className={`flex items-center gap-1 text-[10px] transition-all duration-200 cursor-pointer hover:scale-110 active:scale-95 ${
+              className={`flex items-center gap-1 text-[10px] transition-all duration-200 cursor-pointer hover:scale-110 active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background rounded ${
                 interactions.reposted
                   ? 'text-[hsl(var(--terminal-green))]'
                   : 'text-muted-foreground/60 hover:text-[hsl(var(--terminal-green))]'
               }`}
+              title={locale === 'pt-BR' ? 'Repostar' : 'Repost'}
+              aria-label={locale === 'pt-BR' ? `Repostar, atualmente ${repostCount} reposts` : `Repost, currently ${repostCount} reposts`}
+              aria-pressed={interactions.reposted}
             >
-              <Repeat2 className="h-3 w-3" />
+              <Repeat2 className="h-3 w-3" aria-hidden="true" />
               {formatCount(repostCount)}
             </button>
             <button
               onClick={() => onLike(post.id)}
-              className={`flex items-center gap-1 text-[10px] transition-all duration-200 cursor-pointer hover:scale-110 active:scale-95 ${
+              className={`flex items-center gap-1 text-[10px] transition-all duration-200 cursor-pointer hover:scale-110 active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background rounded ${
                 interactions.liked
                   ? 'text-[hsl(var(--terminal-red))]'
                   : 'text-muted-foreground/60 hover:text-[hsl(var(--terminal-red))]'
               }`}
+              title={locale === 'pt-BR' ? 'Curtir' : 'Like'}
+              aria-label={locale === 'pt-BR' ? `Curtir, atualmente ${likeCount} curtidas` : `Like, currently ${likeCount} likes`}
+              aria-pressed={interactions.liked}
             >
-              <Heart className={`h-3 w-3 ${interactions.liked ? 'fill-current' : ''}`} />
+              <Heart className={`h-3 w-3 ${interactions.liked ? 'fill-current' : ''}`} aria-hidden="true" />
               {formatCount(likeCount)}
             </button>
           </div>
@@ -156,6 +168,7 @@ export default function SocialFeed() {
           interactions={interactions[post.id] ?? DEFAULT_INTERACTION}
           onLike={handleLike}
           onRepost={handleRepost}
+          locale={locale}
         />
       ))}
     </div>
