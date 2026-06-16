@@ -19,12 +19,14 @@ function PostCard({
   interactions,
   onLike,
   onRepost,
+  locale,
 }: {
   post: SocialPost;
   index: number;
   interactions: PostInteractions;
   onLike: (id: string) => void;
   onRepost: (id: string) => void;
+  locale: 'en' | 'pt-BR';
 }) {
   const sentimentBorder =
     post.accountType === 'influencer'
@@ -82,7 +84,10 @@ function PostCard({
             </span>
             <button
               onClick={() => onRepost(post.id)}
-              className={`flex items-center gap-1 text-[10px] transition-all duration-200 cursor-pointer hover:scale-110 active:scale-95 ${
+              aria-label={locale === 'pt-BR' ? 'Repostar' : 'Repost'}
+              title={locale === 'pt-BR' ? 'Repostar' : 'Repost'}
+              aria-pressed={interactions.reposted}
+              className={`flex items-center gap-1 text-[10px] transition-all duration-200 cursor-pointer hover:scale-110 active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background rounded ${
                 interactions.reposted
                   ? 'text-[hsl(var(--terminal-green))]'
                   : 'text-muted-foreground/60 hover:text-[hsl(var(--terminal-green))]'
@@ -93,7 +98,10 @@ function PostCard({
             </button>
             <button
               onClick={() => onLike(post.id)}
-              className={`flex items-center gap-1 text-[10px] transition-all duration-200 cursor-pointer hover:scale-110 active:scale-95 ${
+              aria-label={locale === 'pt-BR' ? 'Curtir' : 'Like'}
+              title={locale === 'pt-BR' ? 'Curtir' : 'Like'}
+              aria-pressed={interactions.liked}
+              className={`flex items-center gap-1 text-[10px] transition-all duration-200 cursor-pointer hover:scale-110 active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background rounded ${
                 interactions.liked
                   ? 'text-[hsl(var(--terminal-red))]'
                   : 'text-muted-foreground/60 hover:text-[hsl(var(--terminal-red))]'
@@ -156,6 +164,7 @@ export default function SocialFeed() {
           interactions={interactions[post.id] ?? DEFAULT_INTERACTION}
           onLike={handleLike}
           onRepost={handleRepost}
+          locale={locale}
         />
       ))}
     </div>
