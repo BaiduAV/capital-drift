@@ -1,3 +1,7 @@
 ## 2024-05-18 - Avoid Runtime Errors on Locales
 **Learning:** Do not commit lockfiles (e.g. `pnpm-lock.yaml`) during a small UI change. Keep PRs focused.
 **Action:** Always verify if `locale` logic is robust.
+## 2024-05-18 - Icon-Only Buttons with Numerical Counts
+**Learning:** When dealing with icon-only interaction buttons that contain a dynamic count (e.g., likes, reposts), if the inner span containing the text count isn’t hidden or if the `aria-label` doesn’t include the explicit count, screen readers might just announce the generic generic label without the specific count or override the internal generic count. By adding an explicit `aria-label` formatted as `[Count] [Action]` to the parent button, setting `aria-hidden="true"` to the inner icons/counters, and adding the `title` attribute, we ensure screen reader users hear the complete context (e.g., "42 likes") instead of just "likes" or "42", and visual users get a tooltip. We also need to add standard `focus-visible` styles to help keyboard users.
+
+**Action:** Whenever building interactive numeric metrics for icons (like social feeds or dashboards), wrap the elements correctly, apply `aria-hidden="true"` to all inner decorative icons and formatting span text, add localized `aria-label` and `title` to the wrapper with the dynamically interpolated counts, and ensure standard `focus-visible` styling is present for accessibility.
