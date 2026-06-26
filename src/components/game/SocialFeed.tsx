@@ -26,6 +26,8 @@ function PostCard({
   onLike: (id: string) => void;
   onRepost: (id: string) => void;
 }) {
+  const { locale } = useGame();
+
   const sentimentBorder =
     post.accountType === 'influencer'
       ? post.sentiment === 'bullish'
@@ -82,25 +84,35 @@ function PostCard({
             </span>
             <button
               onClick={() => onRepost(post.id)}
-              className={`flex items-center gap-1 text-[10px] transition-all duration-200 cursor-pointer hover:scale-110 active:scale-95 ${
+              className={`flex items-center gap-1 text-[10px] transition-all duration-200 cursor-pointer hover:scale-110 active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background ${
                 interactions.reposted
                   ? 'text-[hsl(var(--terminal-green))]'
                   : 'text-muted-foreground/60 hover:text-[hsl(var(--terminal-green))]'
               }`}
+              aria-pressed={interactions.reposted}
+              aria-label={`${interactions.reposted ? (locale === 'pt-BR' ? 'Desfazer repost' : 'Undo repost') : (locale === 'pt-BR' ? 'Repostar' : 'Repost')}, ${repostCount} ${locale === 'pt-BR' ? 'reposts' : 'reposts'}`}
+              title={interactions.reposted ? (locale === 'pt-BR' ? 'Desfazer repost' : 'Undo repost') : (locale === 'pt-BR' ? 'Repostar' : 'Repost')}
             >
-              <Repeat2 className="h-3 w-3" />
-              {formatCount(repostCount)}
+              <span aria-hidden="true" className="flex items-center gap-1">
+                <Repeat2 className="h-3 w-3" />
+                {formatCount(repostCount)}
+              </span>
             </button>
             <button
               onClick={() => onLike(post.id)}
-              className={`flex items-center gap-1 text-[10px] transition-all duration-200 cursor-pointer hover:scale-110 active:scale-95 ${
+              className={`flex items-center gap-1 text-[10px] transition-all duration-200 cursor-pointer hover:scale-110 active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background ${
                 interactions.liked
                   ? 'text-[hsl(var(--terminal-red))]'
                   : 'text-muted-foreground/60 hover:text-[hsl(var(--terminal-red))]'
               }`}
+              aria-pressed={interactions.liked}
+              aria-label={`${interactions.liked ? (locale === 'pt-BR' ? 'Descurtir' : 'Unlike') : (locale === 'pt-BR' ? 'Curtir' : 'Like')}, ${likeCount} ${locale === 'pt-BR' ? 'curtidas' : 'likes'}`}
+              title={interactions.liked ? (locale === 'pt-BR' ? 'Descurtir' : 'Unlike') : (locale === 'pt-BR' ? 'Curtir' : 'Like')}
             >
-              <Heart className={`h-3 w-3 ${interactions.liked ? 'fill-current' : ''}`} />
-              {formatCount(likeCount)}
+              <span aria-hidden="true" className="flex items-center gap-1">
+                <Heart className={`h-3 w-3 ${interactions.liked ? 'fill-current' : ''}`} />
+                {formatCount(likeCount)}
+              </span>
             </button>
           </div>
         </div>
