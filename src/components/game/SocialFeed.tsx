@@ -19,12 +19,14 @@ function PostCard({
   interactions,
   onLike,
   onRepost,
+  locale,
 }: {
   post: SocialPost;
   index: number;
   interactions: PostInteractions;
   onLike: (id: string) => void;
   onRepost: (id: string) => void;
+  locale: 'pt-BR' | 'en';
 }) {
   const sentimentBorder =
     post.accountType === 'influencer'
@@ -76,31 +78,42 @@ function PostCard({
 
           {/* Engagement bar — interactive */}
           <div className="flex items-center gap-4 mt-1.5">
-            <span className="flex items-center gap-1 text-[10px] text-muted-foreground/60 hover:text-[hsl(var(--terminal-cyan))] transition-colors cursor-default">
-              <MessageCircle className="h-3 w-3" />
-              {formatCount(post.engagement.replies)}
+            <span
+              role="group"
+              aria-label={locale === 'pt-BR' ? `${post.engagement.replies} respostas` : `${post.engagement.replies} replies`}
+              title={locale === 'pt-BR' ? 'Respostas' : 'Replies'}
+              className="flex items-center gap-1 text-[10px] text-muted-foreground/60 hover:text-[hsl(var(--terminal-cyan))] transition-colors cursor-default"
+            >
+              <MessageCircle className="h-3 w-3" aria-hidden="true" />
+              <span aria-hidden="true">{formatCount(post.engagement.replies)}</span>
             </span>
             <button
               onClick={() => onRepost(post.id)}
-              className={`flex items-center gap-1 text-[10px] transition-all duration-200 cursor-pointer hover:scale-110 active:scale-95 ${
+              aria-label={locale === 'pt-BR' ? `${repostCount} repostagens` : `${repostCount} reposts`}
+              title={locale === 'pt-BR' ? 'Repostar' : 'Repost'}
+              aria-pressed={interactions.reposted}
+              className={`flex items-center gap-1 text-[10px] transition-all duration-200 cursor-pointer hover:scale-110 active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background rounded-sm ${
                 interactions.reposted
                   ? 'text-[hsl(var(--terminal-green))]'
                   : 'text-muted-foreground/60 hover:text-[hsl(var(--terminal-green))]'
               }`}
             >
-              <Repeat2 className="h-3 w-3" />
-              {formatCount(repostCount)}
+              <Repeat2 className="h-3 w-3" aria-hidden="true" />
+              <span aria-hidden="true">{formatCount(repostCount)}</span>
             </button>
             <button
               onClick={() => onLike(post.id)}
-              className={`flex items-center gap-1 text-[10px] transition-all duration-200 cursor-pointer hover:scale-110 active:scale-95 ${
+              aria-label={locale === 'pt-BR' ? `${likeCount} curtidas` : `${likeCount} likes`}
+              title={locale === 'pt-BR' ? 'Curtir' : 'Like'}
+              aria-pressed={interactions.liked}
+              className={`flex items-center gap-1 text-[10px] transition-all duration-200 cursor-pointer hover:scale-110 active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background rounded-sm ${
                 interactions.liked
                   ? 'text-[hsl(var(--terminal-red))]'
                   : 'text-muted-foreground/60 hover:text-[hsl(var(--terminal-red))]'
               }`}
             >
-              <Heart className={`h-3 w-3 ${interactions.liked ? 'fill-current' : ''}`} />
-              {formatCount(likeCount)}
+              <Heart className={`h-3 w-3 ${interactions.liked ? 'fill-current' : ''}`} aria-hidden="true" />
+              <span aria-hidden="true">{formatCount(likeCount)}</span>
             </button>
           </div>
         </div>
@@ -156,6 +169,7 @@ export default function SocialFeed() {
           interactions={interactions[post.id] ?? DEFAULT_INTERACTION}
           onLike={handleLike}
           onRepost={handleRepost}
+          locale={locale}
         />
       ))}
     </div>
