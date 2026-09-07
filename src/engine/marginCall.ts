@@ -78,19 +78,39 @@ export function checkAndExecuteMarginCall(state: SimulationState): MarginCallRes
       return state.cash + net + 1e-8 >= equityAfter * cashTarget;
     };
 
-    // Find a sufficient whole-unit order, allowing a final fractional holding.
-    let lo = 1;
-    let hi = Math.ceil(pos.quantity);
-    if (reachesTarget(hi)) {
+    // Exemption is monotonic, but reaching the reserve is not: crossing the
+    // stock/crypto monthly limit taxes the entire gain. Split at that boundary.
+    // Use quotes so prior monthly sales, category limits and spreads stay in sync.
+    const maxUnits = Math.ceil(pos.quantity);
+    const ranges: [number, number][] = [[1, maxUnits]];
+    const isExempt = (units: number) => quoteSell(state, id, Math.min(units, pos.quantity)).taxBreakdown?.isExempt;
+    if (isExempt(1) && !fullQuote.taxBreakdown?.isExempt) {
+      let lo = 1;
+      let hi = maxUnits;
+      while (lo < hi) {
+        const mid = lo + Math.ceil((hi - lo) / 2);
+        if (isExempt(mid)) lo = mid;
+        else hi = mid - 1;
+      }
+      ranges.splice(0, 1, [1, lo], [lo + 1, maxUnits]);
+    }
+
+    // Search each continuous tax range in order, allowing a fractional remainder.
+    // If neither range reaches the target, liquidate the available position.
+    let unitsToSell = maxUnits;
+    for (const [start, end] of ranges) {
+      if (!reachesTarget(end)) continue;
+      let lo = start;
+      let hi = end;
       while (lo < hi) {
         const mid = lo + Math.floor((hi - lo) / 2);
         if (reachesTarget(mid)) hi = mid;
         else lo = mid + 1;
       }
-    } else {
-      lo = hi;
+      unitsToSell = lo;
+      break;
     }
-    const qtyToSell = Math.min(lo, pos.quantity);
+    const qtyToSell = Math.min(unitsToSell, pos.quantity);
     const quote = quoteSell(state, id, qtyToSell);
     const cashBefore = state.cash;
     if (executeSell(state, quote)) {
