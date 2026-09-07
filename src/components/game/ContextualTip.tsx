@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { X, Lightbulb } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useGame } from '@/context/GameContext';
 
 const STORAGE_KEY = 'capital-drift-tips-seen';
 
@@ -25,6 +26,7 @@ interface ContextualTipProps {
 }
 
 export default function ContextualTip({ id, message, className }: ContextualTipProps) {
+  const { locale } = useGame();
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
@@ -46,8 +48,13 @@ export default function ContextualTip({ id, message, className }: ContextualTipP
     )}>
       <Lightbulb className="h-3.5 w-3.5 shrink-0" />
       <span className="flex-1">{message}</span>
-      <button onClick={dismiss} className="shrink-0 hover:text-foreground transition-colors rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background" aria-label="Dismiss tip">
-        <X className="h-3.5 w-3.5" />
+      <button
+        type="button"
+        onClick={dismiss}
+        className="shrink-0 hover:text-foreground transition-colors rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+        aria-label={locale === 'pt-BR' ? 'Fechar dica' : 'Dismiss tip'}
+      >
+        <X className="h-3.5 w-3.5" aria-hidden="true" />
       </button>
     </div>
   );

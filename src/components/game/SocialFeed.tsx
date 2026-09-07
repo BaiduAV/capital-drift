@@ -19,12 +19,14 @@ function PostCard({
   interactions,
   onLike,
   onRepost,
+  locale,
 }: {
   post: SocialPost;
   index: number;
   interactions: PostInteractions;
   onLike: (id: string) => void;
   onRepost: (id: string) => void;
+  locale: 'en' | 'pt-BR';
 }) {
   const sentimentBorder =
     post.accountType === 'influencer'
@@ -76,33 +78,48 @@ function PostCard({
 
           {/* Engagement bar — interactive */}
           <div className="flex items-center gap-4 mt-1.5">
-            <span className="flex items-center gap-1 text-[10px] text-muted-foreground/60 hover:text-[hsl(var(--terminal-cyan))] transition-colors cursor-default">
-              <MessageCircle className="h-3 w-3" />
-              {formatCount(post.engagement.replies)}
+            <span
+              role="group"
+              aria-label={`${post.engagement.replies} ${locale === 'pt-BR' ? 'respostas' : 'replies'}`}
+              title={locale === 'pt-BR' ? 'Respostas' : 'Replies'}
+              className="flex items-center gap-1 text-[10px] text-muted-foreground/60 hover:text-[hsl(var(--terminal-cyan))] transition-colors cursor-default"
+            >
+              <span aria-hidden="true" className="flex items-center gap-1">
+                <MessageCircle className="h-3 w-3" />
+                {formatCount(post.engagement.replies)}
+              </span>
             </span>
             <button
               onClick={() => onRepost(post.id)}
-              className={`flex items-center gap-1 text-[10px] transition-all duration-200 cursor-pointer hover:scale-110 active:scale-95 rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[hsl(var(--terminal-green))] focus-visible:ring-offset-1 focus-visible:ring-offset-background ${
+              aria-label={`${repostCount} ${locale === 'pt-BR' ? 'republicações' : 'reposts'}`}
+              title={locale === 'pt-BR' ? 'Republicar' : 'Repost'}
+              aria-pressed={interactions.reposted}
+              className={`flex items-center gap-1 text-[10px] transition-all duration-200 cursor-pointer hover:scale-110 active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background ${
                 interactions.reposted
                   ? 'text-[hsl(var(--terminal-green))]'
                   : 'text-muted-foreground/60 hover:text-[hsl(var(--terminal-green))]'
               }`}
-              aria-label={interactions.reposted ? `Undo repost, current reposts ${repostCount}` : `Repost, current reposts ${repostCount}`}
             >
-              <Repeat2 className="h-3 w-3" />
-              {formatCount(repostCount)}
+              <span aria-hidden="true" className="flex items-center gap-1">
+                <Repeat2 className="h-3 w-3" />
+                {formatCount(repostCount)}
+              </span>
             </button>
             <button
               onClick={() => onLike(post.id)}
-              className={`flex items-center gap-1 text-[10px] transition-all duration-200 cursor-pointer hover:scale-110 active:scale-95 rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[hsl(var(--terminal-red))] focus-visible:ring-offset-1 focus-visible:ring-offset-background ${
+              aria-label={`${likeCount} ${locale === 'pt-BR' ? 'curtidas' : 'likes'}`}
+              title={locale === 'pt-BR' ? 'Curtir' : 'Like'}
+              aria-pressed={interactions.liked}
+              className={`flex items-center gap-1 text-[10px] transition-all duration-200 cursor-pointer hover:scale-110 active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background ${
                 interactions.liked
                   ? 'text-[hsl(var(--terminal-red))]'
                   : 'text-muted-foreground/60 hover:text-[hsl(var(--terminal-red))]'
               }`}
-              aria-label={interactions.liked ? `Unlike, current likes ${likeCount}` : `Like, current likes ${likeCount}`}
             >
-              <Heart className={`h-3 w-3 ${interactions.liked ? 'fill-current' : ''}`} />
-              {formatCount(likeCount)}
+              <span aria-hidden="true" className="flex items-center gap-1">
+                <Heart className={`h-3 w-3 ${interactions.liked ? 'fill-current' : ''}`} />
+                {formatCount(likeCount)}
+              </span>
             </button>
           </div>
         </div>
@@ -158,6 +175,7 @@ export default function SocialFeed() {
           interactions={interactions[post.id] ?? DEFAULT_INTERACTION}
           onLike={handleLike}
           onRepost={handleRepost}
+          locale={locale}
         />
       ))}
     </div>
