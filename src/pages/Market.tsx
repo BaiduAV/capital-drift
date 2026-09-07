@@ -191,6 +191,7 @@ export default function Market() {
                       className="h-6 w-6 text-muted-foreground hover:text-primary shrink-0"
                       onClick={(e) => { e.stopPropagation(); navigate(`/trade?asset=${a.id}`); }}
                       disabled={!!(a.assetState.haltedUntilDay && state.dayIndex < a.assetState.haltedUntilDay)}
+                      aria-label={locale === 'pt-BR' ? `Negociar ${a.id}` : `Trade ${a.id}`}
                     >
                       <ShoppingCart className="h-3 w-3" />
                     </Button>
