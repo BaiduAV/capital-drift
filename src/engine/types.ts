@@ -80,7 +80,9 @@ export interface TaxState {
   totalIRPaid: number;
   totalIOFPaid: number;
   accumulatedLosses: Partial<Record<string, number>>;
+  /** Legacy mixed totals, retained for save compatibility only. */
   monthlySales: Record<number, number>;
+  monthlySalesByCategory?: Record<number, Partial<Record<import('./taxes').TaxCategory, number>>>;
 }
 
 export interface GameState {
@@ -103,6 +105,7 @@ export interface GameState {
   };
   ipoPipeline: IPOPipelineEntry[];
   achievements: Record<string, { unlockedAtDay: number }>;
+  /** recoveryTarget is the target cash/equity ratio (legacy save key). */
   marginCallSettings: { drawdownThreshold: number; recoveryTarget: number };
   taxState?: TaxState;
 }

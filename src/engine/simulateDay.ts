@@ -83,14 +83,15 @@ function phaseShocks(state: SimulationState, ctx: DayContext): { next: Simulatio
   next.events = { active };
 
   // Add credit events to active events temporarily to be processed
-  const allGenerated = [...generated, ...creditEvents.map((c, i) => ({
+  const persistentCreditEvents: PersistentEvent[] = creditEvents.map((c, i) => ({
     id: `credit_${next.dayIndex}_${i}`,
     card: c,
     startedAtDay: next.dayIndex,
     durationDays: 1
-  }))];
+  }));
+  const allGenerated = [...generated, ...persistentCreditEvents];
 
-  next.events.active.push(...allGenerated);
+  next.events.active.push(...persistentCreditEvents);
 
   // Apply macro impacts from all active events
   applyEventMacro(next, next.events.active);
@@ -124,9 +125,11 @@ function phaseShocks(state: SimulationState, ctx: DayContext): { next: Simulatio
           if (existing) {
             const totalQty = existing.quantity + entry.playerReservation;
             existing.avgPrice = (existing.avgPrice * existing.quantity + cost) / totalQty;
+            existing.avgPurchaseDay = ((existing.avgPurchaseDay ?? next.dayIndex) * existing.quantity
+              + next.dayIndex * entry.playerReservation) / totalQty;
             existing.quantity = totalQty;
           } else {
-            next.portfolio[entry.ticker] = { quantity: entry.playerReservation, avgPrice: entry.offerPrice };
+            next.portfolio[entry.ticker] = { quantity: entry.playerReservation, avgPrice: entry.offerPrice, avgPurchaseDay: next.dayIndex };
           }
         }
       }
@@ -199,7 +202,7 @@ function phaseShocks(state: SimulationState, ctx: DayContext): { next: Simulatio
           let ticker: string, nameKey: string, companyName: string;
           if (isFII) {
             const identity = generateFIIIdentity(
-              { usedTickers: new Set(Object.keys(next.assets)), usedNames: new Set(), rng: ctx.rng.names } as any,
+              { usedTickers: new Set(Object.keys(next.assets)), usedNames: new Set(), rng: ctx.rng.names },
               sector
             );
             ticker = identity.ticker;
@@ -312,14 +315,6 @@ function phaseAccountingAndMetrics(
   const lastInfl = next.history.inflationAccumulated[next.history.inflationAccumulated.length - 1] ?? 1;
   next.history.inflationAccumulated.push(lastInfl * (1 + dailyInfl));
 
-  // 11. History
-  const equityAfter = computeEquity(next);
-  next.history.equity.push(equityAfter);
-
-  const peak = Math.max(0, ...next.history.equity);
-  const dd = peak > 0 ? (peak - equityAfter) / peak : 0;
-  next.history.drawdown.push(dd);
-
   // Update loop state
   const baseRng = createRNG(prevState.rngState);
   baseRng.next(); // advance the base seed for the next day
@@ -328,7 +323,11 @@ function phaseAccountingAndMetrics(
 
   // 11b. Apply bankruptcies
   for (const [id, a] of Object.entries(next.assets)) {
-    maybeBankruptAsset(id, a, next, ctx.rng.market);
+    if (maybeBankruptAsset(id, a, next, ctx.rng.market)) {
+      a.lastReturn = -1;
+      returns[id] = -1;
+      a.priceHistory[a.priceHistory.length - 1] = 0;
+    }
   }
 
   // 11c. Margin call check
@@ -342,10 +341,13 @@ function phaseAccountingAndMetrics(
     };
     generatedEvents.push(mcEvent);
     next.events.active.push(mcEvent);
-    // Recalculate equity after forced liquidation
-    const equityAfterMC = computeEquity(next);
-    next.history.equity[next.history.equity.length - 1] = equityAfterMC;
   }
+
+  // Record the final balance after defaults, costs, taxes and liquidation.
+  const equityAfter = computeEquity(next);
+  next.history.equity.push(equityAfter);
+  const peak = Math.max(0, ...next.history.equity);
+  next.history.drawdown.push(peak > 0 ? (peak - equityAfter) / peak : 0);
 
   // Invariants checking
   const errors = checkInvariants(next);

@@ -5,7 +5,7 @@ import { simulateDay } from '@/engine/simulateDay';
 import { checkAchievements, ACHIEVEMENT_DEFS, type AchievementId } from '@/engine/achievements';
 
 import { quoteBuy, quoteSell, executeBuy, executeSell } from '@/engine/trading';
-import { computeEquity } from '@/engine/invariants';
+import { computeEquity, computeMaxDrawdown } from '@/engine/invariants';
 import { saveGame, loadGame, deleteSave, saveLocale, loadLocale } from '@/engine/persistence';
 import { setLocale, getLocale, t, assetName } from '@/engine/i18n';
 import { toast } from 'sonner';
@@ -101,11 +101,6 @@ export function GameProvider({ children }: { children: ReactNode }) {
     const startEquity = computeEquity(stateCopy);
     const endEquity = computeEquity(current);
     const allEvents = collectedResults.flatMap(r => r.events);
-    let minEq = startEquity, maxEq = startEquity;
-    for (const r of collectedResults) {
-      if (r.metrics.equityAfter < minEq) minEq = r.metrics.equityAfter;
-      if (r.metrics.equityAfter > maxEq) maxEq = r.metrics.equityAfter;
-    }
     const assetStartPrices: Record<string, number> = {};
     for (const [id, a] of Object.entries(stateCopy.assets)) assetStartPrices[id] = a.price;
     const movers = Object.entries(current.assets).map(([id, a]) => ({
@@ -114,12 +109,12 @@ export function GameProvider({ children }: { children: ReactNode }) {
     })).sort((a, b) => Math.abs(b.return) - Math.abs(a.return)).slice(0, 6);
     const rankedEvents = [...allEvents].sort((a, b) => b.magnitude - a.magnitude).slice(0, 6);
     const missedOpportunities: string[] = [];
-    const maxDrawdown = maxEq > 0 ? (maxEq - minEq) / maxEq : 0;
+    const maxDrawdown = computeMaxDrawdown([startEquity, ...collectedResults.map(r => r.metrics.equityAfter)]);
     if (maxDrawdown > 0.10) missedOpportunities.push('missed.drawdown');
     const result: PeriodResult = {
       startDay: stateCopy.dayIndex,
       endDay: current.dayIndex,
-      totalReturn: (endEquity - startEquity) / startEquity,
+      totalReturn: startEquity > 0 ? (endEquity - startEquity) / startEquity : 0,
       maxDrawdown,
       events: rankedEvents,
       topMovers: movers,

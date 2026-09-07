@@ -45,6 +45,17 @@ export function initDividendSchedules(state: GameState): void {
   }
 }
 
+/** Initialize newly listed assets and repair older saves without back-paying missed periods. */
+export function ensureDividendSchedules(state: GameState): void {
+  for (const [id, def] of Object.entries(state.assetCatalog)) {
+    const asset = state.assets[id];
+    if (asset && !asset.isBankrupt && asset.nextDividendDay == null
+      && def.dividendYieldAnnual > 0 && def.dividendPeriodDays > 0) {
+      asset.nextDividendDay = state.dayIndex + def.dividendPeriodDays;
+    }
+  }
+}
+
 export interface DividendPayment {
   assetId: string;
   amount: number;
@@ -52,6 +63,7 @@ export interface DividendPayment {
 }
 
 export function applyDividendsAndDistributions(state: GameState): { totalPaid: number; payments: DividendPayment[] } {
+  ensureDividendSchedules(state);
   let totalPaid = 0;
   const payments: DividendPayment[] = [];
 
@@ -59,7 +71,7 @@ export function applyDividendsAndDistributions(state: GameState): { totalPaid: n
     if (!def.dividendYieldAnnual || !def.dividendPeriodDays) continue;
 
     const asset = state.assets[assetId];
-    if (!asset || asset.nextDividendDay == null) continue;
+    if (!asset || asset.isBankrupt || asset.nextDividendDay == null) continue;
 
     // Check if it's time to pay
     if (state.dayIndex < asset.nextDividendDay) continue;

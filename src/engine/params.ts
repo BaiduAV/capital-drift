@@ -242,7 +242,7 @@ export const IPO = {
 // ── L. Margin Call ──
 export const MARGIN_CALL = {
   drawdownThreshold: 0.50, // trigger at 50% drawdown from peak
-  recoveryTarget: 0.40,    // sell until drawdown is reduced to 40%
+  recoveryTarget: 0.40,    // target 40% of current equity in cash (legacy property name)
 };
 
 // ── J. Macro-to-pricing tilt coefficients ──

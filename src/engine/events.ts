@@ -199,7 +199,7 @@ function generateSingleEvent(state: GameState, rng: RNG): EventCard | null {
       magnitude = actD;
       break;
     }
-    case 'SECTOR_CRASH' as any: {
+    case 'SECTOR_CRASH': {
       const { sector, assets } = pickSector(state, rng);
       const shock = -(0.10 + rng.next() * 0.15);
       for (const id of assets) impact[id] = shock;
@@ -274,8 +274,11 @@ export function maybeGenerateEvents(state: GameState, rng: RNG): PersistentEvent
 
 export function rollEvents(state: SimulationState, ctx: DayContext): { active: PersistentEvent[], generated: PersistentEvent[] } {
   // 1. Decay/remove expired events
+  const seen = new Set<string>();
   const active = (state.events?.active || []).filter(e => {
-    return (ctx.dayIndex - e.startedAtDay) < e.durationDays;
+    if (seen.has(e.id) || ctx.dayIndex - e.startedAtDay >= e.durationDays) return false;
+    seen.add(e.id);
+    return true;
   });
 
   // 2. Generate new events

@@ -1,6 +1,6 @@
 // ── Brazilian Tax System: IR (Imposto de Renda) & IOF ──
 
-import type { AssetClass, AssetDefinition, GameState, Position } from './types';
+import type { AssetClass, GameState, TaxState } from './types';
 
 // ── IOF Regressivo (renda fixa, resgates em até 30 dias) ──
 // Day 1: 96%, Day 2: 93%, ... Day 29: 3%, Day 30+: 0%
@@ -11,6 +11,7 @@ const IOF_TABLE = [
 ];
 
 export function getIOFRate(holdingDays: number): number {
+  holdingDays = Math.floor(holdingDays);
   if (holdingDays <= 0) return 0.96;
   if (holdingDays >= 30) return 0;
   return (IOF_TABLE[holdingDays - 1] ?? 0) / 100;
@@ -72,15 +73,7 @@ export interface TaxBreakdown {
   lossOffset: number;        // Prejuízo compensado
 }
 
-// ── Tax State (persisted in GameState) ──
-export interface TaxState {
-  totalIRPaid: number;
-  totalIOFPaid: number;
-  // Accumulated losses by category for carry-forward
-  accumulatedLosses: Partial<Record<TaxCategory, number>>;
-  // Monthly stock sales totals for R$20k exemption
-  monthlySales: Record<number, number>; // monthKey -> total sales amount
-}
+export type { TaxState } from './types';
 
 export function createInitialTaxState(): TaxState {
   return {
@@ -88,6 +81,7 @@ export function createInitialTaxState(): TaxState {
     totalIOFPaid: 0,
     accumulatedLosses: {},
     monthlySales: {},
+    monthlySalesByCategory: {},
   };
 }
 
@@ -146,7 +140,7 @@ export function calculateSellTax(
     case 'STOCK': {
       // R$20k/month exemption (swing trade)
       const monthKey = getMonthKey(state.dayIndex);
-      const currentMonthSales = taxState.monthlySales[monthKey] ?? 0;
+      const currentMonthSales = taxState.monthlySalesByCategory?.[monthKey]?.[category] ?? 0;
       const totalMonthSales = currentMonthSales + saleTotal;
 
       if (totalMonthSales <= 20_000) {
@@ -187,7 +181,7 @@ export function calculateSellTax(
     case 'CRYPTO': {
       // Crypto: 15% on gains when monthly sales > R$35k
       const monthKey = getMonthKey(state.dayIndex);
-      const currentMonthSales = taxState.monthlySales[monthKey] ?? 0;
+      const currentMonthSales = taxState.monthlySalesByCategory?.[monthKey]?.[category] ?? 0;
       const totalMonthSales = currentMonthSales + saleTotal;
 
       if (totalMonthSales <= 35_000) {
@@ -257,7 +251,13 @@ export function applyTaxOnSell(
   state.taxState.totalIRPaid += breakdown.irAmount;
   state.taxState.totalIOFPaid += breakdown.iofAmount;
 
-  // Track monthly sales (for exemptions)
+  // Keep legacy aggregate for save compatibility, but never use mixed totals for exemptions.
+  // Old saves cannot reconstruct categories; separated accounting starts on the next sale.
+  state.taxState.monthlySalesByCategory ??= {};
+  const categorySales = state.taxState.monthlySalesByCategory[getMonthKey(state.dayIndex)] ??= {};
+  categorySales[category] = (categorySales[category] ?? 0) + saleTotal;
+
+  // Track aggregate monthly sales
   const monthKey = getMonthKey(state.dayIndex);
   state.taxState.monthlySales[monthKey] = (state.taxState.monthlySales[monthKey] ?? 0) + saleTotal;
 
@@ -277,6 +277,7 @@ export function applyTaxOnSell(
   for (const key of Object.keys(state.taxState.monthlySales)) {
     if (Number(key) < currentMonth - 3) {
       delete state.taxState.monthlySales[Number(key)];
+      delete state.taxState.monthlySalesByCategory[Number(key)];
     }
   }
 

@@ -30,3 +30,14 @@ export function computeEquity(state: GameState): number {
   }
   return total;
 }
+
+/** Maximum decline from an earlier peak; a later peak cannot precede a loss. */
+export function computeMaxDrawdown(equities: Iterable<number>): number {
+  let peak = 0;
+  let maxDrawdown = 0;
+  for (const equity of equities) {
+    peak = Math.max(peak, equity);
+    if (peak > 0) maxDrawdown = Math.max(maxDrawdown, (peak - equity) / peak);
+  }
+  return maxDrawdown;
+}

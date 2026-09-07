@@ -42,7 +42,8 @@ export function generateReturns(state: GameState, rng: RNG): Record<string, numb
       continue;
     }
 
-    let { drift, vol } = dv;
+    const { drift } = dv;
+    let { vol } = dv;
 
     // IPO volatility multiplier for recently listed assets
     const assetState = state.assets[assetId];
@@ -97,6 +98,11 @@ export function applyReturnsToPrices(state: GameState, returns: Record<string, n
   for (const [assetId, ret] of Object.entries(returns)) {
     const asset = state.assets[assetId];
     if (!asset) continue;
+    if (asset.isBankrupt) {
+      asset.price = 0;
+      asset.lastReturn = 0;
+      continue;
+    }
     asset.lastReturn = ret;
     asset.price = Math.max(0.01, asset.price * (1 + ret)); // never go to 0
   }

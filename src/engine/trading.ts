@@ -5,12 +5,12 @@ import { COSTS } from './params';
 import { calculateSellTax, applyTaxOnSell } from './taxes';
 
 export function quoteBuy(state: GameState, assetId: string, quantity: number): TradeQuote {
-  if (quantity <= 0) {
+  if (!Number.isFinite(quantity) || quantity <= 0 || quantity > Number.MAX_SAFE_INTEGER) {
     return { assetId, quantity, unitPrice: 0, totalCost: 0, fees: 0, spread: 0, canExecute: false, reason: 'trade.invalid_quantity' };
   }
   const def = state.assetCatalog[assetId];
   const asset = state.assets[assetId];
-  if (!def || !asset) {
+  if (!def || !asset || asset.isBankrupt || !Number.isFinite(asset.price) || asset.price <= 0) {
     return { assetId, quantity, unitPrice: 0, totalCost: 0, fees: 0, spread: 0, canExecute: false, reason: 'trade.halted' };
   }
 
@@ -34,7 +34,7 @@ export function quoteBuy(state: GameState, assetId: string, quantity: number): T
   const fees = subtotal * feeRate;
   const totalCost = subtotal + fees;
 
-  if (totalCost > state.cash) {
+  if (!Number.isFinite(totalCost) || !Number.isFinite(state.cash) || totalCost > state.cash) {
     return { assetId, quantity, unitPrice, totalCost, fees, spread: spreadRate, canExecute: false, reason: 'trade.insufficient_cash' };
   }
 
@@ -42,12 +42,12 @@ export function quoteBuy(state: GameState, assetId: string, quantity: number): T
 }
 
 export function quoteSell(state: GameState, assetId: string, quantity: number): TradeQuote {
-  if (quantity <= 0) {
+  if (!Number.isFinite(quantity) || quantity <= 0 || quantity > Number.MAX_SAFE_INTEGER) {
     return { assetId, quantity, unitPrice: 0, totalCost: 0, fees: 0, spread: 0, canExecute: false, reason: 'trade.invalid_quantity' };
   }
   const def = state.assetCatalog[assetId];
   const asset = state.assets[assetId];
-  if (!def || !asset) {
+  if (!def || !asset || asset.isBankrupt || !Number.isFinite(asset.price) || asset.price <= 0) {
     return { assetId, quantity, unitPrice: 0, totalCost: 0, fees: 0, spread: 0, canExecute: false, reason: 'trade.halted' };
   }
 
@@ -80,6 +80,10 @@ export function quoteSell(state: GameState, assetId: string, quantity: number): 
   const fees = subtotal * feeRate;
   const totalCost = subtotal - fees; // net proceeds before tax
 
+  if (!Number.isFinite(totalCost) || !Number.isFinite(state.cash + totalCost)) {
+    return { assetId, quantity, unitPrice, totalCost, fees, spread: spreadRate, canExecute: false, reason: 'trade.invalid_quantity' };
+  }
+
   // Calculate tax estimate
   const taxResult = calculateSellTax(state, assetId, quantity, unitPrice);
 
@@ -102,6 +106,8 @@ export function quoteSell(state: GameState, assetId: string, quantity: number): 
 
 export function executeBuy(state: GameState, quote: TradeQuote): boolean {
   if (!quote.canExecute) return false;
+  const current = quoteBuy(state, quote.assetId, quote.quantity);
+  if (!current.canExecute || current.totalCost !== quote.totalCost || current.unitPrice !== quote.unitPrice) return false;
   state.cash -= quote.totalCost;
   const pos = state.portfolio[quote.assetId] ?? { quantity: 0, avgPrice: 0, avgPurchaseDay: state.dayIndex };
   const totalQty = pos.quantity + quote.quantity;
@@ -119,6 +125,8 @@ export function executeBuy(state: GameState, quote: TradeQuote): boolean {
 
 export function executeSell(state: GameState, quote: TradeQuote): boolean {
   if (!quote.canExecute) return false;
+  const current = quoteSell(state, quote.assetId, quote.quantity);
+  if (!current.canExecute || current.totalCost !== quote.totalCost || current.unitPrice !== quote.unitPrice) return false;
   // Apply tax (deducts from cash and updates taxState)
   applyTaxOnSell(state, quote.assetId, quote.quantity, quote.unitPrice);
   state.cash += quote.totalCost; // net proceeds before tax (tax already deducted by applyTaxOnSell)
@@ -128,4 +136,18 @@ export function executeSell(state: GameState, quote: TradeQuote): boolean {
     delete state.portfolio[quote.assetId];
   }
   return true;
+}
+
+/** Largest affordable whole-unit order. Bounds stay finite even for tiny prices. */
+export function maxAffordableBuyQuantity(state: GameState, assetId: string): number {
+  const one = quoteBuy(state, assetId, 1);
+  if (!one.canExecute || one.totalCost <= 0) return 0;
+  let lo = 0;
+  let hi = Math.min(Number.MAX_SAFE_INTEGER, Math.floor(state.cash / one.totalCost));
+  while (lo < hi) {
+    const mid = lo + Math.ceil((hi - lo) / 2);
+    if (quoteBuy(state, assetId, mid).canExecute) lo = mid;
+    else hi = mid - 1;
+  }
+  return lo;
 }
