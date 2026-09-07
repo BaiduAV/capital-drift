@@ -131,9 +131,9 @@ export default function OnboardingTutorial() {
 
           {/* Close button */}
           <button
-            aria-label={locale === 'pt-BR' ? 'Fechar tutorial' : 'Close tutorial'}
             onClick={handleClose}
-            className="absolute top-3 right-3 text-muted-foreground hover:text-foreground transition-colors z-10"
+            aria-label={isPt ? 'Fechar tutorial' : 'Close tutorial'}
+            className="absolute top-3 right-3 text-muted-foreground hover:text-foreground transition-colors z-10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background"
           >
             <X className="h-4 w-4" />
           </button>
@@ -173,12 +173,18 @@ export default function OnboardingTutorial() {
                 {isPt ? 'Anterior' : 'Previous'}
               </Button>
 
-              <div className="flex gap-1">
+              <div
+                className="flex gap-1"
+                role="group"
+                aria-label={isPt ? 'Passos do tutorial' : 'Tutorial steps'}
+              >
                 {steps.map((_, i) => (
                   <button
                     key={i}
                     onClick={() => setStep(i)}
-                    className={`h-1.5 rounded-full transition-all duration-200 ${
+                    aria-label={isPt ? `Ir para o passo ${i + 1}` : `Go to step ${i + 1}`}
+                    aria-current={i === step ? 'step' : undefined}
+                    className={`h-1.5 rounded-full transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background ${
                       i === step ? 'w-4 bg-primary' : 'w-1.5 bg-muted-foreground/30 hover:bg-muted-foreground/50'
                     }`}
                   />

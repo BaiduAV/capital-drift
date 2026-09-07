@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback } from 'react';
+import { useState, useRef, useCallback, useEffect } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import { LayoutDashboard, TrendingUp, ArrowLeftRight, Briefcase, Play, FastForward } from 'lucide-react';
 import { useGame } from '@/context/GameContext';
@@ -20,7 +20,7 @@ export default function BottomNav() {
   const location = useLocation();
   const [holdProgress, setHoldProgress] = useState(0); // 0-100
   const [isHolding, setIsHolding] = useState(false);
-  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const holdActiveRef = useRef(false);
   const animRef = useRef<ReturnType<typeof requestAnimationFrame> | null>(null);
   const startTimeRef = useRef(0);
   const triggeredRef = useRef(false);
@@ -52,6 +52,7 @@ export default function BottomNav() {
   handleAdvanceRef.current = handleAdvance;
 
   const animateProgress = useCallback(() => {
+    if (!holdActiveRef.current) return;
     const elapsed = Date.now() - startTimeRef.current;
     const progress = Math.min((elapsed / LONG_PRESS_DURATION) * 100, 100);
     setHoldProgress(progress);
@@ -71,6 +72,8 @@ export default function BottomNav() {
   }, [handleFastForward]);
 
   const startHold = useCallback(() => {
+    if (holdActiveRef.current) return;
+    holdActiveRef.current = true;
     triggeredRef.current = false;
     startTimeRef.current = Date.now();
     setIsHolding(true);
@@ -79,6 +82,8 @@ export default function BottomNav() {
   }, [animateProgress]);
 
   const endHold = useCallback(() => {
+    if (!holdActiveRef.current) return;
+    holdActiveRef.current = false;
     if (animRef.current) cancelAnimationFrame(animRef.current);
     animRef.current = null;
 
@@ -91,12 +96,23 @@ export default function BottomNav() {
   }, []);
 
   const cancelHold = useCallback(() => {
+    holdActiveRef.current = false;
     if (animRef.current) cancelAnimationFrame(animRef.current);
     animRef.current = null;
     triggeredRef.current = false;
     setIsHolding(false);
     setHoldProgress(0);
   }, []);
+
+  useEffect(() => {
+    window.addEventListener('blur', cancelHold);
+    return () => {
+      window.removeEventListener('blur', cancelHold);
+      holdActiveRef.current = false;
+      if (animRef.current) cancelAnimationFrame(animRef.current);
+      animRef.current = null;
+    };
+  }, [cancelHold]);
 
   return (
     <>
@@ -139,9 +155,22 @@ export default function BottomNav() {
           onPointerUp={endHold}
           onPointerLeave={cancelHold}
           onPointerCancel={cancelHold}
+          onBlur={cancelHold}
+          onKeyDown={(e) => {
+            if ((e.key === 'Enter' || e.key === ' ') && !e.repeat && !isHolding) {
+              e.preventDefault();
+              startHold();
+            }
+          }}
+          onKeyUp={(e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              endHold();
+            }
+          }}
           onContextMenu={(e) => e.preventDefault()}
           className={cn(
-            'relative h-12 w-12 rounded-full bg-primary text-primary-foreground shadow-lg flex items-center justify-center transition-transform select-none touch-none',
+            'relative h-12 w-12 rounded-full bg-primary text-primary-foreground shadow-lg flex items-center justify-center transition-transform select-none touch-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background',
             isHolding ? 'scale-110' : 'active:scale-95'
           )}
           aria-label={locale === 'pt-BR' ? 'Toque: avançar dia / Segure: avançar 7 dias' : 'Tap: advance day / Hold: advance 7 days'}
