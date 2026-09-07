@@ -16,3 +16,7 @@
 ## 2026-07-08 - Accessible Stateful Icon Buttons with Counts
 **Learning:** In SocialFeed components, `aria-label` directly on wrappers can be too generic or omit numerical counts, and raw counts inside buttons can cause screen readers to read "Like, 42" awkwardly.
 **Action:** Always place `aria-label` (including the count, e.g., "42 likes") and a localized `title` on the button itself. Add `aria-pressed` for state toggles, apply `focus-visible` classes for keyboard navigation, and wrap the visible icon and count in a `span` with `aria-hidden="true"` to prevent redundant reading.
+
+## 2024-05-18 - Provide Keyboard Events for Custom Pointer Interactions
+**Learning:** Custom components using `onPointerDown`/`onPointerUp` for "tap and hold" functionality are entirely inaccessible to keyboard users navigating with Tab/Enter/Space by default. A mouse user could perform a long press, but a keyboard user couldn't.
+**Action:** When creating custom interactions with pointer events, always bind `onKeyDown`/`onKeyUp` for 'Enter' and 'Space' to ensure keyboard accessibility. Make sure to guard against key repeat events (`!e.repeat`) to avoid unintended rapid triggering during the hold.
