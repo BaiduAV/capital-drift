@@ -167,7 +167,6 @@ export default function History() {
                   ]}
                   labelFormatter={(l) => `${locale === 'pt-BR' ? 'Dia' : 'Day'} ${l}`}
                 />
-                {/* @ts-ignore - Recharts ReferenceLine TS issue */}
                 <ReferenceLine y={INITIAL_CASH} stroke="hsl(220, 10%, 30%)" strokeDasharray="4 4" />
                 <Area type="monotone" dataKey="equity" stroke="hsl(140, 70%, 50%)" fill="url(#eqGrad)" strokeWidth={1.5} dot={false} />
                 <Line type="monotone" dataKey="cdi" stroke="hsl(190, 80%, 55%)" strokeWidth={1.5} dot={false} strokeDasharray="5 3" />
@@ -192,7 +191,6 @@ export default function History() {
                 <XAxis dataKey="day" tick={{ fontSize: 10, fill: 'hsl(220, 10%, 45%)' }} tickLine={false} axisLine={false} />
                 <YAxis tick={{ fontSize: 10, fill: 'hsl(220, 10%, 45%)' }} tickLine={false} axisLine={false} tickFormatter={(v: number) => v.toFixed(1) + '%'} width={40} />
                 <Tooltip {...tooltipStyle} formatter={(v: number) => [v.toFixed(2) + '%', 'Drawdown']} labelFormatter={(l) => `${locale === 'pt-BR' ? 'Dia' : 'Day'} ${l}`} />
-                {/* @ts-ignore */}
                 <ReferenceLine y={0} stroke="hsl(220, 10%, 30%)" />
                 <Area type="monotone" dataKey="dd" stroke="hsl(0, 72%, 55%)" fill="url(#ddGrad)" strokeWidth={1.5} dot={false} />
               </AreaChart>

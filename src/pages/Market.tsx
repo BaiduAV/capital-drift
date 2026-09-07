@@ -52,7 +52,7 @@ export default function Market() {
     const groups: Record<string, typeof assetsList> = {};
     for (const a of assetsList) {
       // Group by corrGroup if it exists, otherwise fallback to class
-      const g = (a.def as any).corrGroup || a.def.class;
+      const g = a.def.corrGroup || a.def.class;
       if (!groups[g]) groups[g] = [];
       groups[g].push(a);
     }
