@@ -381,7 +381,19 @@ function PeriodResultCard({ period, locale, formatPct, navigate, t, onDismiss, n
         {period.topMovers.length > 0 && (
           <div className="grid grid-cols-3 gap-1">
             {period.topMovers.map(m => (
-              <span key={m.asset} className={`cursor-pointer hover:underline ${m.return >= 0 ? 'price-up' : 'price-down'}`} onClick={() => navigate(`/trade?asset=${m.asset}`)}>
+              <span
+                key={m.asset}
+                role="button"
+                tabIndex={0}
+                className={`cursor-pointer hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background rounded px-1 -mx-1 ${m.return >= 0 ? 'price-up' : 'price-down'}`}
+                onClick={() => navigate(`/trade?asset=${m.asset}`)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    navigate(`/trade?asset=${m.asset}`);
+                  }
+                }}
+              >
                 {m.asset} {formatPct(m.return)}
               </span>
             ))}
