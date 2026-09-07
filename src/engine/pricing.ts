@@ -2,7 +2,7 @@
 
 import type { GameState } from './types';
 import type { RNG } from './rng';
-import { DRIFT_VOL, CORR_STRENGTH, CRISIS_CRYPTO_CROSS_LINK, MACRO_TILT, MACRO } from './params';
+import { DRIFT_VOL, CORR_STRENGTH, CRISIS_CRYPTO_CROSS_LINK, MACRO_TILT, MACRO, IPO } from './params';
 import { computeSectorReturn } from './correlation';
 
 export function generateReturns(state: GameState, rng: RNG): Record<string, number> {
@@ -17,11 +17,14 @@ export function generateReturns(state: GameState, rng: RNG): Record<string, numb
   // For simplicity since we don't have the T-1 macro state here cleanly without passing it,
   // we proxy the "delta" as the drift + current level deviation. We can just use the current levels 
   // scaled reasonably for the formulas, or rely on macro.riskIndex directly.
+  // Scale level deviations to daily-appropriate magnitudes (basis points, not percentages)
+  // Without scaling, riskOn=0.65 * beta=0.8 = 52% daily return — absurd.
+  const MACRO_DAILY_SCALE = 0.002;
   const macroDelta = {
-    selic: (state.macro.baseRateAnnual - 0.10), // relative to 10%
-    fx: (state.macro.fxUSDBRL - 5.0) / 5.0, // relative to 5.0
-    riskOn: 1.0 - state.macro.riskIndex,
-    commodity: state.macro.activityAnnual * 2.0 // proxy
+    selic: (state.macro.baseRateAnnual - 0.10) * MACRO_DAILY_SCALE,
+    fx: ((state.macro.fxUSDBRL - 5.0) / 5.0) * MACRO_DAILY_SCALE,
+    riskOn: (1.0 - state.macro.riskIndex) * MACRO_DAILY_SCALE,
+    commodity: (state.macro.activityAnnual * 2.0) * MACRO_DAILY_SCALE
   };
 
   const returns: Record<string, number> = {};
@@ -39,7 +42,13 @@ export function generateReturns(state: GameState, rng: RNG): Record<string, numb
       continue;
     }
 
-    const { drift, vol } = dv;
+    let { drift, vol } = dv;
+
+    // IPO volatility multiplier for recently listed assets
+    const assetState = state.assets[assetId];
+    if (assetState?.ipoVolatilityUntilDay && state.dayIndex < assetState.ipoVolatilityUntilDay) {
+      vol *= IPO.volatilityMultiplier;
+    }
 
     if (def.corrGroup === 'FIXED_INCOME') {
       // Fixed income: mostly idiosyncratic, very low correlation
@@ -52,23 +61,22 @@ export function generateReturns(state: GameState, rng: RNG): Record<string, numb
       }
 
       returns[assetId] = ret;
+    } else if (def.corrGroup === 'FX') {
+      // FX: price tracks USD/BRL exchange rate
+      const fxDrift = MACRO.fxUSDBRL.regimeDrift[regime];
+      const fxNoise = rng.nextGaussian() * MACRO.fxUSDBRL.dailyVol * 0.5;
+      returns[assetId] = fxDrift + fxNoise;
     } else if (def.corrGroup === 'EQUITY') {
-      if (assetId === 'USD') {
-        const fxDrift = MACRO.fxUSDBRL.regimeDrift[regime];
-        const fxNoise = rng.nextGaussian() * MACRO.fxUSDBRL.dailyVol * 0.5;
-        returns[assetId] = fxDrift + fxNoise;
-      } else {
-        const sectorBubble = state.market?.sectors?.[def.sector];
+      const sectorBubble = state.market?.sectors?.[def.sector];
 
-        const shocks = {
-          marketShock: equityFactor * vol,
-          sectorShock: rng.nextGaussian() * vol, // Sector specific noise
-          idioShock: rng.nextGaussian() * vol
-        };
+      const shocks = {
+        marketShock: equityFactor * vol,
+        sectorShock: rng.nextGaussian() * vol,
+        idioShock: rng.nextGaussian() * vol
+      };
 
-        const secReturn = computeSectorReturn(def.sector, macroDelta, shocks, sectorBubble);
-        returns[assetId] = drift + secReturn;
-      }
+      const secReturn = computeSectorReturn(def.sector, macroDelta, shocks, sectorBubble);
+      returns[assetId] = drift + secReturn;
     } else if (def.corrGroup === 'CRYPTO') {
       const idioNoise = rng.nextGaussian();
       let factor = cryptoFactor;

@@ -10,6 +10,7 @@ import Market from "@/pages/Market";
 import Portfolio from "@/pages/Portfolio";
 import Trade from "@/pages/Trade";
 import History from "@/pages/History";
+import Achievements from "@/pages/Achievements";
 import Welcome from "@/pages/Welcome";
 import NotFound from "./pages/NotFound";
 
@@ -30,6 +31,7 @@ const App = () => (
               <Route path="/portfolio" element={<Portfolio />} />
               <Route path="/trade" element={<Trade />} />
               <Route path="/history" element={<History />} />
+              <Route path="/achievements" element={<Achievements />} />
             </Route>
             <Route path="*" element={<NotFound />} />
           </Routes>

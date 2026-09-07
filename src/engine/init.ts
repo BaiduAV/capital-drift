@@ -2,8 +2,9 @@
 
 import type { GameState, AssetState } from './types';
 import { buildAssetCatalog } from './assets';
-import { MACRO, INITIAL_CASH, INITIAL_REGIME, DIVIDENDS } from './params';
+import { MACRO, INITIAL_CASH, INITIAL_REGIME, DIVIDENDS, MARGIN_CALL } from './params';
 import { createRNG } from './rng';
+import { initDividendSchedules } from './dividends';
 
 export function createGameState(seed: number): GameState {
   const catalog = buildAssetCatalog(seed);
@@ -21,7 +22,7 @@ export function createGameState(seed: number): GameState {
     };
   }
 
-  return {
+  const state: GameState = {
     dayIndex: 0,
     cash: INITIAL_CASH,
     portfolio: {},
@@ -43,5 +44,21 @@ export function createGameState(seed: number): GameState {
     history: { equity: [INITIAL_CASH], drawdown: [0], cdiAccumulated: [INITIAL_CASH], inflationAccumulated: [1] },
     seed,
     rngState: rng.state(),
+    events: { active: [] },
+    market: {
+      sectors: {},
+      newListingsCount: {},
+    },
+    ipoPipeline: [],
+    achievements: {},
+    marginCallSettings: {
+      drawdownThreshold: MARGIN_CALL.drawdownThreshold,
+      recoveryTarget: MARGIN_CALL.recoveryTarget,
+    },
   };
+
+  // Initialize per-asset dividend schedules
+  initDividendSchedules(state);
+
+  return state;
 }

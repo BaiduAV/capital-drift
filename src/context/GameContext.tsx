@@ -2,11 +2,13 @@ import React, { createContext, useContext, useState, useCallback, useEffect, typ
 import type { GameState, DayResult, PeriodResult, TradeQuote, MacroState } from '@/engine/types';
 import { createGameState } from '@/engine/init';
 import { simulateDay } from '@/engine/simulateDay';
-import { simulatePeriod } from '@/engine/simulatePeriod';
+import { checkAchievements, ACHIEVEMENT_DEFS, type AchievementId } from '@/engine/achievements';
+
 import { quoteBuy, quoteSell, executeBuy, executeSell } from '@/engine/trading';
 import { computeEquity } from '@/engine/invariants';
 import { saveGame, loadGame, deleteSave, saveLocale, loadLocale } from '@/engine/persistence';
-import { setLocale, getLocale, t } from '@/engine/i18n';
+import { setLocale, getLocale, t, assetName } from '@/engine/i18n';
+import { toast } from 'sonner';
 
 interface GameContextType {
   state: GameState;
@@ -21,8 +23,11 @@ interface GameContextType {
   getSellQuote: (assetId: string, qty: number) => TradeQuote;
   buy: (assetId: string, qty: number) => { success: boolean; quote: TradeQuote };
   sell: (assetId: string, qty: number) => { success: boolean; quote: TradeQuote };
+  batchTrades: (fn: (ops: { buy: (id: string, qty: number) => boolean; sell: (id: string, qty: number) => boolean; getState: () => GameState }) => void) => void;
+  reserveIPO: (ticker: string, qty: number) => boolean;
   newGame: (seed?: number) => void;
   switchLocale: () => void;
+  updateMarginCallSettings: (settings: { drawdownThreshold: number; recoveryTarget: number }) => void;
   t: typeof t;
 }
 
@@ -52,21 +57,74 @@ export function GameProvider({ children }: { children: ReactNode }) {
 
   const advanceDay = useCallback(() => {
     const stateCopy = structuredClone(state);
-    // Save macro before simulation for trend arrows
     setPrevMacro({ ...stateCopy.macro });
     const result = simulateDay(stateCopy);
-    // simulateDay returns new state in result.state (does NOT mutate input)
-    setState(result.state as GameState);
+    const newState = result.state as GameState;
+    const newAch = checkAchievements(newState, result, stateCopy);
+    for (const id of newAch) {
+      newState.achievements = { ...newState.achievements, [id]: { unlockedAtDay: newState.dayIndex } };
+    }
+    setState(newState);
     setDayResults(prev => [...prev.slice(-99), result]);
+    for (const id of newAch) {
+      const def = ACHIEVEMENT_DEFS.find(d => d.id === id);
+      if (def) toast.success(`${def.icon} ${t(def.titleKey)}`, { description: t(def.descKey) });
+    }
     return result;
   }, [state]);
 
   const fastForward = useCallback((days: number) => {
     const stateCopy = structuredClone(state);
     setPrevMacro({ ...stateCopy.macro });
-    const result = simulatePeriod(stateCopy, days);
-    // simulatePeriod mutates stateCopy via Object.assign in its loop
-    setState(stateCopy);
+    // Run day-by-day so we can collect DayResults for the NewsFeed
+    const collectedResults: DayResult[] = [];
+    let current = stateCopy;
+    const allNewAch = new Set<AchievementId>();
+    for (let i = 0; i < days; i++) {
+      const prev = current;
+      const result = simulateDay(current);
+      current = result.state as GameState;
+      const newAch = checkAchievements(current, result, prev);
+      for (const id of newAch) {
+        current.achievements = { ...current.achievements, [id]: { unlockedAtDay: current.dayIndex } };
+        allNewAch.add(id);
+      }
+      collectedResults.push(result);
+    }
+    setState(current);
+    for (const id of allNewAch) {
+      const def = ACHIEVEMENT_DEFS.find(d => d.id === id);
+      if (def) toast.success(`${def.icon} ${t(def.titleKey)}`, { description: t(def.descKey) });
+    }
+    setDayResults(prev => [...prev, ...collectedResults].slice(-100));
+    // Build PeriodResult from collected results
+    const startEquity = computeEquity(stateCopy);
+    const endEquity = computeEquity(current);
+    const allEvents = collectedResults.flatMap(r => r.events);
+    let minEq = startEquity, maxEq = startEquity;
+    for (const r of collectedResults) {
+      if (r.metrics.equityAfter < minEq) minEq = r.metrics.equityAfter;
+      if (r.metrics.equityAfter > maxEq) maxEq = r.metrics.equityAfter;
+    }
+    const assetStartPrices: Record<string, number> = {};
+    for (const [id, a] of Object.entries(stateCopy.assets)) assetStartPrices[id] = a.price;
+    const movers = Object.entries(current.assets).map(([id, a]) => ({
+      asset: id,
+      return: (a.price - (assetStartPrices[id] ?? a.price)) / (assetStartPrices[id] || 1),
+    })).sort((a, b) => Math.abs(b.return) - Math.abs(a.return)).slice(0, 6);
+    const rankedEvents = [...allEvents].sort((a, b) => b.magnitude - a.magnitude).slice(0, 6);
+    const missedOpportunities: string[] = [];
+    const maxDrawdown = maxEq > 0 ? (maxEq - minEq) / maxEq : 0;
+    if (maxDrawdown > 0.10) missedOpportunities.push('missed.drawdown');
+    const result: PeriodResult = {
+      startDay: stateCopy.dayIndex,
+      endDay: current.dayIndex,
+      totalReturn: (endEquity - startEquity) / startEquity,
+      maxDrawdown,
+      events: rankedEvents,
+      topMovers: movers,
+      missedOpportunities,
+    };
     return result;
   }, [state]);
 
@@ -78,20 +136,55 @@ export function GameProvider({ children }: { children: ReactNode }) {
     return quoteSell(state, assetId, qty);
   }, [state]);
 
+  const unlockTradeAchievement = useCallback((s: GameState) => {
+    if (!s.achievements?.['first_trade']) {
+      s.achievements = { ...s.achievements, first_trade: { unlockedAtDay: s.dayIndex } };
+      const def = ACHIEVEMENT_DEFS.find(d => d.id === 'first_trade');
+      if (def) toast.success(`${def.icon} ${t(def.titleKey)}`, { description: t(def.descKey) });
+    }
+  }, []);
+
   const buy = useCallback((assetId: string, qty: number) => {
     const stateCopy = structuredClone(state);
     const quote = quoteBuy(stateCopy, assetId, qty);
     const success = executeBuy(stateCopy, quote);
-    if (success) setState(stateCopy);
+    if (success) { unlockTradeAchievement(stateCopy); setState(stateCopy); }
     return { success, quote };
-  }, [state]);
+  }, [state, unlockTradeAchievement]);
 
   const sell = useCallback((assetId: string, qty: number) => {
     const stateCopy = structuredClone(state);
     const quote = quoteSell(stateCopy, assetId, qty);
     const success = executeSell(stateCopy, quote);
-    if (success) setState(stateCopy);
+    if (success) { unlockTradeAchievement(stateCopy); setState(stateCopy); }
     return { success, quote };
+  }, [state, unlockTradeAchievement]);
+
+  const batchTrades = useCallback((fn: (ops: { buy: (id: string, qty: number) => boolean; sell: (id: string, qty: number) => boolean; getState: () => GameState }) => void) => {
+    const stateCopy = structuredClone(state);
+    fn({
+      buy: (id, qty) => {
+        const quote = quoteBuy(stateCopy, id, qty);
+        return executeBuy(stateCopy, quote);
+      },
+      sell: (id, qty) => {
+        const quote = quoteSell(stateCopy, id, qty);
+        return executeSell(stateCopy, quote);
+      },
+      getState: () => stateCopy,
+    });
+    setState(stateCopy);
+  }, [state]);
+
+  const reserveIPO = useCallback((ticker: string, qty: number): boolean => {
+    const stateCopy = structuredClone(state);
+    const entry = stateCopy.ipoPipeline?.find(e => e.ticker === ticker && e.status === 'bookbuilding');
+    if (!entry || qty <= 0) return false;
+    const maxAffordable = Math.floor(stateCopy.cash / entry.offerPrice);
+    if (maxAffordable <= 0) return false;
+    entry.playerReservation = Math.min(qty, maxAffordable);
+    setState(stateCopy);
+    return true;
   }, [state]);
 
   const newGame = useCallback((seed?: number) => {
@@ -109,8 +202,12 @@ export function GameProvider({ children }: { children: ReactNode }) {
     saveLocale(next);
   }, [locale]);
 
+  const updateMarginCallSettings = useCallback((settings: { drawdownThreshold: number; recoveryTarget: number }) => {
+    setState(prev => ({ ...prev, marginCallSettings: settings }));
+  }, []);
+
   return (
-    <GameContext.Provider value={{ state, dayResults, locale, equity, prevMacro, advanceDay, fastForward, getBuyQuote, getSellQuote, buy, sell, newGame, switchLocale, t }}>
+    <GameContext.Provider value={{ state, dayResults, locale, equity, prevMacro, advanceDay, fastForward, getBuyQuote, getSellQuote, buy, sell, batchTrades, reserveIPO, newGame, switchLocale, updateMarginCallSettings, t }}>
       {children}
     </GameContext.Provider>
   );

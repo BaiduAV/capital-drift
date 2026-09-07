@@ -5,7 +5,7 @@
 @tailwind utilities;
 
 @layer base {
-  :root {
+  :root, .dark {
     --background: 220 20% 7%;
     --foreground: 140 60% 70%;
 
@@ -22,7 +22,7 @@
     --secondary-foreground: 140 40% 65%;
 
     --muted: 220 15% 13%;
-    --muted-foreground: 220 10% 50%;
+    --muted-foreground: 220 10% 65%;
 
     --accent: 35 90% 55%;
     --accent-foreground: 220 20% 7%;
@@ -55,6 +55,56 @@
     --sidebar-border: 220 15% 15%;
     --sidebar-ring: 140 70% 50%;
   }
+
+  .light {
+    --background: 220 14% 95%;
+    --foreground: 220 25% 12%;
+
+    /* Improved muted-foreground contrast */
+    --card: 0 0% 100%;
+    --card-foreground: 220 25% 12%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 220 25% 12%;
+
+    --primary: 140 55% 30%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 220 12% 88%;
+    --secondary-foreground: 220 20% 25%;
+
+    --muted: 220 12% 91%;
+    --muted-foreground: 220 12% 35%;
+
+    --accent: 35 80% 45%;
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 72% 48%;
+    --destructive-foreground: 0 0% 98%;
+
+    --border: 220 12% 80%;
+    --input: 220 12% 82%;
+    --ring: 140 55% 30%;
+
+    /* Terminal-specific tokens — high contrast for light bg */
+    --terminal-green: 145 70% 28%;
+    --terminal-red: 0 75% 42%;
+    --terminal-amber: 30 80% 38%;
+    --terminal-cyan: 190 65% 30%;
+    --terminal-blue: 215 65% 40%;
+    --terminal-dim: 220 10% 50%;
+    --terminal-bright: 145 65% 25%;
+    --terminal-glow: 0 0% 0% / 0;
+
+    --sidebar-background: 220 14% 92%;
+    --sidebar-foreground: 220 20% 25%;
+    --sidebar-primary: 140 55% 30%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 220 12% 86%;
+    --sidebar-accent-foreground: 220 25% 12%;
+    --sidebar-border: 220 12% 80%;
+    --sidebar-ring: 140 55% 30%;
+  }
 }
 
 @layer base {
@@ -81,6 +131,10 @@
   .terminal-card {
     @apply border border-border bg-card;
     box-shadow: inset 0 1px 0 0 hsl(var(--terminal-green) / 0.05);
+  }
+
+  .light .terminal-card {
+    box-shadow: 0 1px 3px 0 hsl(220 20% 10% / 0.08), 0 1px 2px -1px hsl(220 20% 10% / 0.06);
   }
 
   .price-up {
@@ -114,5 +168,35 @@
   .scrollbar-terminal::-webkit-scrollbar-thumb {
     background: hsl(var(--border));
     border-radius: 3px;
+  }
+
+  @keyframes trade-flash-green {
+    0% { background-color: hsl(var(--terminal-green) / 0.25); }
+    100% { background-color: transparent; }
+  }
+  @keyframes trade-flash-red {
+    0% { background-color: hsl(var(--terminal-red) / 0.25); }
+    100% { background-color: transparent; }
+  }
+  .trade-flash-buy {
+    animation: trade-flash-green 1.2s ease-out;
+  }
+  .trade-flash-sell {
+    animation: trade-flash-red 1.2s ease-out;
+  }
+
+  /* Safe area for bottom nav */
+  .safe-area-bottom {
+    padding-bottom: env(safe-area-inset-bottom, 0);
+  }
+
+  /* Pulse success animation for trade execution */
+  @keyframes pulse-success {
+    0% { box-shadow: 0 0 0 0 hsl(var(--terminal-green) / 0.4); }
+    70% { box-shadow: 0 0 0 8px hsl(var(--terminal-green) / 0); }
+    100% { box-shadow: 0 0 0 0 hsl(var(--terminal-green) / 0); }
+  }
+  .pulse-success {
+    animation: pulse-success 0.8s ease-out;
   }
 }

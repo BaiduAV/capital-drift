@@ -9,10 +9,19 @@ function randRange(rng: RNG, range: [number, number] | number[]): number {
 }
 
 function pickSector(state: GameState, rng: RNG): { sector: string; assets: string[] } {
-  const sectors = ['BANK', 'ENERGY', 'RETAIL', 'TECH'];
+  // Derive sectors dynamically from the catalog, filtering out non-economic sectors
+  const excludedSectors = new Set(['NONE', 'TOTAL_MARKET', 'DIVIDENDS', 'SMALL_CAPS']);
+  const sectorSet = new Set<string>();
+  for (const def of Object.values(state.assetCatalog)) {
+    if (def.sector && !excludedSectors.has(def.sector) && (def.class === 'STOCK' || def.class === 'ETF' || def.class === 'FII')) {
+      sectorSet.add(def.sector);
+    }
+  }
+  const sectors = Array.from(sectorSet);
+  if (sectors.length === 0) return { sector: 'NONE', assets: [] };
   const sector = sectors[Math.floor(rng.next() * sectors.length)];
   const assets = Object.values(state.assetCatalog)
-    .filter(a => a.sector === sector && (a.class === 'STOCK' || a.class === 'ETF'))
+    .filter(a => a.sector === sector && (a.class === 'STOCK' || a.class === 'ETF' || a.class === 'FII'))
     .map(a => a.id);
   return { sector, assets };
 }
@@ -30,6 +39,7 @@ function generateSingleEvent(state: GameState, rng: RNG): EventCard | null {
     ['CRYPTO_HACK', regime === 'CRISIS' ? 2 : 0.5],
     ['CRYPTO_EUPHORIA_EVENT', regime === 'CRYPTO_EUPHORIA' ? 4 : 0.3],
     ['CRYPTO_RUG_PULL', 0.15],
+    ['FLASH_CRASH', 0.03], // Very rare ~0.03 base weight
     ['CREDIT_DOWNGRADE', regime === 'CRISIS' ? 2 : 0.5],
     ['FX_SHOCK', regime === 'CRISIS' ? 3 : regime === 'BEAR' ? 2 : 0.5],
     ['FISCAL_STRESS', regime === 'CRISIS' ? 3 : regime === 'BEAR' ? 2 : 0.3],
@@ -61,6 +71,7 @@ function generateSingleEvent(state: GameState, rng: RNG): EventCard | null {
   const impact: Record<string, number> = {};
   let macroImpact: EventCard['macroImpact'];
   let magnitude = 0;
+  let vars: Record<string, string> | undefined;
 
   switch (picked) {
     case 'RATE_HIKE': {
@@ -101,17 +112,19 @@ function generateSingleEvent(state: GameState, rng: RNG): EventCard | null {
       break;
     }
     case 'SECTOR_BOOM': {
-      const { assets } = pickSector(state, rng);
+      const { sector, assets } = pickSector(state, rng);
       const shock = 0.005 + rng.next() * 0.02;
       for (const id of assets) impact[id] = shock;
       magnitude = shock;
+      vars = { sector };
       break;
     }
     case 'SECTOR_BUST': {
-      const { assets } = pickSector(state, rng);
+      const { sector, assets } = pickSector(state, rng);
       const shock = -(0.005 + rng.next() * 0.02);
       for (const id of assets) impact[id] = shock;
       magnitude = Math.abs(shock);
+      vars = { sector };
       break;
     }
     case 'CRYPTO_HACK': {
@@ -130,8 +143,14 @@ function generateSingleEvent(state: GameState, rng: RNG): EventCard | null {
       break;
     }
     case 'CRYPTO_RUG_PULL': {
-      impact['CRALTM'] = randRange(rng, EVENT_IMPACTS.cryptoRugPull.targetShock as [number, number]);
-      magnitude = Math.abs(impact['CRALTM'] ?? 0.5);
+      const alts = Object.values(state.assetCatalog).filter(a => a.class === 'CRYPTO_ALT');
+      if (alts.length > 0) {
+        const target = alts[Math.floor(rng.next() * alts.length)];
+        impact[target.id] = randRange(rng, EVENT_IMPACTS.cryptoRugPull.targetShock as [number, number]);
+        magnitude = Math.abs(impact[target.id] ?? 0.5);
+      } else {
+        magnitude = 0;
+      }
       break;
     }
     case 'CREDIT_DOWNGRADE': {
@@ -175,28 +194,41 @@ function generateSingleEvent(state: GameState, rng: RNG): EventCard | null {
       macroImpact = { activityDelta: actD, fxDelta: fxD, riskDelta: riskD };
       for (const [id, def] of Object.entries(state.assetCatalog)) {
         if (def.corrGroup === 'EQUITY') impact[id] = eqShock;
-        if (def.sector === 'ENERGY') impact[id] = (impact[id] ?? 0) + eqShock * 0.5;
+        if (def.sector === 'ENERGIA') impact[id] = (impact[id] ?? 0) + eqShock * 0.5;
       }
       magnitude = actD;
       break;
     }
     case 'SECTOR_CRASH' as any: {
-      const { assets } = pickSector(state, rng);
-      const shock = -(0.10 + rng.next() * 0.15); // Severe immediate shock
+      const { sector, assets } = pickSector(state, rng);
+      const shock = -(0.10 + rng.next() * 0.15);
       for (const id of assets) impact[id] = shock;
       magnitude = Math.abs(shock);
+      vars = { sector };
+      break;
+    }
+    case 'FLASH_CRASH': {
+      // Flash crash: all crypto alts drop -40% to -80%, majors take a smaller hit
+      for (const [id, def] of Object.entries(state.assetCatalog)) {
+        if (def.class === 'CRYPTO_ALT') impact[id] = randRange(rng, EVENT_IMPACTS.flashCrash.altShock as [number, number]);
+        if (def.class === 'CRYPTO_MAJOR') impact[id] = randRange(rng, EVENT_IMPACTS.flashCrash.majorShock as [number, number]);
+      }
+      const riskD = randRange(rng, EVENT_IMPACTS.flashCrash.riskDelta as [number, number]);
+      macroImpact = { riskDelta: riskD };
+      magnitude = 0.60;
       break;
     }
   }
 
-  const typeToKey: Record<EventType | 'SECTOR_CRASH', string> = {
+  const typeToKey: Record<EventType, string> = {
     RATE_HIKE: 'rate_hike', RATE_CUT: 'rate_cut',
     INFLATION_UP: 'inflation_up', INFLATION_DOWN: 'inflation_down',
     SECTOR_BOOM: 'sector_boom', SECTOR_BUST: 'sector_bust',
     CRYPTO_HACK: 'crypto_hack', CRYPTO_EUPHORIA_EVENT: 'crypto_euphoria',
     CRYPTO_RUG_PULL: 'crypto_rug_pull', CREDIT_DOWNGRADE: 'credit_downgrade',
     FX_SHOCK: 'fx_shock', FISCAL_STRESS: 'fiscal_stress', COMMODITY_BOOM: 'commodity_boom',
-    SECTOR_CRASH: 'sector_crash',
+    SECTOR_CRASH: 'sector_crash', FLASH_CRASH: 'flash_crash', MARGIN_CALL: 'margin_call',
+    IPO_ANNOUNCED: 'ipo.announced', IPO_BOOKBUILDING: 'ipo.bookbuilding', IPO_LISTED: 'ipo.listed',
   };
 
   return {
@@ -206,6 +238,7 @@ function generateSingleEvent(state: GameState, rng: RNG): EventCard | null {
     impact,
     macroImpact,
     magnitude,
+    vars,
   };
 }
 

@@ -44,6 +44,10 @@ export function loadGame(): GameState | null {
     if (state.macro.fxUSDBRL === undefined) state.macro.fxUSDBRL = 5.0;
     if (state.macro.activityAnnual === undefined) state.macro.activityAnnual = 0.02;
     if (state.macro.riskIndex === undefined) state.macro.riskIndex = 0.35;
+    if (!state.achievements) state.achievements = {};
+    if (!Array.isArray(state.ipoPipeline)) state.ipoPipeline = [];
+    if (!state.market) state.market = { sectors: {}, newListingsCount: {} };
+    if (!state.marginCallSettings) state.marginCallSettings = { drawdownThreshold: 0.50, recoveryTarget: 0.40 };
     return state;
   } catch {
     return null;
@@ -64,4 +68,16 @@ export function saveLocale(locale: 'pt-BR' | 'en'): void {
 
 export function loadLocale(): 'pt-BR' | 'en' {
   return (localStorage.getItem(LOCALE_KEY) as 'pt-BR' | 'en') || 'pt-BR';
+}
+
+const THEME_KEY = 'patrimonio_theme';
+
+export type AppTheme = 'dark' | 'light';
+
+export function saveTheme(theme: AppTheme): void {
+  localStorage.setItem(THEME_KEY, theme);
+}
+
+export function loadTheme(): AppTheme {
+  return (localStorage.getItem(THEME_KEY) as AppTheme) || 'dark';
 }

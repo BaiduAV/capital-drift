@@ -3,17 +3,22 @@ import { useGame } from '@/context/GameContext';
 import { INITIAL_CASH } from '@/engine/params';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Play, FastForward, AlertTriangle, TrendingUp, TrendingDown, Keyboard } from 'lucide-react';
+import { Play, FastForward, AlertTriangle, TrendingUp, TrendingDown, Keyboard, X } from 'lucide-react';
 import { toast } from 'sonner';
 import type { DayResult, PeriodResult } from '@/engine/types';
 import { useNavigate } from 'react-router-dom';
 import { useKeyboardShortcuts } from '@/hooks/useKeyboardShortcuts';
 import { generateNarrative } from '@/utils/generateNarrative';
 import { ComposedChart, Area, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, ReferenceLine } from 'recharts';
+import { playRegimeSound } from '@/engine/audio';
 import MacroPanel from '@/components/game/MacroPanel';
-import NewsFeed from '@/components/game/NewsFeed';
+import SocialFeed from '@/components/game/SocialFeed';
 import PortfolioHealth from '@/components/game/PortfolioHealth';
 import QuickActions from '@/components/game/QuickActions';
+import DividendCalendar from '@/components/game/DividendCalendar';
+import RebalancePanel from '@/components/game/RebalancePanel';
+import ContextualTip from '@/components/game/ContextualTip';
+import FiscalSummary from '@/components/game/FiscalSummary';
 
 // New Design System imports
 import { PageHeader } from '@/components/ui/PageHeader';
@@ -29,24 +34,31 @@ export default function Dashboard() {
   const navigate = useNavigate();
 
   const formatCurrency = (v: number) =>
-    new Intl.NumberFormat(locale, { style: 'currency', currency: 'BRL', minimumFractionDigits: 2 }).format(v);
+    new Intl.NumberFormat(locale, { style: 'currency', currency: 'BRL', minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(v);
+  const formatCurrencyCompact = (v: number) =>
+    Math.abs(v) >= 1_000_000
+      ? new Intl.NumberFormat(locale, { style: 'currency', currency: 'BRL', notation: 'compact', maximumFractionDigits: 2 }).format(v)
+      : formatCurrency(v);
   const formatPct = (v: number) => (v >= 0 ? '+' : '') + (v * 100).toFixed(2) + '%';
 
   const showDayNotifications = (r: DayResult) => {
     if (r.previousRegime !== r.regime) {
+      playRegimeSound(r.regime);
       toast.warning(`⚡ Regime: ${t(`regime.${r.previousRegime}`)} → ${t(`regime.${r.regime}`)}`, { duration: 5000 });
     }
-    if (r.dividendsPaid > 0) {
-      toast.success(
-        locale === 'pt-BR'
-          ? `💰 Dividendos recebidos: ${formatCurrency(r.dividendsPaid)}`
-          : `💰 Dividends received: ${formatCurrency(r.dividendsPaid)}`,
-        { duration: 4000 }
-      );
+    if (r.dividendsPaid > 0 && r.metrics.dividendDetails.length > 0) {
+      for (const d of r.metrics.dividendDetails) {
+        toast.success(
+          locale === 'pt-BR'
+            ? `💰 ${d.assetId}: +${formatCurrency(d.amount)} (${d.quantity} cotas)`
+            : `💰 ${d.assetId}: +${formatCurrency(d.amount)} (${d.quantity} shares)`,
+          { duration: 4000 }
+        );
+      }
     }
     for (const ev of r.events) {
       if (ev.type === 'CREDIT_DOWNGRADE') {
-        toast.error(`⚠️ ${t(ev.titleKey)}: ${t(ev.descriptionKey)}`, { duration: 5000 });
+        toast.error(`⚠️ ${t(ev.titleKey, ev.vars)}: ${t(ev.descriptionKey, ev.vars)}`, { duration: 5000 });
       }
     }
   };
@@ -113,11 +125,15 @@ export default function Dashboard() {
 
   return (
     <div className="space-y-4">
+      <ContextualTip
+        id="dashboard-advance"
+        message={locale === 'pt-BR' ? '💡 Pressione N para avançar um dia ou F para avançar 7 dias.' : '💡 Press N to advance one day or F for 7 days.'}
+      />
       <PageHeader
-        title={locale === 'pt-BR' ? 'Mission Control' : 'Mission Control'}
+        title={locale === 'pt-BR' ? 'Visão Geral' : 'Overview'}
         subtitle={narrative}
       >
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
           <div className="hidden sm:flex items-center gap-1.5 text-[10px] text-muted-foreground font-mono mr-2">
             <Keyboard className="h-3 w-3" />
             <span>N={locale === 'pt-BR' ? 'Próximo' : 'Next'}</span>
@@ -128,9 +144,13 @@ export default function Dashboard() {
             <Play className="h-3.5 w-3.5" />
             {locale === 'pt-BR' ? 'Avançar Dia' : 'Next Day'}
           </Button>
-          <Button onClick={() => handleFF(7)} variant="secondary" size="sm" className="gap-1.5 font-mono text-xs shadow-md hidden sm:flex">
+          <Button onClick={() => handleFF(7)} variant="secondary" size="sm" className="gap-1.5 font-mono text-xs shadow-md">
             <FastForward className="h-3.5 w-3.5" />
             7d
+          </Button>
+          <Button onClick={() => handleFF(30)} variant="secondary" size="sm" className="gap-1.5 font-mono text-xs shadow-md hidden sm:flex">
+            <FastForward className="h-3.5 w-3.5" />
+            30d
           </Button>
         </div>
       </PageHeader>
@@ -139,7 +159,7 @@ export default function Dashboard() {
       <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-3">
         <StatCard
           label={locale === 'pt-BR' ? 'Patrimônio' : 'Equity'}
-          value={formatCurrency(equity)}
+          value={formatCurrencyCompact(equity)}
         />
         <StatCard
           label={locale === 'pt-BR' ? 'Retorno Total' : 'Total Return'}
@@ -153,8 +173,8 @@ export default function Dashboard() {
         />
         <StatCard
           label={locale === 'pt-BR' ? 'Caixa livre' : 'Free Cash'}
-          value={formatPct(equity > 0 ? state.cash / equity : 0)}
-          sub={formatCurrency(state.cash)}
+          value={(equity > 0 ? (state.cash / equity) * 100 : 0).toFixed(1) + '%'}
+          sub={formatCurrencyCompact(state.cash)}
         />
         <div className="hidden lg:block">
           <StatCard
@@ -186,8 +206,8 @@ export default function Dashboard() {
               <XAxis dataKey="day" tick={{ fontSize: 9 }} stroke="hsl(var(--muted-foreground))" />
               <YAxis tick={{ fontSize: 9 }} stroke="hsl(var(--muted-foreground))" domain={['auto', 'auto']} />
               <Tooltip
-                contentStyle={{ background: 'hsl(220 18% 10%)', border: '1px solid hsl(220 15% 18%)', fontSize: 11, fontFamily: 'JetBrains Mono' }}
-                labelStyle={{ color: 'hsl(140 60% 70%)' }}
+                contentStyle={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', fontSize: 11, fontFamily: 'JetBrains Mono', color: 'hsl(var(--foreground))' }}
+                labelStyle={{ color: 'hsl(var(--primary))' }}
               />
               <Area dataKey="nominal" stroke="hsl(140, 70%, 50%)" fill="hsl(140, 70%, 50%)" fillOpacity={0.08} strokeWidth={1.5} name={locale === 'pt-BR' ? 'Nominal' : 'Nominal'} dot={false} />
               <Line dataKey="real" stroke="hsl(185, 70%, 50%)" strokeWidth={1} strokeDasharray="4 2" name={locale === 'pt-BR' ? 'Real' : 'Real'} dot={false} />
@@ -203,8 +223,8 @@ export default function Dashboard() {
           <div className="shrink-0">
             <MacroPanel />
           </div>
-          <SectionCard title={locale === 'pt-BR' ? 'Feed de Notícias' : 'News Feed'} className="flex-1 min-h-0 overflow-hidden" noPadding>
-            <NewsFeed />
+          <SectionCard title={locale === 'pt-BR' ? 'Feed Social' : 'Social Feed'} className="flex-1 min-h-0 overflow-hidden" noPadding>
+            <SocialFeed />
           </SectionCard>
         </div>
       </div>
@@ -231,7 +251,9 @@ export default function Dashboard() {
           />
         </SectionCard>
         <div className="flex flex-col gap-3">
-          <QuickActions />
+          <RebalancePanel />
+          <FiscalSummary />
+          <DividendCalendar />
           <PortfolioHealth />
         </div>
       </div>
@@ -239,8 +261,25 @@ export default function Dashboard() {
       {/* Day Result */}
       {lastDay && <DayResultCard day={lastDay} locale={locale} formatPct={formatPct} navigate={navigate} t={t} />}
 
-      {/* Period Result */}
-      {lastPeriod && <PeriodResultCard period={lastPeriod} locale={locale} formatPct={formatPct} navigate={navigate} t={t} />}
+      {/* Period Result — persistent until dismissed */}
+      {lastPeriod && (
+        <PeriodResultCard
+          period={lastPeriod}
+          locale={locale}
+          formatPct={formatPct}
+          navigate={navigate}
+          t={t}
+          onDismiss={() => setLastPeriod(null)}
+          narrative={generateNarrative({
+            regime: state.regime,
+            lastEvents: lastPeriod.events,
+            drawdown: peak > 0 ? (peak - equity) / peak : 0,
+            inflationAnnual: state.macro.inflationAnnual,
+            baseRateAnnual: state.macro.baseRateAnnual,
+            locale,
+          })}
+        />
+      )}
 
       {/* Recent history ticker */}
       {dayResults.length > 0 && (
@@ -268,7 +307,7 @@ export default function Dashboard() {
 
 function DayResultCard({ day, locale, formatPct, navigate, t }: {
   day: DayResult; locale: string; formatPct: (v: number) => string;
-  navigate: (path: string) => void; t: (key: string) => string;
+  navigate: (path: string) => void; t: (key: string, vars?: Record<string, string | number>) => string;
 }) {
   return (
     <Card className="terminal-card animate-fade-in">
@@ -292,7 +331,7 @@ function DayResultCard({ day, locale, formatPct, navigate, t }: {
             </span>
             {day.events.map((e, i) => (
               <div key={i} className="pl-4 text-muted-foreground">
-                <span className="text-foreground">{t(e.titleKey)}</span> — {t(e.descriptionKey)}
+                <span className="text-foreground">{t(e.titleKey, e.vars)}</span> — {t(e.descriptionKey, e.vars)}
               </div>
             ))}
           </div>
@@ -302,12 +341,20 @@ function DayResultCard({ day, locale, formatPct, navigate, t }: {
   );
 }
 
-function PeriodResultCard({ period, locale, formatPct, navigate, t }: {
+function PeriodResultCard({ period, locale, formatPct, navigate, t, onDismiss, narrative }: {
   period: PeriodResult; locale: string; formatPct: (v: number) => string;
-  navigate: (path: string) => void; t: (key: string) => string;
+  navigate: (path: string) => void; t: (key: string, vars?: Record<string, string | number>) => string;
+  onDismiss: () => void; narrative?: string;
 }) {
   return (
-    <Card className="terminal-card animate-fade-in">
+    <Card className="terminal-card animate-fade-in relative">
+      <button
+        onClick={onDismiss}
+        className="absolute top-2 right-2 text-muted-foreground hover:text-foreground transition-colors"
+        aria-label={locale === 'pt-BR' ? 'Fechar resumo' : 'Close summary'}
+      >
+        <X className="h-4 w-4" />
+      </button>
       <CardHeader className="py-2 px-4">
         <CardTitle className="text-sm font-sans">
           {locale === 'pt-BR'
@@ -316,6 +363,11 @@ function PeriodResultCard({ period, locale, formatPct, navigate, t }: {
         </CardTitle>
       </CardHeader>
       <CardContent className="px-4 pb-3 space-y-2 text-xs font-mono">
+        {narrative && (
+          <p className="text-[11px] text-muted-foreground italic border-l-2 border-primary/30 pl-2 mb-2">
+            {narrative}
+          </p>
+        )}
         <div className="flex gap-6">
           <div>
             <span className="text-muted-foreground">{locale === 'pt-BR' ? 'Retorno' : 'Return'}: </span>
@@ -329,7 +381,19 @@ function PeriodResultCard({ period, locale, formatPct, navigate, t }: {
         {period.topMovers.length > 0 && (
           <div className="grid grid-cols-3 gap-1">
             {period.topMovers.map(m => (
-              <span key={m.asset} className={`cursor-pointer hover:underline ${m.return >= 0 ? 'price-up' : 'price-down'}`} onClick={() => navigate(`/trade?asset=${m.asset}`)}>
+              <span
+                key={m.asset}
+                role="button"
+                tabIndex={0}
+                className={`cursor-pointer hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background rounded px-1 -mx-1 ${m.return >= 0 ? 'price-up' : 'price-down'}`}
+                onClick={() => navigate(`/trade?asset=${m.asset}`)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    navigate(`/trade?asset=${m.asset}`);
+                  }
+                }}
+              >
                 {m.asset} {formatPct(m.return)}
               </span>
             ))}
@@ -339,7 +403,7 @@ function PeriodResultCard({ period, locale, formatPct, navigate, t }: {
           <div>
             <span className="text-[hsl(var(--terminal-amber))]">{locale === 'pt-BR' ? 'Eventos' : 'Events'}: </span>
             {period.events.map((e, i) => (
-              <span key={i} className="mr-2 text-muted-foreground">{t(e.titleKey)}</span>
+              <span key={i} className="mr-2 text-muted-foreground">{t(e.titleKey, e.vars)}</span>
             ))}
           </div>
         )}

@@ -156,6 +156,13 @@ export const DRIFT_VOL: Record<AssetClass, Record<RegimeId, DriftVol>> = {
     CRISIS:          { drift: -0.00220, vol: 0.110 },
     CRYPTO_EUPHORIA: { drift: 0.00350, vol: 0.100 },
   },
+  FX: {
+    CALM:            { drift: 0.00010, vol: 0.008 },
+    BULL:            { drift: -0.00020, vol: 0.009 },
+    BEAR:            { drift: 0.00030, vol: 0.011 },
+    CRISIS:          { drift: 0.00080, vol: 0.018 },
+    CRYPTO_EUPHORIA: { drift: -0.00010, vol: 0.009 },
+  },
 };
 
 // ── D. Correlation ──
@@ -205,6 +212,7 @@ export const EVENT_IMPACTS = {
   cryptoHack: { majorShock: [-0.10, -0.03], altShock: [-0.18, -0.06] },
   cryptoEuphoria: { altShock: [0.05, 0.20] },
   cryptoRugPull: { targetShock: [-0.80, -0.40] },
+  flashCrash: { altShock: [-0.80, -0.40], majorShock: [-0.15, -0.05], riskDelta: [0.03, 0.08] },
   fxShock: { fxDelta: [0.03, 0.10], riskDelta: [0.02, 0.06], equityShock: [-0.02, -0.005] },
   fiscalStress: { riskDelta: [0.04, 0.10], rateDelta: [0.002, 0.008], activityDelta: [-0.005, -0.001], equityShock: [-0.015, -0.005] },
   commodityBoom: { activityDelta: [0.002, 0.008], fxDelta: [-0.05, -0.01], riskDelta: [-0.03, -0.01], equityShock: [0.005, 0.02] },
@@ -221,6 +229,21 @@ export const CREDIT = {
 // ── I. Initial state ──
 export const INITIAL_CASH = 5000;
 export const INITIAL_REGIME: RegimeId = 'CALM';
+
+// ── K. IPO Pipeline ──
+export const IPO = {
+  leadDays: 5,
+  bookbuildingStart: 2,       // days after announcement to start bookbuilding
+  volatilityMultiplier: 1.5,
+  volatilityDays: 5,          // days post-listing with extra vol
+  popRange: { low: -0.05, high: 0.20 },
+};
+
+// ── L. Margin Call ──
+export const MARGIN_CALL = {
+  drawdownThreshold: 0.50, // trigger at 50% drawdown from peak
+  recoveryTarget: 0.40,    // sell until drawdown is reduced to 40%
+};
 
 // ── J. Macro-to-pricing tilt coefficients ──
 export const MACRO_TILT = {

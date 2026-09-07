@@ -14,7 +14,15 @@ export const SECTOR_BETAS: Partial<Record<Sector, { selic: number; fx: number; r
     IMOB: { selic: -0.8, fx: -0.1, riskOn: 0.5, commodity: 0 },
     TELECOM: { selic: -0.3, fx: 0, riskOn: 0.2, commodity: 0 },
     LOGISTICA: { selic: -0.4, fx: 0.1, riskOn: 0.4, commodity: 0.1 },
-    ENERGIA: { selic: -0.2, fx: 0, riskOn: 0.2, commodity: 0 }
+    ENERGIA: { selic: -0.2, fx: 0, riskOn: 0.2, commodity: 0 },
+    // ETF sectors
+    TOTAL_MARKET: { selic: -0.4, fx: 0.1, riskOn: 0.7, commodity: 0.1 },
+    DIVIDENDS: { selic: 0.2, fx: 0, riskOn: 0.3, commodity: 0 },
+    SMALL_CAPS: { selic: -0.6, fx: 0, riskOn: 0.8, commodity: 0.1 },
+    // FII sectors
+    BRICK: { selic: -0.7, fx: 0, riskOn: 0.4, commodity: 0 },
+    PAPER: { selic: 0.4, fx: 0, riskOn: 0.1, commodity: 0 },
+    HYBRID: { selic: -0.2, fx: 0, riskOn: 0.3, commodity: 0 },
 };
 
 export function computeSectorReturn(

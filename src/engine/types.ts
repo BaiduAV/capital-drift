@@ -2,9 +2,9 @@
 
 export type RegimeId = 'CALM' | 'BULL' | 'BEAR' | 'CRISIS' | 'CRYPTO_EUPHORIA';
 
-export type AssetClass = 'RF_POS' | 'RF_PRE' | 'RF_IPCA' | 'DEBENTURE' | 'STOCK' | 'ETF' | 'FII' | 'CRYPTO_MAJOR' | 'CRYPTO_ALT';
+export type AssetClass = 'RF_POS' | 'RF_PRE' | 'RF_IPCA' | 'DEBENTURE' | 'STOCK' | 'ETF' | 'FII' | 'CRYPTO_MAJOR' | 'CRYPTO_ALT' | 'FX';
 
-export type CorrGroup = 'EQUITY' | 'CRYPTO' | 'FIXED_INCOME';
+export type CorrGroup = 'EQUITY' | 'CRYPTO' | 'FIXED_INCOME' | 'FX';
 
 export type Sector =
   | "ENERGIA" | "BANCOS" | "VAREJO" | "AGRO"
@@ -28,6 +28,7 @@ export type LiquidityRule = 'D0' | 'D7' | 'D30_OR_PENALTY';
 export interface AssetDefinition {
   id: string;
   nameKey: string; // i18n key
+  displayName?: string; // Dynamic name for generated assets (used when no i18n key exists)
   class: AssetClass;
   sector: Sector;
   corrGroup: CorrGroup;
@@ -44,11 +45,14 @@ export interface AssetState {
   haltedUntilDay: number | null;
   priceHistory: number[]; // last 90 prices
   isBankrupt?: boolean;
+  nextDividendDay?: number; // per-asset dividend schedule
+  ipoVolatilityUntilDay?: number; // elevated vol post-listing
 }
 
 export interface Position {
   quantity: number;
   avgPrice: number;
+  avgPurchaseDay?: number; // weighted average purchase day for tax holding period
 }
 
 export interface CreditWatchState {
@@ -72,6 +76,13 @@ export interface CalendarState {
   nextStockPayDay: number;
 }
 
+export interface TaxState {
+  totalIRPaid: number;
+  totalIOFPaid: number;
+  accumulatedLosses: Partial<Record<string, number>>;
+  monthlySales: Record<number, number>;
+}
+
 export interface GameState {
   dayIndex: number;
   cash: number;
@@ -90,6 +101,24 @@ export interface GameState {
     sectors: Partial<Record<Sector, SectorBubbleState>>;
     newListingsCount: Partial<Record<Sector, number>>;
   };
+  ipoPipeline: IPOPipelineEntry[];
+  achievements: Record<string, { unlockedAtDay: number }>;
+  marginCallSettings: { drawdownThreshold: number; recoveryTarget: number };
+  taxState?: TaxState;
+}
+
+export interface IPOPipelineEntry {
+  ticker: string;
+  displayName: string;
+  sector: Sector;
+  assetClass: 'STOCK' | 'FII';
+  offerPrice: number;
+  announcedDay: number;
+  listingDay: number;
+  status: 'announced' | 'bookbuilding' | 'listed';
+  demand: number;
+  playerReservation: number;
+  catalogEntry: AssetDefinition;
 }
 
 export interface PersistentEvent {
@@ -102,7 +131,7 @@ export interface PersistentEvent {
 
 export type SimulationState = GameState;
 
-export type EventType = 'RATE_HIKE' | 'RATE_CUT' | 'INFLATION_UP' | 'INFLATION_DOWN' | 'SECTOR_BOOM' | 'SECTOR_BUST' | 'CRYPTO_HACK' | 'CRYPTO_EUPHORIA_EVENT' | 'CRYPTO_RUG_PULL' | 'CREDIT_DOWNGRADE' | 'FX_SHOCK' | 'FISCAL_STRESS' | 'COMMODITY_BOOM' | 'SECTOR_CRASH';
+export type EventType = 'RATE_HIKE' | 'RATE_CUT' | 'INFLATION_UP' | 'INFLATION_DOWN' | 'SECTOR_BOOM' | 'SECTOR_BUST' | 'CRYPTO_HACK' | 'CRYPTO_EUPHORIA_EVENT' | 'CRYPTO_RUG_PULL' | 'CREDIT_DOWNGRADE' | 'FX_SHOCK' | 'FISCAL_STRESS' | 'COMMODITY_BOOM' | 'SECTOR_CRASH' | 'FLASH_CRASH' | 'MARGIN_CALL' | 'IPO_ANNOUNCED' | 'IPO_BOOKBUILDING' | 'IPO_LISTED';
 
 export interface EventCard {
   type: EventType;
@@ -111,6 +140,7 @@ export interface EventCard {
   impact: Record<string, number>; // assetId -> return shock
   macroImpact?: { baseRateDelta?: number; inflationDelta?: number; fxDelta?: number; activityDelta?: number; riskDelta?: number };
   magnitude: number; // absolute impact for ranking
+  vars?: Record<string, string>; // i18n interpolation variables
 }
 
 export interface DayResult {
@@ -119,6 +149,7 @@ export interface DayResult {
     equityBefore: number;
     equityAfter: number;
     dividendsPaid: number;
+    dividendDetails: { assetId: string; amount: number; quantity: number }[];
   };
   warnings: string[];
   trace: {
@@ -172,4 +203,17 @@ export interface TradeQuote {
   spread: number;
   canExecute: boolean;
   reason?: string; // i18n key if can't execute
+  // Tax fields (sell only)
+  taxBreakdown?: {
+    capitalGain: number;
+    irRate: number;
+    irAmount: number;
+    iofRate: number;
+    iofAmount: number;
+    totalTax: number;
+    netAfterTax: number;
+    isExempt: boolean;
+    exemptionReason?: string;
+    lossOffset: number;
+  };
 }

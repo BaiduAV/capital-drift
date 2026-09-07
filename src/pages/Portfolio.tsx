@@ -3,9 +3,14 @@ import { useGame } from '@/context/GameContext';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
 import { Button } from '@/components/ui/button';
-import { AlertTriangle, ShieldAlert } from 'lucide-react';
+import { AlertTriangle, ShieldAlert, Lightbulb, Briefcase } from 'lucide-react';
 import AssetDetailModal from '@/components/game/AssetDetailModal';
+import RebalancePanel from '@/components/game/RebalancePanel';
+import { generateRecommendations } from '@/engine/recommendations';
 import { INITIAL_CASH } from '@/engine/params';
+import { useNavigate } from 'react-router-dom';
+import ContextualTip from '@/components/game/ContextualTip';
+import { EmptyState } from '@/components/ui/EmptyState';
 
 // Design System
 import { PageHeader } from '@/components/ui/PageHeader';
@@ -29,9 +34,14 @@ const CLASS_COLORS: Record<string, string> = {
 export default function Portfolio() {
   const { state, locale, equity, t } = useGame();
   const [selectedAsset, setSelectedAsset] = useState<string | null>(null);
+  const navigate = useNavigate();
 
   const formatCurrency = (v: number) =>
     new Intl.NumberFormat(locale, { style: 'currency', currency: 'BRL', minimumFractionDigits: 2 }).format(v);
+  const formatCompact = (v: number) =>
+    Math.abs(v) >= 1_000_000
+      ? new Intl.NumberFormat(locale, { style: 'currency', currency: 'BRL', notation: 'compact', maximumFractionDigits: 2 }).format(v)
+      : formatCurrency(v);
   const formatPct = (v: number) => (v >= 0 ? '+' : '') + (v * 100).toFixed(2) + '%';
 
   const positions = useMemo(() => {
@@ -99,6 +109,20 @@ export default function Portfolio() {
         </div>
       </PageHeader>
 
+      {positions.length === 0 ? (
+        <EmptyState
+          icon={<Briefcase className="h-12 w-12" />}
+          message={locale === 'pt-BR' ? 'Sua carteira está vazia' : 'Your portfolio is empty'}
+          description={locale === 'pt-BR' ? 'Vá para o Mercado para comprar seus primeiros ativos e começar a investir.' : 'Go to the Market to buy your first assets and start investing.'}
+          action={<Button size="sm" onClick={() => navigate('/market')}>{locale === 'pt-BR' ? 'Ir para Mercado' : 'Go to Market'}</Button>}
+        />
+      ) : (
+      <>
+      <ContextualTip
+        id="portfolio-click-detail"
+        message={locale === 'pt-BR' ? '💡 Clique em uma posição para ver detalhes e histórico do ativo.' : '💡 Click a position to see asset details and history.'}
+      />
+
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         {/* Left Col: Risco & Macro Allocation */}
         <div className="space-y-4 lg:col-span-1">
@@ -113,7 +137,7 @@ export default function Portfolio() {
                     innerRadius={45}
                     outerRadius={75}
                     dataKey="value"
-                    stroke="hsl(220, 20%, 7%)"
+                    stroke="hsl(var(--background))"
                     strokeWidth={2}
                   >
                     {pieData.map((entry) => (
@@ -121,7 +145,7 @@ export default function Portfolio() {
                     ))}
                   </Pie>
                   <Tooltip
-                    contentStyle={{ backgroundColor: 'hsl(220, 20%, 10%)', border: '1px solid hsl(220, 10%, 25%)', borderRadius: '4px', fontSize: '11px', fontFamily: 'monospace' }}
+                    contentStyle={{ backgroundColor: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: '4px', fontSize: '11px', fontFamily: 'monospace', color: 'hsl(var(--foreground))' }}
                     formatter={(v: number) => [formatCurrency(v)]}
                   />
                 </PieChart>
@@ -140,21 +164,14 @@ export default function Portfolio() {
             </div>
           </SectionCard>
 
-          <SectionCard
-            title={locale === 'pt-BR' ? 'Riscos e Alertas' : 'Risks & Alerts'}
-            action={
-              <Button size="sm" variant="outline" className="h-7 text-xs font-mono" onClick={() => alert(locale === 'pt-BR' ? 'Sugestão de rebalanceamento virá em breve!' : 'Rebalance suggestions coming soon!')}>
-                Rebalance
-              </Button>
-            }
-          >
+          <SectionCard title={locale === 'pt-BR' ? 'Riscos e Alertas' : 'Risks & Alerts'}>
             <div className="space-y-2">
               <div className="flex justify-between text-xs font-mono mb-3">
-                <span className="text-muted-foreground">Fixed Income</span>
+                <span className="text-muted-foreground">{locale === 'pt-BR' ? 'Renda Fixa' : 'Fixed Income'}</span>
                 <span>{(rfExposure / equity * 100 || 0).toFixed(1)}%</span>
               </div>
               <div className="flex justify-between text-xs font-mono mb-3">
-                <span className="text-muted-foreground">Equity</span>
+                <span className="text-muted-foreground">{locale === 'pt-BR' ? 'Renda Variável' : 'Equity'}</span>
                 <span>{(eqExposure / equity * 100 || 0).toFixed(1)}%</span>
               </div>
               <div className="flex justify-between text-xs font-mono mb-4">
@@ -170,7 +187,7 @@ export default function Portfolio() {
               ) : (
                 <div className="space-y-1">
                   {riskHints.map((hint, i) => (
-                    <div key={i} className="text-xs text-terminal-amber font-mono flex items-start gap-1">
+                    <div key={i} className="text-xs text-[hsl(var(--terminal-amber))] font-mono flex items-start gap-1">
                       <span>{hint}</span>
                     </div>
                   ))}
@@ -178,6 +195,8 @@ export default function Portfolio() {
               )}
             </div>
           </SectionCard>
+
+          <RebalancePanel />
         </div>
 
         {/* Right Col: Positions Table */}
@@ -195,7 +214,7 @@ export default function Portfolio() {
                   render: p => (
                     <div className="flex flex-col">
                       <span className="font-semibold text-foreground font-mono">{p.id}</span>
-                      <span className="text-[9px] text-muted-foreground uppercase">{p.def.class}</span>
+                      <span className="text-[9px] text-muted-foreground uppercase">{t(`class.${p.def.class}`)}</span>
                     </div>
                   )
                 },
@@ -217,7 +236,7 @@ export default function Portfolio() {
                   align: 'right',
                   render: p => (
                     <div className="flex flex-col items-end font-mono">
-                      <span className="text-xs text-foreground">{formatCurrency(p.marketValue)}</span>
+                      <span className="text-xs text-foreground">{formatCompact(p.marketValue)}</span>
                       <span className="text-[10px] text-muted-foreground">{formatCurrency(p.asset.price)}/un</span>
                     </div>
                   )
@@ -229,7 +248,7 @@ export default function Portfolio() {
                   render: p => (
                     <div className="flex flex-col items-end font-mono">
                       <span className={p.pnl >= 0 ? 'price-up text-xs font-semibold' : 'price-down text-xs font-semibold'}>
-                        {formatCurrency(p.pnl)}
+                        {formatCompact(p.pnl)}
                       </span>
                       <span className={p.pnlPct >= 0 ? 'price-up text-[10px]' : 'price-down text-[10px]'}>
                         {formatPct(p.pnlPct)}
@@ -255,6 +274,8 @@ export default function Portfolio() {
           </SectionCard>
         </div>
       </div>
+      </>
+      )}
 
       <AssetDetailModal assetId={selectedAsset} onClose={() => setSelectedAsset(null)} />
     </div>

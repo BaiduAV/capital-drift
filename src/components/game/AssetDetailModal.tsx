@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { useGame } from '@/context/GameContext';
 import { ResponsiveContainer, AreaChart, Area, XAxis, YAxis, Tooltip, CartesianGrid } from 'recharts';
 import type { AssetDefinition, AssetState, Position } from '@/engine/types';
+import { assetName } from '@/engine/i18n';
 
 interface Props {
   assetId: string | null;
@@ -40,7 +41,7 @@ export default function AssetDetailModal({ assetId, onClose }: Props) {
         <DialogHeader className="p-4 pb-2">
           <DialogTitle className="font-mono text-base flex items-center gap-2">
             <span className="text-primary">{assetId}</span>
-            <span className="text-sm text-muted-foreground font-normal">{t(def.nameKey)}</span>
+            <span className="text-sm text-muted-foreground font-normal">{assetName(def)}</span>
           </DialogTitle>
           <DialogDescription className="sr-only">
             {locale === 'pt-BR' ? 'Detalhes do ativo' : 'Asset details'}
@@ -70,8 +71,8 @@ export default function AssetDetailModal({ assetId, onClose }: Props) {
               <YAxis domain={[minPrice * 0.995, maxPrice * 1.005]} hide />
               <Tooltip
                 contentStyle={{
-                  backgroundColor: 'hsl(220, 20%, 10%)',
-                  border: '1px solid hsl(220, 10%, 25%)',
+                  backgroundColor: 'hsl(var(--card))',
+                  border: '1px solid hsl(var(--border))',
                   borderRadius: '4px',
                   fontSize: '11px',
                   fontFamily: 'monospace',
@@ -93,10 +94,10 @@ export default function AssetDetailModal({ assetId, onClose }: Props) {
 
         {/* Info grid */}
         <div className="grid grid-cols-2 gap-x-4 gap-y-1.5 p-4 text-xs font-mono">
-          <InfoRow label={locale === 'pt-BR' ? 'Classe' : 'Class'} value={def.class} />
-          <InfoRow label={locale === 'pt-BR' ? 'Setor' : 'Sector'} value={def.sector} />
+          <InfoRow label={locale === 'pt-BR' ? 'Classe' : 'Class'} value={t(`class.${def.class}`)} />
+          <InfoRow label={locale === 'pt-BR' ? 'Setor' : 'Sector'} value={t(`sector.${def.sector}`)} />
           <InfoRow label={locale === 'pt-BR' ? 'Liquidez' : 'Liquidity'} value={def.liquidityRule} />
-          <InfoRow label={locale === 'pt-BR' ? 'Correlação' : 'Correlation'} value={def.corrGroup} />
+          <InfoRow label={locale === 'pt-BR' ? 'Correlação' : 'Correlation'} value={t(`group.${def.corrGroup}`)} />
           {def.dividendYieldAnnual != null && (
             <InfoRow label="Div. Yield" value={formatPct(def.dividendYieldAnnual)} className="price-up" />
           )}

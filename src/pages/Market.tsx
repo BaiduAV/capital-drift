@@ -7,6 +7,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { ShoppingCart } from 'lucide-react';
 import AssetDetailModal from '@/components/game/AssetDetailModal';
 import type { AssetClass } from '@/engine/types';
+import { assetName } from '@/engine/i18n';
 
 import { PageHeader } from '@/components/ui/PageHeader';
 import { SectionCard } from '@/components/ui/SectionCard';
@@ -80,7 +81,7 @@ export default function Market() {
       {viewTab === 'overview' && (
         <div className="space-y-4 animate-fade-in">
           {Object.entries(heatmapGroups).map(([groupName, groupAssets]) => (
-            <SectionCard key={groupName} title={groupName} className="bg-transparent border-none shadow-none" contentClassName="p-0">
+            <SectionCard key={groupName} title={t(`group.${groupName}`)} className="bg-transparent border-none shadow-none" contentClassName="p-0">
               <div className="flex flex-wrap gap-2">
                 {groupAssets
                   .sort((a, b) => b.assetState.lastReturn - a.assetState.lastReturn)
@@ -95,8 +96,16 @@ export default function Market() {
                     return (
                       <div
                         key={a.id}
-                        className={`w-24 p-2 rounded-md border text-center cursor-pointer transition-colors hover:brightness-110 ${colorClass} ${halted ? 'opacity-50' : ''}`}
+                        role="button"
+                        tabIndex={0}
+                        className={`w-24 p-2 rounded-md border text-center cursor-pointer transition-colors hover:brightness-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background ${colorClass} ${halted ? 'opacity-50' : ''}`}
                         onClick={() => setSelectedAsset(a.id)}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter' || e.key === ' ') {
+                            e.preventDefault();
+                            setSelectedAsset(a.id);
+                          }
+                        }}
                       >
                         <div className="text-xs font-mono font-bold text-foreground truncate">{a.id}</div>
                         <div className="text-[10px] font-mono text-foreground/80 mt-1">{formatPrice(a.assetState.price)}</div>
@@ -110,133 +119,96 @@ export default function Market() {
         </div>
       )}
 
+      {/* Screener: Tabela */}
       {viewTab === 'screener' && (
-      <Card className="terminal-card">
-        <CardContent className="p-0">
-          <div className="overflow-x-auto">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead className="text-xs">{locale === 'pt-BR' ? 'Ativo' : 'Asset'}</TableHead>
-                  <TableHead className="text-xs text-right">{locale === 'pt-BR' ? 'Preço' : 'Price'}</TableHead>
-                  <TableHead className="text-xs text-right">{locale === 'pt-BR' ? 'Variação' : 'Change'}</TableHead>
-                  <TableHead className="text-xs hidden sm:table-cell">{locale === 'pt-BR' ? 'Classe' : 'Class'}</TableHead>
-                  <TableHead className="text-xs hidden md:table-cell">{locale === 'pt-BR' ? 'Setor' : 'Sector'}</TableHead>
-                  <TableHead className="text-xs text-right">{locale === 'pt-BR' ? 'Posição' : 'Position'}</TableHead>
-                  <TableHead className="text-xs text-center w-16"></TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {assets.map(({ id, def, assetState, position }) => {
-                  const halted = assetState.haltedUntilDay && state.dayIndex < assetState.haltedUntilDay;
-                  return (
-                    <TableRow
-                      key={id}
-                      className={`${halted ? 'opacity-50' : ''} cursor-pointer hover:bg-muted/50`}
-                      onClick={() => setSelectedAsset(id)}
-                    >
-                      <TableCell className="text-xs font-mono font-medium">
-                        <span className="text-foreground">{id}</span>
-                        <span className="text-muted-foreground ml-2 hidden sm:inline">{t(def.nameKey)}</span>
-                      </TableCell>
-                      <TableCell className="text-xs font-mono text-right">{formatPrice(assetState.price)}</TableCell>
-                      <TableCell className={`text-xs font-mono text-right ${assetState.lastReturn >= 0 ? 'price-up' : 'price-down'}`}>
-                        {formatPct(assetState.lastReturn)}
-                        {halted && <span className="ml-1 text-accent">⏸</span>}
-                      </TableCell>
-                      <TableCell className="text-[10px] text-muted-foreground hidden sm:table-cell">{def.class}</TableCell>
-                      <TableCell className="text-[10px] text-muted-foreground hidden md:table-cell">{def.sector}</TableCell>
-                      <TableCell className="text-xs font-mono text-right">
-                        {position ? position.quantity : '—'}
-                      </TableCell>
-                      <TableCell className="text-center">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="h-6 w-6 p-0 text-muted-foreground hover:text-primary"
-                          onClick={(e) => { e.stopPropagation(); navigate(`/trade?asset=${id}`); }}
-                          disabled={!!halted}
-                          aria-label={locale === 'pt-BR' ? `Negociar ${id}` : `Trade ${id}`}
-                          title={locale === 'pt-BR' ? `Negociar ${id}` : `Trade ${id}`}
-                        >
-                          <ShoppingCart className="h-3 w-3" />
-                        </Button>
-                      </TableCell>
-                    </TableRow>
-                  );
-                })}
-              </TableBody>
-            </Table>
-          </div>
-
-          <DataTable
-            data={filteredAssets.sort((a, b) => b.assetState.lastReturn - a.assetState.lastReturn)}
-            keyExtractor={a => a.id}
-            onRowClick={a => setSelectedAsset(a.id)}
-            emptyMessage={locale === 'pt-BR' ? 'Nenhum ativo encontrado.' : 'No assets found.'}
-            columns={[
-              {
-                key: 'asset',
-                header: locale === 'pt-BR' ? 'Ativo' : 'Asset',
-                render: (a) => (
-                  <div>
-                    <span className="text-foreground font-semibold font-mono">{a.id}</span>
-                    <span className="text-muted-foreground ml-2 hidden sm:inline text-xs">{t(a.def.nameKey)}</span>
-                    {a.assetState.haltedUntilDay && state.dayIndex < a.assetState.haltedUntilDay && (
-                      <span className="ml-2 text-xs text-accent">⏸</span>
-                    )}
-                  </div>
-                )
-              },
-              {
-                key: 'price',
-                header: locale === 'pt-BR' ? 'Preço' : 'Price',
-                align: 'right',
-                render: (a) => <span className="font-mono text-xs text-muted-foreground">{formatPrice(a.assetState.price)}</span>
-              },
-              {
-                key: 'change',
-                header: locale === 'pt-BR' ? 'Variação' : 'Change',
-                align: 'right',
-                render: (a) => (
-                  <span className={`font-mono text-xs font-bold ${a.assetState.lastReturn >= 0 ? 'price-up' : 'price-down'}`}>
-                    {formatPct(a.assetState.lastReturn)}
-                  </span>
-                )
-              },
-              {
-                key: 'class',
-                header: locale === 'pt-BR' ? 'Classe' : 'Class',
-                className: 'hidden md:table-cell',
-                render: (a) => <span className="text-[10px] text-muted-foreground">{a.def.class}</span>
-              },
-              {
-                key: 'sector',
-                header: locale === 'pt-BR' ? 'Setor' : 'Sector',
-                className: 'hidden lg:table-cell',
-                render: (a) => <span className="text-[10px] text-muted-foreground">{a.def.sector}</span>
-              },
-              {
-                key: 'action',
-                header: '',
-                align: 'right',
-                className: 'w-12',
-                render: (a) => (
+        <div className="space-y-4">
+          <SectionCard
+            title={locale === 'pt-BR' ? 'Mercado' : 'Market'}
+            action={
+              <div className="flex gap-2">
+                {CLASS_TABS.map(tab => (
                   <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-6 w-6 text-muted-foreground hover:text-primary shrink-0"
-                    onClick={(e) => { e.stopPropagation(); navigate(`/trade?asset=${a.id}`); }}
-                    disabled={!!(a.assetState.haltedUntilDay && state.dayIndex < a.assetState.haltedUntilDay)}
+                    key={tab.key}
+                    variant={classFilter === tab.key ? 'default' : 'secondary'}
+                    size="sm"
+                    className="text-xs"
+                    onClick={() => setClassFilter(tab.key)}
                   >
-                    <ShoppingCart className="h-3 w-3" />
+                    {locale === 'pt-BR' ? tab.labelPt : tab.labelEn}
                   </Button>
-                )
-              }
-            ]}
-          />
-        </CardContent>
-      </Card>
+                ))}
+              </div>
+            }
+          >
+            <DataTable
+              data={filteredAssets.sort((a, b) => b.assetState.lastReturn - a.assetState.lastReturn)}
+              keyExtractor={a => a.id}
+              onRowClick={a => setSelectedAsset(a.id)}
+              emptyMessage={locale === 'pt-BR' ? 'Nenhum ativo encontrado.' : 'No assets found.'}
+              columns={[
+                {
+                  key: 'asset',
+                  header: locale === 'pt-BR' ? 'Ativo' : 'Asset',
+                  render: (a) => (
+                    <div>
+                      <span className="text-foreground font-semibold font-mono">{a.id}</span>
+                      <span className="text-muted-foreground ml-2 hidden sm:inline text-xs">{assetName(a.def)}</span>
+                      {a.assetState.haltedUntilDay && state.dayIndex < a.assetState.haltedUntilDay && (
+                        <span className="ml-2 text-xs text-accent">⏸</span>
+                      )}
+                    </div>
+                  )
+                },
+                {
+                  key: 'price',
+                  header: locale === 'pt-BR' ? 'Preço' : 'Price',
+                  align: 'right',
+                  render: (a) => <span className="font-mono text-xs text-muted-foreground">{formatPrice(a.assetState.price)}</span>
+                },
+                {
+                  key: 'change',
+                  header: locale === 'pt-BR' ? 'Variação' : 'Change',
+                  align: 'right',
+                  render: (a) => (
+                    <span className={`font-mono text-xs font-bold ${a.assetState.lastReturn >= 0 ? 'price-up' : 'price-down'}`}>
+                      {formatPct(a.assetState.lastReturn)}
+                    </span>
+                  )
+                },
+                {
+                  key: 'class',
+                  header: locale === 'pt-BR' ? 'Classe' : 'Class',
+                  className: 'hidden md:table-cell',
+                  render: (a) => <span className="text-[10px] text-muted-foreground">{t(`class.${a.def.class}`)}</span>
+                },
+                {
+                  key: 'sector',
+                  header: locale === 'pt-BR' ? 'Setor' : 'Sector',
+                  className: 'hidden lg:table-cell',
+                  render: (a) => <span className="text-[10px] text-muted-foreground">{t(`sector.${a.def.sector}`)}</span>
+                },
+                {
+                  key: 'action',
+                  header: '',
+                  align: 'right',
+                  className: 'w-12',
+                  render: (a) => (
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-6 w-6 text-muted-foreground hover:text-primary shrink-0"
+                      onClick={(e) => { e.stopPropagation(); navigate(`/trade?asset=${a.id}`); }}
+                      disabled={!!(a.assetState.haltedUntilDay && state.dayIndex < a.assetState.haltedUntilDay)}
+                      aria-label={locale === 'pt-BR' ? `Negociar ${a.id}` : `Trade ${a.id}`}
+                    >
+                      <ShoppingCart className="h-3 w-3" />
+                    </Button>
+                  )
+                }
+              ]}
+            />
+          </SectionCard>
+        </div>
       )}
 
       <AssetDetailModal assetId={selectedAsset} onClose={() => setSelectedAsset(null)} />
