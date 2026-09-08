@@ -170,7 +170,10 @@ export default function AppLayout() {
       toast.error(locale === 'pt-BR' ? 'Seed inválida. Use um número inteiro positivo.' : 'Invalid seed. Use a positive integer.');
       return;
     }
-    newGame(seed);
+    if (!newGame(seed)) {
+      toast.error(locale === 'pt-BR' ? 'Não foi possível iniciar um novo jogo. A partida atual foi mantida. Tente novamente.' : 'Could not start a new game. Your current game was kept. Please retry.');
+      return;
+    }
     setNewGameOpen(false);
     toast.success(locale === 'pt-BR' ? 'Novo jogo iniciado!' : 'New game started!');
   };

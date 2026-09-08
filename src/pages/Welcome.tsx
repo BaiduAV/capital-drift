@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { toast } from 'sonner';
 import { useGame } from '@/context/GameContext';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -15,7 +16,10 @@ export default function Welcome() {
 
   const handleNewGame = () => {
     const s = seed ? parseInt(seed) : Date.now();
-    newGame(isNaN(s) ? Date.now() : s);
+    if (!newGame(isNaN(s) ? Date.now() : s)) {
+      toast.error(locale === 'pt-BR' ? 'Não foi possível iniciar um novo jogo. A partida atual foi mantida. Tente novamente.' : 'Could not start a new game. Your current game was kept. Please retry.');
+      return;
+    }
     navigate('/');
   };
 

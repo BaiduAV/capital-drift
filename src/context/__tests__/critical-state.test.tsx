@@ -63,6 +63,30 @@ describe('save protection and recovery', () => {
     expect(localStorage.getItem(KEY)).toBe(original);
   });
 
+  it('reports a failed reset without changing the game and succeeds on retry', () => {
+    const hook = setup();
+    act(() => { hook.result.current.buy('TSELIC', 1); hook.result.current.advanceDay(); });
+    const before = hook.result.current.state;
+    const results = hook.result.current.dayResults;
+    const macro = hook.result.current.prevMacro;
+    const saved = localStorage.getItem(KEY);
+    const storage = vi.spyOn(Storage.prototype, 'setItem').mockImplementation(() => { throw new DOMException('Full', 'QuotaExceededError'); });
+    act(() => { expect(hook.result.current.newGame(42)).toBe(false); });
+    expect(hook.result.current.state).toBe(before);
+    expect(hook.result.current.dayResults).toBe(results);
+    expect(hook.result.current.prevMacro).toBe(macro);
+    expect(localStorage.getItem(KEY)).toBe(saved);
+    expect(screen.getByRole('alert')).toBeInTheDocument();
+    storage.mockRestore();
+    act(() => { expect(hook.result.current.newGame(42)).toBe(true); });
+    expect(hook.result.current.state.seed).toBe(42);
+    expect(hook.result.current.state.dayIndex).toBe(0);
+    expect(hook.result.current.dayResults).toEqual([]);
+    expect(hook.result.current.prevMacro).toBeNull();
+    expect(loadGame()!.seed).toBe(42);
+    expect(screen.queryByRole('alert')).toBeNull();
+  });
+
   it('migrates overbooked IPOs deterministically and marks incomplete legacy tax history', () => {
     const state = createGameState(1);
     state.ipoPipeline = ['A', 'B'].map(ticker => ({ ticker, displayName: ticker, sector: 'NONE', assetClass: 'STOCK', offerPrice: 100, announcedDay: 0, listingDay: 7, status: 'bookbuilding', demand: 0.5, playerReservation: 40, catalogEntry: { ...state.assetCatalog.TSELIC, id: ticker, class: 'STOCK' } }));

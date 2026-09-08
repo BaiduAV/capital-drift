@@ -26,7 +26,7 @@ interface GameContextType {
   sell: (assetId: string, qty: number) => { success: boolean; quote: TradeQuote };
   batchTrades: (fn: (ops: { buy: (id: string, qty: number) => boolean; sell: (id: string, qty: number) => boolean; getState: () => GameState }) => void) => void;
   reserveIPO: (ticker: string, qty: number) => boolean;
-  newGame: (seed?: number) => void;
+  newGame: (seed?: number) => boolean;
   switchLocale: () => void;
   updateMarginCallSettings: (settings: { drawdownThreshold: number; recoveryTarget: number }) => void;
   t: typeof t;
@@ -193,12 +193,13 @@ export function GameProvider({ children }: { children: ReactNode }) {
 
   const newGame = useCallback((seed?: number) => {
     const next = createGameState(seed ?? Date.now());
-    if (!saveGame(next, true).ok) { setSaveFailed(true); return; }
+    if (!saveGame(next, true).ok) { setSaveFailed(true); return false; }
     commit(next);
     setSavingPaused(false);
     setSaveFailed(false);
     setDayResults([]);
     setPrevMacro(null);
+    return true;
   }, [commit]);
 
   const retrySave = () => {
