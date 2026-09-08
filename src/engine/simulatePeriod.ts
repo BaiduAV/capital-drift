@@ -2,14 +2,13 @@
 
 import type { GameState, PeriodResult, EventCard } from './types';
 import { simulateDay } from './simulateDay';
-import { computeEquity } from './invariants';
+import { computeEquity, computeMaxDrawdown } from './invariants';
 
 export function simulatePeriod(state: GameState, days: number): PeriodResult {
   const startDay = state.dayIndex;
   const startEquity = computeEquity(state);
   const allEvents: EventCard[] = [];
-  let minEquity = startEquity;
-  let maxEquity = startEquity;
+  const equities = [startEquity];
 
   const assetStartPrices: Record<string, number> = {};
   for (const [id, a] of Object.entries(state.assets)) {
@@ -20,15 +19,14 @@ export function simulatePeriod(state: GameState, days: number): PeriodResult {
     const result = simulateDay(state);
     allEvents.push(...result.events);
     const eq = result.metrics.equityAfter;
-    if (eq < minEquity) minEquity = eq;
-    if (eq > maxEquity) maxEquity = eq;
+    equities.push(eq);
     // Mutate state for the next simple loop in period simulation
     Object.assign(state, result.state);
   }
 
   const endEquity = computeEquity(state);
-  const totalReturn = (endEquity - startEquity) / startEquity;
-  const maxDrawdown = maxEquity > 0 ? (maxEquity - minEquity) / maxEquity : 0;
+  const totalReturn = startEquity > 0 ? (endEquity - startEquity) / startEquity : 0;
+  const maxDrawdown = computeMaxDrawdown(equities);
 
   // Top movers
   const movers = Object.entries(state.assets).map(([id, a]) => ({

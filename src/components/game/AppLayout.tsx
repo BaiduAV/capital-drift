@@ -382,20 +382,20 @@ export default function AppLayout() {
               </div>
               <div className="space-y-1.5">
                 <Label className="text-xs font-mono flex justify-between">
-                  <span>{locale === 'pt-BR' ? 'Alvo de Recuperação' : 'Recovery Target'}</span>
+                  <span>{locale === 'pt-BR' ? 'Reserva de caixa' : 'Cash reserve target'}</span>
                   <span className="text-primary">{mcRecovery}%</span>
                 </Label>
                 <Slider
                   value={[mcRecovery]}
                   onValueChange={([v]) => setMcRecovery(v)}
                   min={5}
-                  max={mcThreshold - 5}
+                  max={100}
                   step={5}
                 />
                 <p className="text-[10px] text-muted-foreground/70">
                   {locale === 'pt-BR'
-                    ? 'Venda forçada até drawdown reduzir a este nível.'
-                    : 'Forced selling stops when drawdown reaches this level.'}
+                    ? 'Venda dos ativos de maior risco até manter esta parcela do patrimônio em caixa.'
+                    : 'Sell higher-risk assets until this share of equity is held in cash.'}
                 </p>
               </div>
             </div>

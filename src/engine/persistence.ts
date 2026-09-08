@@ -1,6 +1,7 @@
 // ── LocalStorage persistence ──
 
 import type { GameState } from './types';
+import { ensureDividendSchedules } from './dividends';
 
 const STORAGE_KEY = 'patrimonio_save';
 const LOCALE_KEY = 'patrimonio_locale';
@@ -20,6 +21,7 @@ export function loadGame(): GameState | null {
     const state = JSON.parse(raw) as GameState;
     // Backwards compat: add priceHistory if missing
     for (const [id, a] of Object.entries(state.assets)) {
+      if (a.isBankrupt) { a.price = 0; a.lastReturn = 0; }
       if (!a.priceHistory) a.priceHistory = [a.price];
     }
     // Backwards compat: add cdiAccumulated if missing
@@ -48,6 +50,7 @@ export function loadGame(): GameState | null {
     if (!Array.isArray(state.ipoPipeline)) state.ipoPipeline = [];
     if (!state.market) state.market = { sectors: {}, newListingsCount: {} };
     if (!state.marginCallSettings) state.marginCallSettings = { drawdownThreshold: 0.50, recoveryTarget: 0.40 };
+    ensureDividendSchedules(state);
     return state;
   } catch {
     return null;

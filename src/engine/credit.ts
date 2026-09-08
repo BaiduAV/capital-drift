@@ -29,12 +29,7 @@ export function processCreditWatchAndDefaults(state: GameState, rng: RNG): Event
         const [minLoss, maxLoss] = CREDIT.principalLoss[rating];
         const lossFraction = minLoss + rng.next() * (maxLoss - minLoss);
 
-        // Apply loss to positions
-        const pos = state.portfolio[assetId];
-        if (pos && pos.quantity > 0) {
-          const lostValue = pos.quantity * state.assets[assetId].price * lossFraction;
-          state.assets[assetId].price *= (1 - lossFraction);
-        }
+        // Market clearing applies the event loss once, regardless of ownership.
 
         // Halt trading
         state.assets[assetId].haltedUntilDay = state.dayIndex + 3 + Math.floor(rng.next() * 7);

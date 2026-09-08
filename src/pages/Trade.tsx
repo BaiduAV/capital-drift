@@ -18,6 +18,7 @@ import { toast } from 'sonner';
 import { Search, ShoppingCart, TrendingUp, TrendingDown, Landmark, Clock, X } from 'lucide-react';
 import { AreaChart, Area, ResponsiveContainer } from 'recharts';
 import type { TradeQuote, AssetClass } from '@/engine/types';
+import { maxAffordableBuyQuantity } from '@/engine/trading';
 import { assetName } from '@/engine/i18n';
 import { useIsMobile } from '@/hooks/use-mobile';
 
@@ -72,18 +73,7 @@ export default function Trade() {
     return side === 'buy' ? getBuyQuote(assetId, qty) : getSellQuote(assetId, qty);
   }, [assetId, qty, side, getBuyQuote, getSellQuote]);
 
-  const maxBuyQty = useMemo(() => {
-    if (!selectedAsset || !selectedDef) return 0;
-    let lo = 0, hi = Math.floor(state.cash / (selectedAsset.price * 0.5));
-    hi = Math.max(hi, 1);
-    while (lo < hi) {
-      const mid = Math.ceil((lo + hi) / 2);
-      const q = getBuyQuote(assetId, mid);
-      if (q.canExecute) lo = mid;
-      else hi = mid - 1;
-    }
-    return lo;
-  }, [assetId, selectedAsset, selectedDef, state.cash, getBuyQuote]);
+  const maxBuyQty = useMemo(() => maxAffordableBuyQuantity(state, assetId), [state, assetId]);
 
   const sortedAssets = useMemo(() =>
     Object.entries(state.assetCatalog)
@@ -591,7 +581,7 @@ export default function Trade() {
               )}
               {sortedAssets.map(a => {
                 const isSelected = a.id === assetId;
-                const halted = a.assetState.haltedUntilDay && state.dayIndex < a.assetState.haltedUntilDay;
+                const halted = a.assetState.isBankrupt || (a.assetState.haltedUntilDay && state.dayIndex < a.assetState.haltedUntilDay);
                 const isFlashing = flashId?.id === a.id;
                 const history = a.assetState.priceHistory ?? [];
 

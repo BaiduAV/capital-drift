@@ -24,7 +24,7 @@ export function checkAndExecuteMarginCall(state: SimulationState): MarginCallRes
   const equity = computeEquity(state);
   const peak = Math.max(0, ...state.history.equity, equity);
 
-  if (peak <= 0) {
+  if (peak <= 0 || equity <= 0) {
     return { triggered: false, totalLiquidated: 0, assetsLiquidated: [], drawdownPct: 0 };
   }
 
@@ -36,11 +36,11 @@ export function checkAndExecuteMarginCall(state: SimulationState): MarginCallRes
     return { triggered: false, totalLiquidated: 0, assetsLiquidated: [], drawdownPct: drawdown };
   }
 
-  // Target equity to reach recovery level
-  const targetEquity = peak * (1 - recoveryTarget);
-  const deficit = targetEquity - equity;
-
-  if (deficit <= 0) {
+  // Selling cannot restore lost equity. Reduce exposure by building a cash reserve.
+  // Keep the recoveryTarget key so existing saved settings remain readable.
+  const cashTarget = Math.max(0, Math.min(1, recoveryTarget));
+  const targetReached = () => state.cash + 1e-8 >= computeEquity(state) * cashTarget;
+  if (targetReached()) {
     return { triggered: false, totalLiquidated: 0, assetsLiquidated: [], drawdownPct: drawdown };
   }
 
@@ -53,30 +53,75 @@ export function checkAndExecuteMarginCall(state: SimulationState): MarginCallRes
       def: state.assetCatalog[id],
       price: state.assets[id]?.price ?? 0,
     }))
-    .filter(p => p.def && p.price > 0)
+    .filter(p => p.def && Number.isFinite(p.price) && p.price > 0 && Number.isFinite(p.pos.quantity) && p.pos.quantity <= Number.MAX_SAFE_INTEGER)
     .sort((a, b) => {
       const orderA = LIQUIDATION_ORDER.indexOf(a.def.class);
       const orderB = LIQUIDATION_ORDER.indexOf(b.def.class);
       return (orderA === -1 ? 99 : orderA) - (orderB === -1 ? 99 : orderB);
     });
 
-  let remaining = deficit;
   const liquidated: MarginCallResult['assetsLiquidated'] = [];
   let totalProceeds = 0;
 
   for (const { id, pos, price } of positionEntries) {
-    if (remaining <= 0) break;
+    if (targetReached()) break;
+    const fullQuote = quoteSell(state, id, pos.quantity);
+    if (!fullQuote.canExecute) continue;
 
-    const qtyNeeded = Math.ceil(remaining / price);
-    const qtyToSell = Math.min(qtyNeeded, pos.quantity);
+    const currentEquity = computeEquity(state);
+    const reachesTarget = (units: number) => {
+      const quantity = Math.min(units, pos.quantity);
+      const quote = quoteSell(state, id, quantity);
+      if (!quote.canExecute) return false;
+      const net = quote.taxBreakdown?.netAfterTax ?? quote.totalCost;
+      const equityAfter = currentEquity - quantity * price + net;
+      return state.cash + net + 1e-8 >= equityAfter * cashTarget;
+    };
 
-    const quote = quoteSell(state, id, qtyToSell);
-    if (quote.canExecute) {
-      executeSell(state, quote);
-      liquidated.push({ assetId: id, quantity: qtyToSell, proceeds: quote.totalCost });
-      totalProceeds += quote.totalCost;
-      remaining -= quote.totalCost;
+    // Exemption is monotonic, but reaching the reserve is not: crossing the
+    // stock/crypto monthly limit taxes the entire gain. Split at that boundary.
+    // Use quotes so prior monthly sales, category limits and spreads stay in sync.
+    const maxUnits = Math.ceil(pos.quantity);
+    const ranges: [number, number][] = [[1, maxUnits]];
+    const isExempt = (units: number) => quoteSell(state, id, Math.min(units, pos.quantity)).taxBreakdown?.isExempt;
+    if (isExempt(1) && !fullQuote.taxBreakdown?.isExempt) {
+      let lo = 1;
+      let hi = maxUnits;
+      while (lo < hi) {
+        const mid = lo + Math.ceil((hi - lo) / 2);
+        if (isExempt(mid)) lo = mid;
+        else hi = mid - 1;
+      }
+      ranges.splice(0, 1, [1, lo], [lo + 1, maxUnits]);
     }
+
+    // Search each continuous tax range in order, allowing a fractional remainder.
+    // If neither range reaches the target, liquidate the available position.
+    let unitsToSell = maxUnits;
+    for (const [start, end] of ranges) {
+      if (!reachesTarget(end)) continue;
+      let lo = start;
+      let hi = end;
+      while (lo < hi) {
+        const mid = lo + Math.floor((hi - lo) / 2);
+        if (reachesTarget(mid)) hi = mid;
+        else lo = mid + 1;
+      }
+      unitsToSell = lo;
+      break;
+    }
+    const qtyToSell = Math.min(unitsToSell, pos.quantity);
+    const quote = quoteSell(state, id, qtyToSell);
+    const cashBefore = state.cash;
+    if (executeSell(state, quote)) {
+      const proceeds = state.cash - cashBefore;
+      liquidated.push({ assetId: id, quantity: qtyToSell, proceeds });
+      totalProceeds += proceeds;
+    }
+  }
+
+  if (liquidated.length === 0) {
+    return { triggered: false, totalLiquidated: 0, assetsLiquidated: [], drawdownPct: drawdown };
   }
 
   const drawdownPctStr = (drawdown * 100).toFixed(1);

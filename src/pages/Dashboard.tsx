@@ -212,7 +212,6 @@ export default function Dashboard() {
               <Area dataKey="nominal" stroke="hsl(140, 70%, 50%)" fill="hsl(140, 70%, 50%)" fillOpacity={0.08} strokeWidth={1.5} name={locale === 'pt-BR' ? 'Nominal' : 'Nominal'} dot={false} />
               <Line dataKey="real" stroke="hsl(185, 70%, 50%)" strokeWidth={1} strokeDasharray="4 2" name={locale === 'pt-BR' ? 'Real' : 'Real'} dot={false} />
               <Line dataKey="cdi" stroke="hsl(220, 10%, 50%)" strokeWidth={1} strokeDasharray="2 2" name="CDI" dot={false} />
-              {/* @ts-ignore - Recharts ReferenceLine TS issue */}
               {peak > 0 && <ReferenceLine y={peak} stroke="hsl(35, 90%, 55%)" strokeDasharray="3 3" strokeWidth={0.5} />}
             </ComposedChart>
           </ResponsiveContainer>
