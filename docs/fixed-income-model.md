@@ -40,6 +40,8 @@ A inadimplência é persistente: impede novas operações, encerra a remuneraç�
 
 Debêntures deixam de ter resgate universal D7. O mercado secundário pode ficar indisponível em estresse; a profundidade diária é limitada e compartilhada entre ordens, com spread de compra/venda. O modelo usa risco macro e estado de crédito como aproximação da disponibilidade de comprador. Uma venda efetivamente executada liquida em D+1; o recebível continua no patrimônio até lá. A liquidação automática para recompor caixa não usa ativos com liquidação futura ou posições bloqueadas.
 
+O evento de rebaixamento aplica a queda anunciada ao preço de mercado da debênture e converte esse impacto em prêmio adicional de crédito. Esse prêmio persiste no save e na precificação dos próximos pregões, sem reaplicar o choque nem restaurar artificialmente o preço quando o evento expira. O valor contratual acumulado e o pagamento no vencimento permanecem preservados, salvo inadimplência.
+
 ## Migração
 
 Saves v1 e sem versão são lidos antes de migrar. Preços, quantidades, custos, caixa, impostos pagos, recebíveis D7 já existentes e histórico de patrimônio são preservados. A categoria tributária do mês corrente é transportada para a data civil de migração para não reiniciar a isenção inadvertidamente.

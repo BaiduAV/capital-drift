@@ -99,6 +99,7 @@ export function projectFixedIncome(state: GameState, id: string): { price: numbe
   if (t.indexer === 'CDI') instrument.bookValue *= (1 + cdi * t.cdiPercent) * Math.pow(1 + t.annualRate, 1 / 252);
   if (t.indexer === 'FIXED' && t.kind === 'BANK') instrument.bookValue *= 1 + annualToDaily(t.annualRate);
   instrument.marketYield = marketYield(state, t);
+  if (t.kind === 'CORPORATE') instrument.marketYield += instrument.creditSpreadAdjustment ?? 0;
   let price = instrument.bookValue;
   if (t.indexer === 'IPCA') instrument.inflationFactor *= Math.pow(1 + state.macro.inflationAnnual, elapsed / 365);
   if (t.kind === 'TREASURY' && t.indexer !== 'SELIC') {

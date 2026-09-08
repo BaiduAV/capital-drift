@@ -50,6 +50,7 @@ export interface FixedIncomeLot {
 }
 
 export interface FixedIncomeInstrument {
+  creditSpreadAdjustment?: number;
   volumeDay?: number;
   volumeSold?: number;
   maturityDay: number;

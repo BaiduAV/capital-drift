@@ -111,6 +111,21 @@ export function applyReturnsToPrices(state: GameState, returns: Record<string, n
     }
     if (state.assetCatalog[assetId]?.fixedIncome && asset.fixedIncome) {
       const projected = projectFixedIncome(state, assetId);
+      const remaining = projected.instrument.maturityDay - state.dayIndex - 1;
+      const projectedReturn = projected.price / asset.price - 1;
+      if (state.assetCatalog[assetId].fixedIncome!.kind === 'CORPORATE'
+        && remaining > 0 && ret < projectedReturn - 1e-12) {
+        // Direct credit shocks arrive in the merged return. Reprice the credit
+        // spread, preserving contractual accrual and the payment at maturity.
+        // Persisting the spread prevents an artificial rebound the next day.
+        const shockedPrice = Math.max(0.01, asset.price * (1 + ret));
+        const shockedYield = (1 + projected.instrument.marketYield)
+          * Math.pow(projected.price / shockedPrice, 252 / remaining) - 1;
+        projected.instrument.creditSpreadAdjustment = (projected.instrument.creditSpreadAdjustment ?? 0)
+          + shockedYield - projected.instrument.marketYield;
+        projected.instrument.marketYield = shockedYield;
+        projected.price = shockedPrice;
+      }
       asset.lastReturn = projected.price / asset.price - 1;
       asset.price = projected.price;
       asset.fixedIncome = projected.instrument;

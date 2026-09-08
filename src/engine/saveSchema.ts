@@ -11,7 +11,7 @@ const terms = z.object({
   issuer: z.string().min(1), fgcCovered: z.boolean(), taxExempt: z.boolean(), custodyAnnual: nonnegative.max(1),
 });
 const lot = z.object({ quantity: nonnegative.positive().max(Number.MAX_SAFE_INTEGER), unitCost: nonnegative, purchaseDay: day, purchaseDate: date, maturityDay: day, custodyAccrued: nonnegative });
-const instrument = z.object({ maturityDay: day, faceValue: nonnegative, bookValue: nonnegative, inflationFactor: num.positive(), issuedYield: num.min(-0.99), marketYield: num.min(-0.99), volumeDay: day.optional(), volumeSold: nonnegative.optional() });
+const instrument = z.object({ maturityDay: day, faceValue: nonnegative, bookValue: nonnegative, inflationFactor: num.positive(), issuedYield: num.min(-0.99), marketYield: num.min(-0.99), creditSpreadAdjustment: nonnegative.optional(), volumeDay: day.optional(), volumeSold: nonnegative.optional() });
 const classes = z.enum(['RF_POS', 'RF_PRE', 'RF_IPCA', 'DEBENTURE', 'STOCK', 'ETF', 'FII', 'CRYPTO_MAJOR', 'CRYPTO_ALT', 'FX']);
 const sector = z.enum(['ENERGIA', 'BANCOS', 'VAREJO', 'AGRO', 'TECH', 'MINERACAO', 'SAUDE', 'INDUSTRIA', 'UTILITIES', 'IMOB', 'TELECOM', 'LOGISTICA', 'TOTAL_MARKET', 'DIVIDENDS', 'SMALL_CAPS', 'BRICK', 'PAPER', 'HYBRID', 'NONE']);
 const definition = z.object({
