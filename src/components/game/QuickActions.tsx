@@ -2,7 +2,7 @@ import { availableCash } from '@/engine/cash';
 import { maxAffordableBuyQuantity } from '@/engine/trading';
 import { notifyBatchResult } from '@/utils/notifyBatchResult';
 import { useState } from 'react';
-import { useGame } from '@/context/GameContext';
+import { useGame } from '@/context/game-context';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Shield, Scale, Flame } from 'lucide-react';

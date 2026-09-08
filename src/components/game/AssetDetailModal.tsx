@@ -2,7 +2,7 @@ import { positionMarketValue, positionUnitValue } from '@/engine/valuation';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
-import { useGame } from '@/context/GameContext';
+import { useGame } from '@/context/game-context';
 import { ResponsiveContainer, AreaChart, Area, XAxis, YAxis, Tooltip, CartesianGrid } from 'recharts';
 import type { AssetDefinition, AssetState, Position } from '@/engine/types';
 import { assetName } from '@/engine/i18n';

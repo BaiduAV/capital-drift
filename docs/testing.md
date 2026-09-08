@@ -12,6 +12,8 @@ npm run lint
 npm run build
 ```
 
+O lint exige zero avisos (`--max-warnings 0`) e ignora apenas saídas geradas de build, cobertura e testes. Componentes React exportam componentes; o contexto e o hook compartilhados ficam em `src/context/game-context.ts`, com o provider em `GameContext.tsx`.
+
 O workflow `CI / validate` executa instalação pelo lock, TypeScript, lint, testes com cobertura e build em PRs e pushes para `main`/`release`. O relatório HTML fica em `coverage/index.html`, disponível também como artefato do workflow por 14 dias. A configuração de checks obrigatórios na proteção de branch é independente do arquivo de workflow.
 
 ## Organização

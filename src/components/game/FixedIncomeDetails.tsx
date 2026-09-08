@@ -1,4 +1,4 @@
-import { useGame } from '@/context/GameContext';
+import { useGame } from '@/context/game-context';
 import { dateAtDay, gameDate, calendarDaysBetween } from '@/engine/financialCalendar';
 import { fixedIncomeLots, fixedIncomeSellCapacity, fixedIncomeOfferRate } from '@/engine/fixedIncome';
 

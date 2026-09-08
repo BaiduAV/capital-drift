@@ -1,4 +1,4 @@
-import { useGame } from '@/context/GameContext';
+import { useGame } from '@/context/game-context';
 import type { EventCard, EventType } from '@/engine/types';
 
 const eventMeta: Record<EventType, { icon: string; colorClass: string }> = {

@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { useGame } from '@/context/GameContext';
+import { useGame } from '@/context/game-context';
 import { useNavigate } from 'react-router-dom';
 import { SectionCard } from '@/components/ui/SectionCard';
 import { Calendar, Coins } from 'lucide-react';

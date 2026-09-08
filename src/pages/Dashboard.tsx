@@ -1,6 +1,6 @@
 import { positionMarketValue, positionUnitValue } from '@/engine/valuation';
 import { useState, useMemo, useCallback } from 'react';
-import { useGame } from '@/context/GameContext';
+import { useGame } from '@/context/game-context';
 import { INITIAL_CASH } from '@/engine/params';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -34,15 +34,15 @@ export default function Dashboard() {
   const [lastPeriod, setLastPeriod] = useState<PeriodResult | null>(null);
   const navigate = useNavigate();
 
-  const formatCurrency = (v: number) =>
-    new Intl.NumberFormat(locale, { style: 'currency', currency: 'BRL', minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(v);
+  const formatCurrency = useCallback((v: number) =>
+    new Intl.NumberFormat(locale, { style: 'currency', currency: 'BRL', minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(v), [locale]);
   const formatCurrencyCompact = (v: number) =>
     Math.abs(v) >= 1_000_000
       ? new Intl.NumberFormat(locale, { style: 'currency', currency: 'BRL', notation: 'compact', maximumFractionDigits: 2 }).format(v)
       : formatCurrency(v);
   const formatPct = (v: number) => Number.isFinite(v) ? (v >= 0 ? '+' : '') + (v * 100).toFixed(2) + '%' : '—';
 
-  const showDayNotifications = (r: DayResult) => {
+  const showDayNotifications = useCallback((r: DayResult) => {
     if (r.previousRegime !== r.regime) {
       playRegimeSound(r.regime);
       toast.warning(`⚡ Regime: ${t(`regime.${r.previousRegime}`)} → ${t(`regime.${r.regime}`)}`, { duration: 5000 });
@@ -62,14 +62,14 @@ export default function Dashboard() {
         toast.error(`⚠️ ${t(ev.titleKey, ev.vars)}: ${t(ev.descriptionKey, ev.vars)}`, { duration: 5000 });
       }
     }
-  };
+  }, [locale, t, formatCurrency]);
 
   const handleAdvance = useCallback(() => {
     const r = advanceDay();
     setLastDay(r);
     setLastPeriod(null);
     showDayNotifications(r);
-  }, [advanceDay]);
+  }, [advanceDay, showDayNotifications]);
 
   const handleFF = useCallback((days: number) => {
     const r = fastForward(days);
@@ -86,16 +86,15 @@ export default function Dashboard() {
   // Narrative
   const peak = Math.max(...state.history.equity);
   const currentDD = peak > 0 ? (peak - equity) / peak : 0;
-  const lastEvents = dayResults.length > 0 ? dayResults[dayResults.length - 1].events : [];
 
   const narrative = useMemo(() => generateNarrative({
     regime: state.regime,
-    lastEvents,
+    lastEvents: dayResults.length > 0 ? dayResults[dayResults.length - 1].events : [],
     drawdown: currentDD,
     inflationAnnual: state.macro.inflationAnnual,
     baseRateAnnual: state.macro.baseRateAnnual,
     locale,
-  }), [state.regime, lastEvents, currentDD, state.macro.inflationAnnual, state.macro.baseRateAnnual, locale]);
+  }), [state.regime, dayResults, currentDD, state.macro.inflationAnnual, state.macro.baseRateAnnual, locale]);
 
   // Chart data: nominal + real equity + CDI (using accumulated inflation from history)
   const chartData = useMemo(() => {

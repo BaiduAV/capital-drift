@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { act, cleanup, fireEvent, renderHook, screen } from '@testing-library/react';
-import { GameProvider, useGame } from '../GameContext';
+import { GameProvider } from '../GameContext';
+import { useGame } from '../game-context';
 import { createGameState } from '../../engine/init';
 import { loadGame, loadGameResult, saveGame } from '../../engine/persistence';
 import { quoteBuy } from '../../engine/trading';

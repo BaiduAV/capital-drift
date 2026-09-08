@@ -3,7 +3,7 @@ import { maxAffordableBuyQuantity } from '@/engine/trading';
 import { computeEquity } from '@/engine/invariants';
 import { positionMarketValue } from '@/engine/valuation';
 import { useState, useMemo } from 'react';
-import { useGame } from '@/context/GameContext';
+import { useGame } from '@/context/game-context';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Shield, Scale, Flame, ArrowRightLeft, Lightbulb, ChevronDown } from 'lucide-react';

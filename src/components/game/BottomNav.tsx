@@ -1,7 +1,7 @@
 import { useState, useRef, useCallback, useEffect } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import { LayoutDashboard, TrendingUp, ArrowLeftRight, Briefcase, Play, FastForward } from 'lucide-react';
-import { useGame } from '@/context/GameContext';
+import { useGame } from '@/context/game-context';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 import { playRegimeSound } from '@/engine/audio';

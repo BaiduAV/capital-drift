@@ -2,6 +2,7 @@ import type { ReactElement } from 'react';
 import { afterEach, beforeEach, expect, it, vi } from 'vitest';
 import { cleanup, fireEvent, render, screen, within } from '@testing-library/react';
 import App from '@/App';
+import { toast } from 'sonner';
 import { buyFixture, gameFixture, ipoFixture } from '@/test/factories/game';
 import { loadGame, saveGame } from '@/engine/persistence';
 
@@ -140,4 +141,28 @@ it('treats absent legacy drawdown history as unavailable', () => {
   fireEvent.click(screen.getByRole('button', { name: 'Estatísticas' }));
   expect(screen.getByText('Max DD').parentElement).toHaveTextContent('—');
   expect(view.container.textContent).not.toMatch(/NaN|Infinity/);
+});
+
+it('refreshes dividend notification language when the locale changes after mounting', () => {
+  const state = gameFixture();
+  const fii = Object.values(state.assetCatalog).find(asset => asset.class === 'FII')!.id;
+  buyFixture(state, fii, 5);
+  // Make both command invocations pay a dividend so each language is observable.
+  state.assets[fii].nextDividendDay = 0;
+  state.assetCatalog[fii].dividendPeriodDays = 1;
+  expect(saveGame(state).ok).toBe(true);
+  const success = vi.spyOn(toast, 'success');
+  try {
+    open('/');
+    fireEvent.click(screen.getAllByRole('button', { name: 'EN' })[0]);
+    fireEvent.keyDown(window, { key: 'n' });
+    expect(success).toHaveBeenCalledWith(expect.stringMatching(/\(5 shares\)$/), { duration: 4000 });
+    success.mockClear();
+    fireEvent.click(screen.getAllByRole('button', { name: 'PT' })[0]);
+    fireEvent.keyDown(window, { key: 'n' });
+    expect(success).toHaveBeenCalledWith(expect.stringMatching(/\(5 cotas\)$/), { duration: 4000 });
+    expect(loadGame()!.dayIndex).toBe(2);
+  } finally {
+    success.mockRestore();
+  }
 });

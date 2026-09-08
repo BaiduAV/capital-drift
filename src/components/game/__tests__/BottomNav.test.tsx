@@ -5,7 +5,7 @@ import BottomNav from '../BottomNav';
 
 const actions = vi.hoisted(() => ({ advanceDay: vi.fn(), fastForward: vi.fn() }));
 
-vi.mock('@/context/GameContext', () => ({
+vi.mock('@/context/game-context', () => ({
   useGame: () => ({ locale: 'pt-BR', t: (key: string) => key, ...actions }),
 }));
 vi.mock('@/engine/audio', () => ({ playRegimeSound: vi.fn() }));

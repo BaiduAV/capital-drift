@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { act, cleanup, renderHook } from '@testing-library/react';
-import { GameProvider, useGame } from '../GameContext';
+import { GameProvider } from '../GameContext';
+import { useGame } from '../game-context';
 import { buyFixture, gameFixture, ipoFixture } from '@/test/factories/game';
 import { loadGame, saveGame, loadLocale } from '@/engine/persistence';
 import { computeEquity, computeMaxDrawdown } from '@/engine/invariants';

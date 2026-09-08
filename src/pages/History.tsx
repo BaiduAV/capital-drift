@@ -1,4 +1,4 @@
-import { useGame } from '@/context/GameContext';
+import { useGame } from '@/context/game-context';
 import { INITIAL_CASH } from '@/engine/params';
 import { useMemo, useState } from 'react';
 import { sharpeRatio, volatility, winRate, bestDay, worstDay } from '@/engine/stats';

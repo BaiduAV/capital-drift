@@ -1,5 +1,5 @@
 import { useMemo, useState, useCallback } from 'react';
-import { useGame } from '@/context/GameContext';
+import { useGame } from '@/context/game-context';
 import { generateSocialPosts, type SocialPost } from '@/engine/socialFeed';
 import { Heart, Repeat2, MessageCircle, BadgeCheck } from 'lucide-react';
 

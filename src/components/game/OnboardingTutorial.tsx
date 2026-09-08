@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { useGame } from '@/context/GameContext';
+import { useGame } from '@/context/game-context';
 import { Button } from '@/components/ui/button';
 import { X, ChevronRight, ChevronLeft, TrendingUp, ShoppingCart, BarChart3, Shield, Zap, Calendar, Coins, Target } from 'lucide-react';
 
@@ -208,9 +208,4 @@ export default function OnboardingTutorial() {
       </div>
     </div>
   );
-}
-
-/** Call this to reopen the tutorial from anywhere */
-export function openTutorial() {
-  window.dispatchEvent(new Event('patrimonio:open-tutorial'));
 }

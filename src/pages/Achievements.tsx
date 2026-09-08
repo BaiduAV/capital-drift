@@ -1,4 +1,4 @@
-import { useGame } from '@/context/GameContext';
+import { useGame } from '@/context/game-context';
 import { ACHIEVEMENT_DEFS } from '@/engine/achievements';
 import { Card, CardContent } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';

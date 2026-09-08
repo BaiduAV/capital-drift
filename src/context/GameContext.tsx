@@ -1,5 +1,5 @@
-import React, { createContext, useContext, useState, useCallback, useEffect, useRef, type ReactNode } from 'react';
-import type { GameState, DayResult, PeriodResult, TradeQuote, MacroState } from '@/engine/types';
+import { useState, useCallback, useEffect, useRef, type ReactNode } from 'react';
+import type { GameState, DayResult, PeriodResult, MacroState } from '@/engine/types';
 import { createGameState } from '@/engine/init';
 import { simulateDay } from '@/engine/simulateDay';
 import { checkAchievements, ACHIEVEMENT_DEFS, type AchievementId } from '@/engine/achievements';
@@ -8,31 +8,9 @@ import { quoteBuy, quoteSell, executeBuy, executeSell } from '@/engine/trading';
 import { computeEquity, computeMaxDrawdown } from '@/engine/invariants';
 import { reserveIPO as reserveIPOOrder } from '@/engine/cash';
 import { saveGame, loadGameResult, saveLocale, loadLocale } from '@/engine/persistence';
-import { setLocale, getLocale, t, assetName } from '@/engine/i18n';
+import { setLocale, t } from '@/engine/i18n';
 import { toast } from 'sonner';
-
-interface GameContextType {
-  state: GameState;
-  dayResults: DayResult[];
-  locale: 'pt-BR' | 'en';
-  equity: number;
-  prevMacro: MacroState | null;
-
-  advanceDay: () => DayResult;
-  fastForward: (days: number) => PeriodResult;
-  getBuyQuote: (assetId: string, qty: number) => TradeQuote;
-  getSellQuote: (assetId: string, qty: number) => TradeQuote;
-  buy: (assetId: string, qty: number) => { success: boolean; quote: TradeQuote };
-  sell: (assetId: string, qty: number) => { success: boolean; quote: TradeQuote };
-  batchTrades: (fn: (ops: { buy: (id: string, qty: number) => boolean; sell: (id: string, qty: number) => boolean; getState: () => GameState }) => void) => { executed: number; rejected: number };
-  reserveIPO: (ticker: string, qty: number) => boolean;
-  newGame: (seed?: number) => boolean;
-  switchLocale: () => void;
-  updateMarginCallSettings: (settings: { drawdownThreshold: number; recoveryTarget: number }) => void;
-  t: typeof t;
-}
-
-const GameContext = createContext<GameContextType | null>(null);
+import { GameContext } from './game-context';
 
 export function GameProvider({ children }: { children: ReactNode }) {
   const [locale, setLocaleState] = useState<'pt-BR' | 'en'>(() => {
@@ -233,10 +211,4 @@ export function GameProvider({ children }: { children: ReactNode }) {
       {children}
     </GameContext.Provider>
   );
-}
-
-export function useGame() {
-  const ctx = useContext(GameContext);
-  if (!ctx) throw new Error('useGame must be used within GameProvider');
-  return ctx;
 }
