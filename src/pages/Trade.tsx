@@ -608,8 +608,17 @@ export default function Trade() {
                 return (
                   <div
                     key={a.id}
+                    role="button"
+                    tabIndex={halted ? -1 : 0}
+                    aria-selected={isSelected}
                     onClick={() => { if (!halted) selectAsset(a.id); }}
-                    className={`flex items-center justify-between px-4 py-2.5 cursor-pointer transition-colors
+                    onKeyDown={(e) => {
+                      if (!halted && (e.key === 'Enter' || e.key === ' ')) {
+                        e.preventDefault();
+                        selectAsset(a.id);
+                      }
+                    }}
+                    className={`flex items-center justify-between px-4 py-2.5 cursor-pointer transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background
                       ${isSelected ? 'bg-primary/10 border-l-2 border-primary' : 'hover:bg-muted/40 border-l-2 border-transparent'}
                       ${halted ? 'opacity-40 cursor-not-allowed' : ''}
                       ${isFlashing ? (flashId.side === 'buy' ? 'trade-flash-buy' : 'trade-flash-sell') : ''}`}
