@@ -23,7 +23,44 @@ export type SectorBubbleState = {
 
 export type CreditRating = 'AA' | 'BBB';
 
-export type LiquidityRule = 'D0' | 'D7' | 'D30_OR_PENALTY';
+export type LiquidityRule = 'D0' | 'D1' | 'D7' | 'D30_OR_PENALTY' | 'MATURITY' | 'SECONDARY';
+
+export interface FixedIncomeTerms {
+  kind: 'BANK' | 'TREASURY' | 'CORPORATE';
+  indexer: 'CDI' | 'SELIC' | 'FIXED' | 'IPCA';
+  annualRate: number; // fixed rate, real rate or spread over CDI
+  cdiPercent: number;
+  termBusinessDays: number;
+  lockCalendarDays: number;
+  redemption: 'DAILY' | 'MATURITY' | 'SECONDARY';
+  settlementBusinessDays: number;
+  issuer: string;
+  fgcCovered: boolean;
+  taxExempt: boolean;
+  custodyAnnual: number;
+}
+
+export interface FixedIncomeLot {
+  quantity: number;
+  unitCost: number;
+  purchaseDay: number;
+  purchaseDate: string;
+  maturityDay: number;
+  custodyAccrued: number;
+}
+
+export interface FixedIncomeInstrument {
+  creditSpreadAdjustment?: number;
+  volumeDay?: number;
+  volumeSold?: number;
+  maturityDay: number;
+  faceValue: number;
+  bookValue: number;
+  inflationFactor: number;
+  issuedYield: number;
+  marketYield: number;
+}
+
 
 export interface AssetDefinition {
   id: string;
@@ -37,12 +74,14 @@ export interface AssetDefinition {
   dividendYieldAnnual?: number; // fixed per asset at init
   dividendPeriodDays?: number;  // 30 for FIIs, 90 for stocks
   initialPrice: number;
+  fixedIncome?: FixedIncomeTerms;
 }
 
 export interface AssetState {
   price: number;
   lastReturn: number;
   haltedUntilDay: number | null;
+  fixedIncome?: FixedIncomeInstrument;
   priceHistory: number[]; // last 90 prices
   isBankrupt?: boolean;
   nextDividendDay?: number; // per-asset dividend schedule
@@ -52,6 +91,7 @@ export interface AssetState {
 export interface Position {
   quantity: number;
   avgPrice: number;
+  fixedIncomeLots?: FixedIncomeLot[];
   avgPurchaseDay?: number; // weighted average purchase day for tax holding period
 }
 
@@ -91,6 +131,12 @@ export interface TaxState {
 
 export interface GameState {
   saveVersion?: number;
+  calendarDate?: string;
+  fixedIncomeMigrationDay?: number;
+  issuerDefaults?: Record<string, { day: number; recoveryFraction: number }>;
+  fgcWindowStart?: string;
+  fgcHistory?: { date: string; amount: number }[];
+  fixedIncomeLog?: { day: number; assetId: string; type: 'MATURITY' | 'DEFAULT' | 'FGC'; amount: number }[];
   pendingSettlements?: { assetId: string; amount: number; dueDay: number }[];
   dayIndex: number;
   cash: number;

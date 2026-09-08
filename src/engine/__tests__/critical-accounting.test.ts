@@ -16,7 +16,7 @@ function sell(state: GameState, id: string, quantity: number) {
   expect(executeSell(state, quoteSell(state, id, quantity))).toBe(true);
 }
 function ipo(state: GameState, ticker: string) {
-  const def = { ...state.assetCatalog.TSELIC, id: ticker, class: 'STOCK' as const, corrGroup: 'EQUITY' as const };
+  const def = { ...state.assetCatalog.TSELIC, fixedIncome: undefined, id: ticker, class: 'STOCK' as const, corrGroup: 'EQUITY' as const };
   state.ipoPipeline.push({ ticker, displayName: ticker, sector: 'NONE', assetClass: 'STOCK', offerPrice: 100, announcedDay: 0, listingDay: 0, status: 'bookbuilding', demand: 0.5, playerReservation: 0, catalogEntry: def });
 }
 
@@ -55,7 +55,7 @@ describe('monthly tax reconciliation', () => {
     state.taxState = { totalIRPaid: 0, totalIOFPaid: 0, monthlySales: {}, accumulatedLosses: { STOCK: -30000 } };
     sell(state, 'TEST', 201);
     expect(state.taxState.accumulatedLosses.STOCK).toBe(-9900);
-    state.dayIndex = 30;
+    state.dayIndex = 30; state.calendarDate = '2026-02-02';
     sell(state, 'TEST', 201);
     expect(state.taxState.totalIRPaid).toBe(1530);
     expect(state.taxState.accumulatedLosses.STOCK).toBe(0);
@@ -185,16 +185,11 @@ describe('committed IPO cash', () => {
 });
 
 describe('redemption timing', () => {
-  it.each([[29, 0.005], [30, 0], [100, 0]])('CDB110 penalty at day %s is %s', (day, penalty) => {
-    const state = createGameState(1);
-    state.dayIndex = day;
-    state.portfolio.CDB110 = { quantity: 1, avgPrice: 100, avgPurchaseDay: 0 };
-    expect(quoteSell(state, 'CDB110', 1).spread).toBe(penalty);
-  });
-
   it('keeps D7 net proceeds in equity but unavailable until settlement', () => {
     const state = createGameState(1);
     state.cash = 0;
+    delete state.assetCatalog.DEBAA.fixedIncome; // Retain coverage of generic legacy D7 receivables.
+    state.assetCatalog.DEBAA.liquidityRule = 'D7';
     state.portfolio.DEBAA = { quantity: 10, avgPrice: 80, avgPurchaseDay: 0 };
     const quote = quoteSell(state, 'DEBAA', 10);
     expect(quote.settlementDay).toBe(7);

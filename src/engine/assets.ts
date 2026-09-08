@@ -17,12 +17,12 @@ export function buildAssetCatalog(seed: number): Record<string, AssetDefinition>
     // ── Fixed Income (8) — static IDs, well-known product names ──
     { id: 'TSELIC', nameKey: 'asset.tselic', class: 'RF_POS', sector: 'NONE', corrGroup: 'FIXED_INCOME', liquidityRule: 'D0', initialPrice: 100 },
     { id: 'CDB100', nameKey: 'asset.cdb100', class: 'RF_POS', sector: 'NONE', corrGroup: 'FIXED_INCOME', liquidityRule: 'D0', initialPrice: 100 },
-    { id: 'CDB110', nameKey: 'asset.cdb110', class: 'RF_POS', sector: 'NONE', corrGroup: 'FIXED_INCOME', liquidityRule: 'D30_OR_PENALTY', initialPrice: 100 },
-    { id: 'CDBPRE', nameKey: 'asset.cdbpre', class: 'RF_PRE', sector: 'NONE', corrGroup: 'FIXED_INCOME', liquidityRule: 'D0', initialPrice: 100 },
+    { id: 'CDB110', nameKey: 'asset.cdb110', class: 'RF_POS', sector: 'NONE', corrGroup: 'FIXED_INCOME', liquidityRule: 'D0', initialPrice: 100 },
+    { id: 'CDBPRE', nameKey: 'asset.cdbpre', class: 'RF_PRE', sector: 'NONE', corrGroup: 'FIXED_INCOME', liquidityRule: 'MATURITY', initialPrice: 100 },
     { id: 'TPRE', nameKey: 'asset.tpre', class: 'RF_PRE', sector: 'NONE', corrGroup: 'FIXED_INCOME', liquidityRule: 'D0', initialPrice: 100 },
     { id: 'TIPCA', nameKey: 'asset.tipca', class: 'RF_IPCA', sector: 'NONE', corrGroup: 'FIXED_INCOME', liquidityRule: 'D0', initialPrice: 100 },
-    { id: 'DEBAA', nameKey: 'asset.debaa', class: 'DEBENTURE', sector: 'NONE', corrGroup: 'FIXED_INCOME', liquidityRule: 'D7', creditRating: 'AA', initialPrice: 100 },
-    { id: 'DEBBBB', nameKey: 'asset.debbbb', class: 'DEBENTURE', sector: 'NONE', corrGroup: 'FIXED_INCOME', liquidityRule: 'D7', creditRating: 'BBB', initialPrice: 100 },
+    { id: 'DEBAA', nameKey: 'asset.debaa', class: 'DEBENTURE', sector: 'NONE', corrGroup: 'FIXED_INCOME', liquidityRule: 'SECONDARY', creditRating: 'AA', initialPrice: 100 },
+    { id: 'DEBBBB', nameKey: 'asset.debbbb', class: 'DEBENTURE', sector: 'NONE', corrGroup: 'FIXED_INCOME', liquidityRule: 'SECONDARY', creditRating: 'BBB', initialPrice: 100 },
   ];
 
   // Mark fixed income tickers as used

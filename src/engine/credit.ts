@@ -8,7 +8,7 @@ export function processCreditWatchAndDefaults(state: GameState, rng: RNG): Event
   const events: EventCard[] = [];
 
   for (const [assetId, def] of Object.entries(state.assetCatalog)) {
-    if (def.class !== 'DEBENTURE' || !def.creditRating) continue;
+    if (def.fixedIncome || def.class !== 'DEBENTURE' || !def.creditRating) continue;
 
     const rating = def.creditRating;
     const existing = state.credit.watch[assetId];

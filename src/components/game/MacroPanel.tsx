@@ -1,3 +1,4 @@
+import { annualToDaily, simulatedCDI } from '@/engine/financialCalendar';
 import { useMemo, useRef, useEffect, useState } from 'react';
 import { useGame } from '@/context/GameContext';
 import { INITIAL_CASH } from '@/engine/params';
@@ -156,7 +157,7 @@ export default function MacroPanel() {
         </Tooltip>
         <MacroItem
           label={locale === 'pt-BR' ? 'CDI/dia' : 'CDI/day'}
-          value={(macro.baseRateAnnual / 252 * 100).toFixed(4) + '%'}
+          value={(annualToDaily(simulatedCDI(state)) * 100).toFixed(4) + '%'}
           tooltip={tt.cdi}
         />
         <MacroItem

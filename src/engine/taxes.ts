@@ -2,28 +2,9 @@
 
 import type { AssetClass, GameState, TaxState } from './types';
 
-// ── IOF Regressivo (renda fixa, resgates em até 30 dias) ──
-// Day 1: 96%, Day 2: 93%, ... Day 29: 3%, Day 30+: 0%
-const IOF_TABLE = [
-  96, 93, 90, 86, 83, 80, 76, 73, 70, 66,
-  63, 60, 56, 53, 50, 46, 43, 40, 36, 33,
-  30, 26, 23, 20, 16, 13, 10, 6, 3, 0,
-];
-
-export function getIOFRate(holdingDays: number): number {
-  holdingDays = Math.floor(holdingDays);
-  if (holdingDays <= 0) return 0.96;
-  if (holdingDays >= 30) return 0;
-  return (IOF_TABLE[holdingDays - 1] ?? 0) / 100;
-}
-
-// ── IR Regressivo (renda fixa: CDB, Tesouro, Debêntures) ──
-export function getFixedIncomeIRRate(holdingDays: number): number {
-  if (holdingDays <= 180) return 0.225;
-  if (holdingDays <= 360) return 0.20;
-  if (holdingDays <= 720) return 0.175;
-  return 0.15;
-}
+import { getIOFRate, getFixedIncomeIRRate } from './fixedIncomeTax';
+export { getIOFRate, getFixedIncomeIRRate } from './fixedIncomeTax';
+import { taxMonth } from './financialCalendar';
 
 // ── Asset class → tax category ──
 export type TaxCategory = 'FIXED_INCOME' | 'STOCK' | 'FII' | 'ETF' | 'CRYPTO' | 'FX';
@@ -49,14 +30,6 @@ export function getTaxCategory(assetClass: AssetClass): TaxCategory {
     default:
       return 'STOCK';
   }
-}
-
-// ── Monthly sales tracker for R$20k stock exemption ──
-// In the game, 1 month ≈ 21 trading days (simplified to 30 calendar days)
-const MONTH_DAYS = 30;
-
-function getMonthKey(dayIndex: number): number {
-  return Math.floor(dayIndex / MONTH_DAYS);
 }
 
 // ── Tax Calculation Result ──
@@ -140,7 +113,7 @@ export function calculateSellTax(
     }
     case 'STOCK':
     case 'CRYPTO': {
-      const monthKey = getMonthKey(state.dayIndex);
+      const monthKey = taxMonth(state);
       const sales = (taxState.monthlySalesByCategory?.[monthKey]?.[category] ?? 0) + saleTotal;
       const ledger = taxState.monthlyResults?.[monthKey]?.[category];
       const openingLoss = ledger?.openingLoss ?? Math.min(0, taxState.accumulatedLosses[category] ?? 0);
@@ -230,11 +203,11 @@ export function applyTaxOnSell(
   // Keep legacy aggregate for save compatibility, but never use mixed totals for exemptions.
   // Old saves cannot reconstruct categories; separated accounting starts on the next sale.
   state.taxState.monthlySalesByCategory ??= {};
-  const categorySales = state.taxState.monthlySalesByCategory[getMonthKey(state.dayIndex)] ??= {};
+  const categorySales = state.taxState.monthlySalesByCategory[taxMonth(state)] ??= {};
   categorySales[category] = (categorySales[category] ?? 0) + saleTotal;
 
   // Track aggregate monthly sales
-  const monthKey = getMonthKey(state.dayIndex);
+  const monthKey = taxMonth(state);
   state.taxState.monthlySales[monthKey] = (state.taxState.monthlySales[monthKey] ?? 0) + saleTotal;
 
   if (category === 'STOCK' || category === 'CRYPTO') {
@@ -258,7 +231,7 @@ export function applyTaxOnSell(
   }
 
   // Clean up old monthly sales data (keep last 3 months)
-  const currentMonth = getMonthKey(state.dayIndex);
+  const currentMonth = taxMonth(state);
   for (const key of Object.keys(state.taxState.monthlySales)) {
     if (Number(key) < currentMonth - 3) {
       delete state.taxState.monthlySales[Number(key)];

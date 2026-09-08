@@ -4,6 +4,9 @@ type Locale = 'pt-BR' | 'en';
 
 const translations: Record<Locale, Record<string, string>> = {
   'pt-BR': {
+    'trade.at_maturity': 'Operação disponível somente no vencimento; aguarde o crédito automático.',
+    'trade.no_liquidity': 'Sem comprador ou quantidade acima da liquidez disponível hoje.',
+    'trade.locked': 'Aplicação em liquidação ou carência; consulte os lotes disponíveis.',
     // Assets - Fixed Income
     'asset.tselic': 'Tesouro Selic',
     'asset.cdb100': 'CDB 100% CDI',
@@ -19,11 +22,11 @@ const translations: Record<Locale, Record<string, string>> = {
     'asset.usd': 'Dólar (USD/BRL)',
     // Events
     'event.rate_hike.title': 'Juros Sobem',
-    'event.rate_hike.desc': 'Banco Central eleva taxa base. Renda fixa se beneficia, bolsa pressiona.',
+    'event.rate_hike.desc': 'Banco Central eleva juros. Pós-fixados passam a render mais; títulos pré e IPCA+ sofrem marcação a mercado.',
     'event.rate_cut.title': 'Juros Caem',
     'event.rate_cut.desc': 'Banco Central reduz taxa base. Ações e FIIs ganham fôlego.',
     'event.inflation_up.title': 'Inflação Acelera',
-    'event.inflation_up.desc': 'IPCA acima das expectativas. Varejo sofre, IPCA+ protege.',
+    'event.inflation_up.desc': 'Inflação aumenta. IPCA+ corrige o principal, mas o preço de venda antecipada continua sujeito aos juros reais.',
     'event.inflation_down.title': 'Inflação Arrefece',
     'event.inflation_down.desc': 'IPCA surpreende para baixo. Alívio generalizado no mercado.',
     'event.sector_boom.title': 'Setor em Alta',
@@ -141,6 +144,9 @@ const translations: Record<Locale, Record<string, string>> = {
     'tax.rate': 'Alíquota',
   },
   'en': {
+    'trade.at_maturity': 'Available at maturity only; wait for automatic payment.',
+    'trade.no_liquidity': 'No buyer or quantity exceeds available market depth today.',
+    'trade.locked': 'Investment is settling or locked; check available lots.',
     'asset.tselic': 'Treasury Selic', 'asset.cdb100': 'CDB 100% CDI', 'asset.cdb110': 'CDB 110% CDI',
     'asset.cdbpre': 'CDB Pre 12%', 'asset.tpre': 'Treasury Pre', 'asset.tipca': 'Treasury IPCA+',
     'asset.debaa': 'Debenture AA', 'asset.debbbb': 'Debenture BBB',
@@ -150,7 +156,7 @@ const translations: Record<Locale, Record<string, string>> = {
     'asset.usd': 'Dollar (USD/BRL)',
     // Events
     'event.rate_hike.title': 'Rate Hike',
-    'event.rate_hike.desc': 'Central bank raises base rate. Fixed income benefits, equities pressured.',
+    'event.rate_hike.desc': 'Central bank raises rates. Floating-rate accrual increases; fixed-rate and inflation-linked bonds are marked to market.',
     'event.rate_cut.title': 'Rate Cut',
     'event.rate_cut.desc': 'Central bank cuts base rate. Stocks and REITs rally.',
     'event.inflation_up.title': 'Inflation Rises',

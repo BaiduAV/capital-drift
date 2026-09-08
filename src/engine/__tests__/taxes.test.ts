@@ -32,12 +32,13 @@ describe('separate monthly exemption counters', () => {
   it('starts a new simulated month with fresh counters', () => {
     const state = taxState();
     applyTaxOnSell(state, 'STOCK', 201, 100);
-    state.dayIndex = 30;
+    state.dayIndex = 30; state.calendarDate = '2026-02-02';
     expect(calculateSellTax(state, 'STOCK', 1, 100).isExempt).toBe(true);
   });
 
   it('preserves taxes and loss offsets from old saves without guessing categories', () => {
     const state = taxState();
+    delete state.calendarDate; // Exercise legacy counters without a financial calendar.
     state.taxState = { totalIRPaid: 10, totalIOFPaid: 20, accumulatedLosses: { STOCK: -100 }, monthlySales: { 0: 90000 } };
     expect(calculateSellTax(state, 'STOCK', 1, 100).isExempt).toBe(true);
     applyTaxOnSell(state, 'STOCK', 1, 100);

@@ -1,3 +1,4 @@
+import { taxMonth } from '../financialCalendar';
 import { describe, expect, it } from 'vitest';
 import { createGameState } from '../init';
 import { checkAndExecuteMarginCall } from '../marginCall';
@@ -76,7 +77,7 @@ describe('liquidation across monthly exemption boundaries', () => {
     state.portfolio.TEST = { quantity, avgPrice: 0 };
     state.history.equity = [200000];
     state.taxState = createInitialTaxState();
-    state.taxState.monthlySalesByCategory = { 0: { [getTaxCategory(assetClass)]: priorSales } };
+    state.taxState.monthlySalesByCategory = { [taxMonth(state)]: { [getTaxCategory(assetClass)]: priorSales } };
     return state;
   }
 

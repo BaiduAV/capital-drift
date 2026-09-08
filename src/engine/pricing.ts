@@ -1,5 +1,6 @@
 // ── Price generation with correlated market factors + macro tilt ──
 
+import { projectFixedIncome } from './fixedIncome';
 import type { GameState } from './types';
 import type { RNG } from './rng';
 import { DRIFT_VOL, CORR_STRENGTH, CRISIS_CRYPTO_CROSS_LINK, MACRO_TILT, MACRO, IPO } from './params';
@@ -33,6 +34,11 @@ export function generateReturns(state: GameState, rng: RNG): Record<string, numb
     const isBankrupt = state.assets[assetId]?.isBankrupt;
     if (isBankrupt) {
       returns[assetId] = 0;
+      continue;
+    }
+
+    if (def.fixedIncome && state.assets[assetId]?.fixedIncome) {
+      returns[assetId] = projectFixedIncome(state, assetId).price / state.assets[assetId].price - 1;
       continue;
     }
 
@@ -101,6 +107,28 @@ export function applyReturnsToPrices(state: GameState, returns: Record<string, n
     if (asset.isBankrupt) {
       asset.price = 0;
       asset.lastReturn = 0;
+      continue;
+    }
+    if (state.assetCatalog[assetId]?.fixedIncome && asset.fixedIncome) {
+      const projected = projectFixedIncome(state, assetId);
+      const remaining = projected.instrument.maturityDay - state.dayIndex - 1;
+      const projectedReturn = projected.price / asset.price - 1;
+      if (state.assetCatalog[assetId].fixedIncome!.kind === 'CORPORATE'
+        && remaining > 0 && ret < projectedReturn - 1e-12) {
+        // Direct credit shocks arrive in the merged return. Reprice the credit
+        // spread, preserving contractual accrual and the payment at maturity.
+        // Persisting the spread prevents an artificial rebound the next day.
+        const shockedPrice = Math.max(0.01, asset.price * (1 + ret));
+        const shockedYield = (1 + projected.instrument.marketYield)
+          * Math.pow(projected.price / shockedPrice, 252 / remaining) - 1;
+        projected.instrument.creditSpreadAdjustment = (projected.instrument.creditSpreadAdjustment ?? 0)
+          + shockedYield - projected.instrument.marketYield;
+        projected.instrument.marketYield = shockedYield;
+        projected.price = shockedPrice;
+      }
+      asset.lastReturn = projected.price / asset.price - 1;
+      asset.price = projected.price;
+      asset.fixedIncome = projected.instrument;
       continue;
     }
     asset.lastReturn = ret;

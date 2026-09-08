@@ -18,6 +18,9 @@ import { toast } from 'sonner';
 import { Search, ShoppingCart, TrendingUp, TrendingDown, Landmark, Clock, X } from 'lucide-react';
 import { AreaChart, Area, ResponsiveContainer } from 'recharts';
 import type { TradeQuote, AssetClass } from '@/engine/types';
+import FixedIncomeDetails from '@/components/game/FixedIncomeDetails';
+import { fixedIncomeSellCapacity } from '@/engine/fixedIncome';
+import { dateAtDay } from '@/engine/financialCalendar';
 import { availableCash } from '@/engine/cash';
 import { maxAffordableBuyQuantity } from '@/engine/trading';
 import { assetName } from '@/engine/i18n';
@@ -77,8 +80,8 @@ export default function Trade() {
   const settlementNotice = liveQuote && side === 'sell' ? (
     <p className="text-xs text-muted-foreground">
       {liveQuote.settlementDay > state.dayIndex
-        ? (locale === 'pt-BR' ? `Resgate D7: crédito líquido no dia ${liveQuote.settlementDay}.` : `D7 redemption: net proceeds available on day ${liveQuote.settlementDay}.`)
-        : (locale === 'pt-BR' ? 'O IR pode incluir ajuste das vendas anteriores do mês, inclusive devoluções.' : 'Tax may include reconciliation of earlier sales this month, including refunds.')}
+        ? (locale === 'pt-BR' ? `Crédito líquido em ${dateAtDay(state, liveQuote.settlementDay)} (D+${liveQuote.settlementDay - state.dayIndex} úteis).` : `Net proceeds on ${dateAtDay(state, liveQuote.settlementDay)} (T+${liveQuote.settlementDay - state.dayIndex} business days).`)
+        : selectedDef?.fixedIncome ? (locale === 'pt-BR' ? 'IR e IOF calculados por aplicação, em dias corridos. Resgates seguem PEPS.' : 'Tax is calculated per lot using calendar days. FIFO redemptions.') : (locale === 'pt-BR' ? 'O IR pode incluir ajuste das vendas anteriores do mês, inclusive devoluções.' : 'Tax may include reconciliation of earlier sales this month, including refunds.')}
     </p>
   ) : null;
 
@@ -150,14 +153,14 @@ export default function Trade() {
         { label: 'MAX', qty: maxBuyQty },
       ];
     }
-    const posQty = position?.quantity ?? 0;
+    const posQty = selectedDef?.fixedIncome ? fixedIncomeSellCapacity(state, assetId) : position?.quantity ?? 0;
     return [
       { label: '25%', qty: Math.floor(posQty * 0.25) },
       { label: '50%', qty: Math.floor(posQty * 0.5) },
       { label: '75%', qty: Math.floor(posQty * 0.75) },
       { label: 'MAX', qty: posQty },
     ];
-  }, [side, maxBuyQty, position]);
+  }, [side, maxBuyQty, position, selectedDef, state, assetId]);
 
   const selectAsset = (id: string) => {
     setAssetId(id);
@@ -238,6 +241,8 @@ export default function Trade() {
             )}
           </div>
 
+          <FixedIncomeDetails assetId={assetId} />
+
           {/* Position P&L in ticket */}
           {position && (
             <div className="bg-muted/20 rounded-md px-3 py-2 text-xs font-mono">
@@ -257,7 +262,7 @@ export default function Trade() {
                         {formatCurrency(pnl)} ({formatPct(pnlPct)})
                       </span>
                     </div>
-                    {holdingDays > 0 && (
+                    {holdingDays > 0 && !selectedDef.fixedIncome && (
                       <div className="flex justify-between mt-0.5">
                         <span className="text-muted-foreground">{t('tax.holding_days')}</span>
                         <span className="text-foreground">{holdingDays}d</span>

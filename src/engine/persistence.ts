@@ -1,6 +1,8 @@
 // ── LocalStorage persistence ──
 
 import type { GameState } from './types';
+import { initializeFixedIncome } from './fixedIncome';
+import { annualToDaily, simulatedCDI } from './financialCalendar';
 import { saveSchema } from './saveSchema';
 import { normalizeReservations } from './cash';
 import { ensureDividendSchedules } from './dividends';
@@ -24,7 +26,7 @@ function decode(raw: string): GameState {
     if (!state.history.cdiAccumulated) {
       state.history.cdiAccumulated = [state.history.equity[0] ?? 5000];
       for (let i = 1; i < state.history.equity.length; i++) {
-        const dailyCDI = state.macro.baseRateAnnual / 252;
+        const dailyCDI = annualToDaily(simulatedCDI(state));
         const prev = state.history.cdiAccumulated[i - 1];
         state.history.cdiAccumulated.push(prev * (1 + dailyCDI));
       }
@@ -33,7 +35,7 @@ function decode(raw: string): GameState {
     if (!state.history.inflationAccumulated) {
       state.history.inflationAccumulated = [1];
       for (let i = 1; i < state.history.equity.length; i++) {
-        const dailyInfl = state.macro.inflationAnnual / 252;
+        const dailyInfl = Math.expm1(Math.log1p(state.macro.inflationAnnual) / 252);
         const prev = state.history.inflationAccumulated[i - 1];
         state.history.inflationAccumulated.push(prev * (1 + dailyInfl));
       }
@@ -53,7 +55,8 @@ function decode(raw: string): GameState {
       state.taxState.monthlyResults = {};
     }
     state.pendingSettlements ??= [];
-    state.saveVersion = 1;
+    initializeFixedIncome(state, state.saveVersion !== 2);
+    state.saveVersion = 2;
     return state;
 }
 
@@ -83,7 +86,8 @@ export function loadGame(): GameState | null {
 
 /** Never replace unreadable data unless the player explicitly requests recovery/reset. */
 export function saveGame(state: GameState, replaceInvalid = false): SaveResult {
-  if (!saveSchema.safeParse(state).success) return { ok: false, reason: 'invalid' };
+  const candidate = { ...state, saveVersion: 2 };
+  if (!saveSchema.safeParse(candidate).success) return { ok: false, reason: 'invalid' };
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
     let valid = false;
@@ -93,7 +97,7 @@ export function saveGame(state: GameState, replaceInvalid = false): SaveResult {
         localStorage.setItem(RECOVERY_KEY, raw);
       }
     }
-    const next = JSON.stringify({ ...state, saveVersion: 1 });
+    const next = JSON.stringify(candidate);
     if (raw === next) return { ok: true };
     if (valid) localStorage.setItem(BACKUP_KEY, raw!);
     localStorage.setItem(STORAGE_KEY, next);
