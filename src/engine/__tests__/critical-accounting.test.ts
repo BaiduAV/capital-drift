@@ -96,6 +96,56 @@ describe('monthly tax reconciliation', () => {
     expect(result.assetsLiquidated[0].quantity).toBe(1);
     expect(state.cash).toBe(100);
   });
+
+  it.each([
+    ['STOCK', 199, 1], ['STOCK', 197, 3], ['STOCK', 200, 0],
+    ['CRYPTO_MAJOR', 349, 1], ['CRYPTO_MAJOR', 347, 3], ['CRYPTO_MAJOR', 350, 0],
+  ] as const)('takes the largest executable %s tranche after %s prior units (%s remaining exempt)', (cls, priorUnits, expectedUnits) => {
+    const state = createGameState(1);
+    asset(state, 'GAIN', cls, priorUnits);
+    sell(state, 'GAIN', priorUnits);
+    state.cash = 0;
+    asset(state, 'REMAINING', cls, 10);
+    state.history.equity = [10000];
+    state.marginCallSettings.recoveryTarget = 0.4;
+    const fullQuote = quoteSell(state, 'REMAINING', 10);
+    expect(fullQuote.canExecute).toBe(false);
+    expect(fullQuote.reason).toBe('trade.insufficient_cash');
+    const partial = expectedUnits > 0 ? quoteSell(state, 'REMAINING', expectedUnits) : null;
+    if (partial) {
+      expect(partial.canExecute).toBe(true);
+      expect(partial.taxBreakdown.netAfterTax).toBeLessThan(computeEquity(state) * 0.4);
+    }
+    expect(quoteSell(state, 'REMAINING', expectedUnits + 1).canExecute).toBe(false);
+
+    const result = checkAndExecuteMarginCall(state);
+    expect(result.triggered).toBe(expectedUnits > 0);
+    expect(result.assetsLiquidated).toEqual(expectedUnits > 0
+      ? [{ assetId: 'REMAINING', quantity: expectedUnits, proceeds: partial!.taxBreakdown.netAfterTax }]
+      : []);
+    expect(state.portfolio.REMAINING.quantity).toBe(10 - expectedUnits);
+    expect(state.cash).toBeCloseTo(partial?.taxBreakdown.netAfterTax ?? 0);
+    expect(result.totalLiquidated).toBeCloseTo(state.cash);
+    expect(state.taxState.totalIRPaid).toBe(0);
+  });
+
+  it('continues to the next asset after an exempt tranche makes partial progress', () => {
+    const state = createGameState(1);
+    asset(state, 'GAIN', 'STOCK', 199);
+    sell(state, 'GAIN', 199);
+    state.cash = 0;
+    asset(state, 'REMAINING', 'STOCK', 10);
+    state.portfolio.TSELIC = { quantity: 10, avgPrice: 100, avgPurchaseDay: 0 };
+    state.history.equity = [10000];
+    state.marginCallSettings.recoveryTarget = 0.4;
+    const result = checkAndExecuteMarginCall(state);
+    expect(result.assetsLiquidated).toEqual([
+      { assetId: 'REMAINING', quantity: 1, proceeds: 100 },
+      { assetId: 'TSELIC', quantity: 7, proceeds: 700 },
+    ]);
+    expect(state.cash).toBe(800);
+    expect(state.taxState.totalIRPaid).toBe(0);
+  });
 });
 
 describe('committed IPO cash', () => {

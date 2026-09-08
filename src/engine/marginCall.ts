@@ -97,9 +97,12 @@ export function checkAndExecuteMarginCall(state: SimulationState): MarginCallRes
     }
 
     // Search each continuous tax range in order, allowing a fractional remainder.
-    // If neither range reaches the target, liquidate the available position.
-    let unitsToSell = maxUnits;
+    // Within each range, net proceeds increase with quantity. Keep its executable
+    // endpoint as a fallback if no range can reach the entire reserve target.
+    let unitsToSell = 0;
     for (const [start, end] of ranges) {
+      if (!quoteSell(state, id, Math.min(end, pos.quantity)).canExecute) continue;
+      unitsToSell = end;
       if (!reachesTarget(end)) continue;
       let lo = start;
       let hi = end;
@@ -111,6 +114,7 @@ export function checkAndExecuteMarginCall(state: SimulationState): MarginCallRes
       unitsToSell = lo;
       break;
     }
+    if (unitsToSell === 0) continue;
     const qtyToSell = Math.min(unitsToSell, pos.quantity);
     const quote = quoteSell(state, id, qtyToSell);
     const cashBefore = state.cash;
