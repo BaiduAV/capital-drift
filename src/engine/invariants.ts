@@ -21,7 +21,7 @@ export function checkInvariants(state: GameState): string[] {
 }
 
 export function computeEquity(state: GameState): number {
-  let total = state.cash;
+  let total = state.cash + (state.pendingSettlements ?? []).reduce((sum, item) => sum + item.amount, 0);
   for (const [assetId, pos] of Object.entries(state.portfolio)) {
     const asset = state.assets[assetId];
     if (asset) {

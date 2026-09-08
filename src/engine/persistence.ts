@@ -1,24 +1,20 @@
 // ── LocalStorage persistence ──
 
 import type { GameState } from './types';
+import { saveSchema } from './saveSchema';
+import { normalizeReservations } from './cash';
 import { ensureDividendSchedules } from './dividends';
 
 const STORAGE_KEY = 'patrimonio_save';
 const LOCALE_KEY = 'patrimonio_locale';
 
-export function saveGame(state: GameState): void {
-  try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-  } catch (e) {
-    console.warn('Failed to save game:', e);
-  }
-}
+const BACKUP_KEY = 'patrimonio_save_backup';
+const RECOVERY_KEY = 'patrimonio_save_recovery';
+export type SaveResult = { ok: boolean; reason?: 'invalid' | 'storage' };
+export type LoadResult = { state: GameState | null; status: 'empty' | 'loaded' | 'recovered' | 'blocked'; reservationsAdjusted?: boolean };
 
-export function loadGame(): GameState | null {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) return null;
-    const state = JSON.parse(raw) as GameState;
+function decode(raw: string): GameState {
+    const state = saveSchema.parse(JSON.parse(raw)) as GameState;
     // Backwards compat: add priceHistory if missing
     for (const [id, a] of Object.entries(state.assets)) {
       if (a.isBankrupt) { a.price = 0; a.lastReturn = 0; }
@@ -51,9 +47,59 @@ export function loadGame(): GameState | null {
     if (!state.market) state.market = { sectors: {}, newListingsCount: {} };
     if (!state.marginCallSettings) state.marginCallSettings = { drawdownThreshold: 0.50, recoveryTarget: 0.40 };
     ensureDividendSchedules(state);
+    // Legacy totals cannot reconstruct past realized gains. Track future sales explicitly.
+    if (state.taxState && !state.taxState.monthlyResults) {
+      if (Object.values(state.taxState.monthlySales).some(sales => sales > 0)) state.taxState.reconciliationStartDay = state.dayIndex;
+      state.taxState.monthlyResults = {};
+    }
+    state.pendingSettlements ??= [];
+    state.saveVersion = 1;
     return state;
+}
+
+export function loadGameResult(): LoadResult {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return { state: null, status: 'empty' };
+    try {
+      const state = decode(raw);
+      const reservationsAdjusted = normalizeReservations(state) > 0;
+      return { state, status: 'loaded', reservationsAdjusted };
+    } catch {
+      const backup = localStorage.getItem(BACKUP_KEY);
+      if (backup) {
+        try { const state = decode(backup); normalizeReservations(state); return { state, status: 'recovered' }; } catch { /* Keep both originals. */ }
+      }
+      return { state: null, status: 'blocked' };
+    }
   } catch {
-    return null;
+    return { state: null, status: 'blocked' };
+  }
+}
+
+export function loadGame(): GameState | null {
+  return loadGameResult().state;
+}
+
+/** Never replace unreadable data unless the player explicitly requests recovery/reset. */
+export function saveGame(state: GameState, replaceInvalid = false): SaveResult {
+  if (!saveSchema.safeParse(state).success) return { ok: false, reason: 'invalid' };
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    let valid = false;
+    if (raw) {
+      try { decode(raw); valid = true; } catch {
+        if (!replaceInvalid) return { ok: false, reason: 'invalid' };
+        localStorage.setItem(RECOVERY_KEY, raw);
+      }
+    }
+    const next = JSON.stringify({ ...state, saveVersion: 1 });
+    if (raw === next) return { ok: true };
+    if (valid) localStorage.setItem(BACKUP_KEY, raw!);
+    localStorage.setItem(STORAGE_KEY, next);
+    return { ok: true };
+  } catch {
+    return { ok: false, reason: 'storage' };
   }
 }
 
@@ -66,11 +112,11 @@ export function hasSave(): boolean {
 }
 
 export function saveLocale(locale: 'pt-BR' | 'en'): void {
-  localStorage.setItem(LOCALE_KEY, locale);
+  try { localStorage.setItem(LOCALE_KEY, locale); } catch { /* Preference remains in memory. */ }
 }
 
 export function loadLocale(): 'pt-BR' | 'en' {
-  return (localStorage.getItem(LOCALE_KEY) as 'pt-BR' | 'en') || 'pt-BR';
+  try { return localStorage.getItem(LOCALE_KEY) === 'en' ? 'en' : 'pt-BR'; } catch { return 'pt-BR'; }
 }
 
 const THEME_KEY = 'patrimonio_theme';
@@ -78,9 +124,9 @@ const THEME_KEY = 'patrimonio_theme';
 export type AppTheme = 'dark' | 'light';
 
 export function saveTheme(theme: AppTheme): void {
-  localStorage.setItem(THEME_KEY, theme);
+  try { localStorage.setItem(THEME_KEY, theme); } catch { /* Preference remains in memory. */ }
 }
 
 export function loadTheme(): AppTheme {
-  return (localStorage.getItem(THEME_KEY) as AppTheme) || 'dark';
+  try { return localStorage.getItem(THEME_KEY) === 'light' ? 'light' : 'dark'; } catch { return 'dark'; }
 }

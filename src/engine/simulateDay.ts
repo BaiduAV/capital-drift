@@ -13,6 +13,7 @@ import { processCreditWatchAndDefaults } from './credit';
 import { applyDividendsAndDistributions } from './dividends';
 import { checkInvariants, computeEquity } from './invariants';
 import { checkAndExecuteMarginCall } from './marginCall';
+import { reservedCash, settleReceivables } from './cash';
 import { IPO } from './params';
 
 export interface SimulateDayOptions {
@@ -119,7 +120,7 @@ function phaseShocks(state: SimulationState, ctx: DayContext): { next: Simulatio
       // Credit player reservation at offer price
       if (entry.playerReservation > 0) {
         const cost = entry.playerReservation * entry.offerPrice;
-        if (next.cash >= cost) {
+        if (next.cash - reservedCash(next, entry.ticker) + 1e-8 >= cost) {
           next.cash -= cost;
           const existing = next.portfolio[entry.ticker];
           if (existing) {
@@ -320,6 +321,7 @@ function phaseAccountingAndMetrics(
   baseRng.next(); // advance the base seed for the next day
   next.rngState = baseRng.state();
   next.dayIndex++;
+  settleReceivables(next);
 
   // 11b. Apply bankruptcies
   for (const [id, a] of Object.entries(next.assets)) {

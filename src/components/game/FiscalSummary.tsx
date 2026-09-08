@@ -41,7 +41,7 @@ export default function FiscalSummary() {
       }));
   }, [taxState.accumulatedLosses]);
 
-  if (totalTaxPaid < 0.01 && lossEntries.length === 0) {
+  if (totalTaxPaid < 0.01 && lossEntries.length === 0 && taxState.reconciliationStartDay == null) {
     return (
       <SectionCard title={t('tax.fiscal_summary')} className="opacity-70">
         <div className="flex items-center gap-2 text-xs text-muted-foreground font-mono py-2">
@@ -57,6 +57,11 @@ export default function FiscalSummary() {
   return (
     <SectionCard title={t('tax.fiscal_summary')}>
       <div className="space-y-2 text-xs font-mono">
+        {taxState.reconciliationStartDay != null && <p className="text-muted-foreground">
+          {locale === 'pt-BR'
+            ? `Save antigo: o ajuste mensal acompanha vendas a partir do dia ${taxState.reconciliationStartDay}. Os lucros anteriores não estavam registrados; impostos já pagos foram preservados.`
+            : `Legacy save: monthly reconciliation tracks sales from day ${taxState.reconciliationStartDay}. Earlier gains were not recorded; taxes already paid were preserved.`}
+        </p>}
         {/* Total taxes */}
         <div className="flex justify-between items-center">
           <span className="text-muted-foreground flex items-center gap-1.5">

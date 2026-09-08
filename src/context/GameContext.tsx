@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useCallback, useEffect, type ReactNode } from 'react';
+import React, { createContext, useContext, useState, useCallback, useEffect, useRef, type ReactNode } from 'react';
 import type { GameState, DayResult, PeriodResult, TradeQuote, MacroState } from '@/engine/types';
 import { createGameState } from '@/engine/init';
 import { simulateDay } from '@/engine/simulateDay';
@@ -6,7 +6,8 @@ import { checkAchievements, ACHIEVEMENT_DEFS, type AchievementId } from '@/engin
 
 import { quoteBuy, quoteSell, executeBuy, executeSell } from '@/engine/trading';
 import { computeEquity, computeMaxDrawdown } from '@/engine/invariants';
-import { saveGame, loadGame, deleteSave, saveLocale, loadLocale } from '@/engine/persistence';
+import { reserveIPO as reserveIPOOrder } from '@/engine/cash';
+import { saveGame, loadGameResult, saveLocale, loadLocale } from '@/engine/persistence';
 import { setLocale, getLocale, t, assetName } from '@/engine/i18n';
 import { toast } from 'sonner';
 
@@ -25,7 +26,7 @@ interface GameContextType {
   sell: (assetId: string, qty: number) => { success: boolean; quote: TradeQuote };
   batchTrades: (fn: (ops: { buy: (id: string, qty: number) => boolean; sell: (id: string, qty: number) => boolean; getState: () => GameState }) => void) => void;
   reserveIPO: (ticker: string, qty: number) => boolean;
-  newGame: (seed?: number) => void;
+  newGame: (seed?: number) => boolean;
   switchLocale: () => void;
   updateMarginCallSettings: (settings: { drawdownThreshold: number; recoveryTarget: number }) => void;
   t: typeof t;
@@ -40,23 +41,35 @@ export function GameProvider({ children }: { children: ReactNode }) {
     return l;
   });
 
-  const [state, setState] = useState<GameState>(() => {
-    const saved = loadGame();
-    return saved ?? createGameState(Date.now());
-  });
+  const [initial] = useState(loadGameResult);
+  const [state, setState] = useState<GameState>(() => initial.state ?? createGameState(Date.now()));
+  const stateRef = useRef(state);
+  const [savingPaused, setSavingPaused] = useState(initial.status === 'blocked' || initial.status === 'recovered');
+  const [saveFailed, setSaveFailed] = useState(false);
+  // Publish each completed command synchronously; React may batch its renders.
+  const commit = useCallback((next: GameState) => {
+    stateRef.current = next;
+    setState(next);
+  }, []);
 
   const [dayResults, setDayResults] = useState<DayResult[]>([]);
   const [prevMacro, setPrevMacro] = useState<MacroState | null>(null);
 
   // Auto-save on state change
   useEffect(() => {
-    saveGame(state);
-  }, [state]);
+    if (!savingPaused) setSaveFailed(!saveGame(state).ok);
+  }, [state, savingPaused]);
+
+  useEffect(() => {
+    if (initial.reservationsAdjusted) toast.warning(locale === 'pt-BR'
+      ? 'Reservas antigas de IPO foram ajustadas ao caixa disponível.'
+      : 'Legacy IPO reservations were adjusted to available cash.');
+  }, [initial, locale]);
 
   const equity = computeEquity(state);
 
   const advanceDay = useCallback(() => {
-    const stateCopy = structuredClone(state);
+    const stateCopy = structuredClone(stateRef.current);
     setPrevMacro({ ...stateCopy.macro });
     const result = simulateDay(stateCopy);
     const newState = result.state as GameState;
@@ -64,17 +77,17 @@ export function GameProvider({ children }: { children: ReactNode }) {
     for (const id of newAch) {
       newState.achievements = { ...newState.achievements, [id]: { unlockedAtDay: newState.dayIndex } };
     }
-    setState(newState);
+    commit(newState);
     setDayResults(prev => [...prev.slice(-99), result]);
     for (const id of newAch) {
       const def = ACHIEVEMENT_DEFS.find(d => d.id === id);
       if (def) toast.success(`${def.icon} ${t(def.titleKey)}`, { description: t(def.descKey) });
     }
     return result;
-  }, [state]);
+  }, [commit]);
 
   const fastForward = useCallback((days: number) => {
-    const stateCopy = structuredClone(state);
+    const stateCopy = structuredClone(stateRef.current);
     setPrevMacro({ ...stateCopy.macro });
     // Run day-by-day so we can collect DayResults for the NewsFeed
     const collectedResults: DayResult[] = [];
@@ -91,7 +104,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
       }
       collectedResults.push(result);
     }
-    setState(current);
+    commit(current);
     for (const id of allNewAch) {
       const def = ACHIEVEMENT_DEFS.find(d => d.id === id);
       if (def) toast.success(`${def.icon} ${t(def.titleKey)}`, { description: t(def.descKey) });
@@ -121,7 +134,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
       missedOpportunities,
     };
     return result;
-  }, [state]);
+  }, [commit]);
 
   const getBuyQuote = useCallback((assetId: string, qty: number) => {
     return quoteBuy(state, assetId, qty);
@@ -140,23 +153,23 @@ export function GameProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const buy = useCallback((assetId: string, qty: number) => {
-    const stateCopy = structuredClone(state);
+    const stateCopy = structuredClone(stateRef.current);
     const quote = quoteBuy(stateCopy, assetId, qty);
     const success = executeBuy(stateCopy, quote);
-    if (success) { unlockTradeAchievement(stateCopy); setState(stateCopy); }
+    if (success) { unlockTradeAchievement(stateCopy); commit(stateCopy); }
     return { success, quote };
-  }, [state, unlockTradeAchievement]);
+  }, [commit, unlockTradeAchievement]);
 
   const sell = useCallback((assetId: string, qty: number) => {
-    const stateCopy = structuredClone(state);
+    const stateCopy = structuredClone(stateRef.current);
     const quote = quoteSell(stateCopy, assetId, qty);
     const success = executeSell(stateCopy, quote);
-    if (success) { unlockTradeAchievement(stateCopy); setState(stateCopy); }
+    if (success) { unlockTradeAchievement(stateCopy); commit(stateCopy); }
     return { success, quote };
-  }, [state, unlockTradeAchievement]);
+  }, [commit, unlockTradeAchievement]);
 
   const batchTrades = useCallback((fn: (ops: { buy: (id: string, qty: number) => boolean; sell: (id: string, qty: number) => boolean; getState: () => GameState }) => void) => {
-    const stateCopy = structuredClone(state);
+    const stateCopy = structuredClone(stateRef.current);
     fn({
       buy: (id, qty) => {
         const quote = quoteBuy(stateCopy, id, qty);
@@ -168,27 +181,32 @@ export function GameProvider({ children }: { children: ReactNode }) {
       },
       getState: () => stateCopy,
     });
-    setState(stateCopy);
-  }, [state]);
+    commit(stateCopy);
+  }, [commit]);
 
   const reserveIPO = useCallback((ticker: string, qty: number): boolean => {
-    const stateCopy = structuredClone(state);
-    const entry = stateCopy.ipoPipeline?.find(e => e.ticker === ticker && e.status === 'bookbuilding');
-    if (!entry || qty <= 0) return false;
-    const maxAffordable = Math.floor(stateCopy.cash / entry.offerPrice);
-    if (maxAffordable <= 0) return false;
-    entry.playerReservation = Math.min(qty, maxAffordable);
-    setState(stateCopy);
+    const stateCopy = structuredClone(stateRef.current);
+    if (!reserveIPOOrder(stateCopy, ticker, qty)) return false;
+    commit(stateCopy);
     return true;
-  }, [state]);
+  }, [commit]);
 
   const newGame = useCallback((seed?: number) => {
-    deleteSave();
-    const s = createGameState(seed ?? Date.now());
-    setState(s);
+    const next = createGameState(seed ?? Date.now());
+    if (!saveGame(next, true).ok) { setSaveFailed(true); return false; }
+    commit(next);
+    setSavingPaused(false);
+    setSaveFailed(false);
     setDayResults([]);
     setPrevMacro(null);
-  }, []);
+    return true;
+  }, [commit]);
+
+  const retrySave = () => {
+    const result = saveGame(stateRef.current, initial.status === 'recovered');
+    setSaveFailed(!result.ok);
+    if (result.ok) setSavingPaused(false);
+  };
 
   const switchLocale = useCallback(() => {
     const next = locale === 'pt-BR' ? 'en' : 'pt-BR';
@@ -198,11 +216,21 @@ export function GameProvider({ children }: { children: ReactNode }) {
   }, [locale]);
 
   const updateMarginCallSettings = useCallback((settings: { drawdownThreshold: number; recoveryTarget: number }) => {
-    setState(prev => ({ ...prev, marginCallSettings: settings }));
-  }, []);
+    if (![settings.drawdownThreshold, settings.recoveryTarget].every(v => Number.isFinite(v) && v >= 0 && v <= 1)) return;
+    commit({ ...stateRef.current, marginCallSettings: settings });
+  }, [commit]);
 
   return (
     <GameContext.Provider value={{ state, dayResults, locale, equity, prevMacro, advanceDay, fastForward, getBuyQuote, getSellQuote, buy, sell, batchTrades, reserveIPO, newGame, switchLocale, updateMarginCallSettings, t }}>
+      {(savingPaused || saveFailed) && (
+        <div role="alert" className="sticky top-0 z-50 border-b border-destructive bg-background p-3 text-sm">
+          <p>{locale === 'pt-BR'
+            ? (savingPaused ? 'O save original está preservado. O salvamento está pausado até você escolher como recuperar a partida.' : 'Não foi possível salvar. Seu progresso recente está apenas nesta aba; mantenha-a aberta e tente novamente.')
+            : (savingPaused ? 'The original save is preserved. Saving is paused until you choose how to recover the game.' : 'Saving failed. Recent progress is only in this tab; keep it open and retry.')}</p>
+          {(!savingPaused || initial.status === 'recovered') && <button className="underline mr-4" onClick={retrySave}>{locale === 'pt-BR' ? 'Salvar partida recuperada / tentar novamente' : 'Save recovered game / retry'}</button>}
+          {savingPaused && <button className="underline" onClick={() => newGame()}>{locale === 'pt-BR' ? 'Arquivar save original e iniciar nova partida' : 'Archive original save and start a new game'}</button>}
+        </div>
+      )}
       {children}
     </GameContext.Provider>
   );

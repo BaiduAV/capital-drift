@@ -18,6 +18,7 @@ import { toast } from 'sonner';
 import { Search, ShoppingCart, TrendingUp, TrendingDown, Landmark, Clock, X } from 'lucide-react';
 import { AreaChart, Area, ResponsiveContainer } from 'recharts';
 import type { TradeQuote, AssetClass } from '@/engine/types';
+import { availableCash } from '@/engine/cash';
 import { maxAffordableBuyQuantity } from '@/engine/trading';
 import { assetName } from '@/engine/i18n';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -73,6 +74,14 @@ export default function Trade() {
     return side === 'buy' ? getBuyQuote(assetId, qty) : getSellQuote(assetId, qty);
   }, [assetId, qty, side, getBuyQuote, getSellQuote]);
 
+  const settlementNotice = liveQuote && side === 'sell' ? (
+    <p className="text-xs text-muted-foreground">
+      {liveQuote.settlementDay > state.dayIndex
+        ? (locale === 'pt-BR' ? `Resgate D7: crédito líquido no dia ${liveQuote.settlementDay}.` : `D7 redemption: net proceeds available on day ${liveQuote.settlementDay}.`)
+        : (locale === 'pt-BR' ? 'O IR pode incluir ajuste das vendas anteriores do mês, inclusive devoluções.' : 'Tax may include reconciliation of earlier sales this month, including refunds.')}
+    </p>
+  ) : null;
+
   const maxBuyQty = useMemo(() => maxAffordableBuyQuantity(state, assetId), [state, assetId]);
 
   const sortedAssets = useMemo(() =>
@@ -95,20 +104,14 @@ export default function Trade() {
 
   const [ipoReserveQty, setIpoReserveQty] = useState<Record<string, string>>({});
 
-  const fmtCompact = (v: number) =>
-    Math.abs(v) >= 1_000_000
-      ? new Intl.NumberFormat(locale, { style: 'currency', currency: 'BRL', notation: 'compact', maximumFractionDigits: 2 }).format(v)
-      : new Intl.NumberFormat(locale, { style: 'currency', currency: 'BRL', minimumFractionDigits: 2 }).format(v);
-
   const handleExecute = useCallback(() => {
     if (!assetId || qty <= 0) return;
     const result = side === 'buy' ? buy(assetId, qty) : sell(assetId, qty);
     if (result.success) {
-      const newEquity = Object.entries(state.portfolio).reduce((sum, [id, pos]) => sum + pos.quantity * state.assets[id].price, 0) + state.cash;
       toast.success(
         locale === 'pt-BR'
-          ? `${side === 'buy' ? 'Compra' : 'Venda'} de ${qty}× ${assetId} executada! Patrimônio: ${fmtCompact(newEquity)}`
-          : `${side === 'buy' ? 'Bought' : 'Sold'} ${qty}× ${assetId}! Equity: ${fmtCompact(newEquity)}`
+          ? `${side === 'buy' ? 'Compra' : 'Venda'} de ${qty}× ${assetId} executada!`
+          : `${side === 'buy' ? 'Bought' : 'Sold'} ${qty}× ${assetId}!`
       );
       setFlashId({ id: assetId, side });
       setTimeout(() => setFlashId(null), 1500);
@@ -117,7 +120,7 @@ export default function Trade() {
     } else {
       toast.error(result.quote.reason ? t(result.quote.reason) : 'Trade failed');
     }
-  }, [assetId, qty, side, buy, sell, locale, t, isMobile, state.portfolio, state.assets, state.cash, fmtCompact]);
+  }, [assetId, qty, side, buy, sell, locale, t, isMobile]);
 
   const handleTradeClick = () => {
     if (liveQuote && liveQuote.canExecute) {
@@ -354,13 +357,13 @@ export default function Trade() {
                       ✓ {t(liveQuote.taxBreakdown.exemptionReason)}
                     </div>
                   )}
-                  {liveQuote.taxBreakdown.irAmount > 0.01 && (
+                  {Math.abs(liveQuote.taxBreakdown.irAmount) > 0.01 && (
                     <div className="flex justify-between">
                       <span className="text-muted-foreground">
-                        {t('tax.ir')} ({(liveQuote.taxBreakdown.irRate * 100).toFixed(1)}%)
+                        {locale === 'pt-BR' ? 'IR / ajuste fiscal' : 'Income tax / adjustment'} ({(liveQuote.taxBreakdown.irRate * 100).toFixed(1)}%)
                       </span>
                       <span className="text-[hsl(var(--terminal-red))]">
-                        −{formatCurrency(liveQuote.taxBreakdown.irAmount)}
+                        {liveQuote.taxBreakdown.irAmount < 0 ? '+' : '−'}{formatCurrency(Math.abs(liveQuote.taxBreakdown.irAmount))}
                       </span>
                     </div>
                   )}
@@ -382,7 +385,7 @@ export default function Trade() {
                       </span>
                     </div>
                   )}
-                  {liveQuote.taxBreakdown.totalTax > 0.01 && (
+                  {Math.abs(liveQuote.taxBreakdown.totalTax) > 0.01 && (
                     <div className="flex justify-between font-semibold text-foreground">
                       <span>{t('tax.net_after_tax')}</span>
                       <span>{formatCurrency(liveQuote.taxBreakdown.netAfterTax)}</span>
@@ -391,13 +394,14 @@ export default function Trade() {
                 </div>
               )}
 
+              {settlementNotice}
               <div className="flex justify-between">
-                <span className="text-muted-foreground">{locale === 'pt-BR' ? 'Caixa após' : 'Cash after'}</span>
+                <span className="text-muted-foreground">{locale === 'pt-BR' ? 'Caixa disponível após' : 'Available cash after'}</span>
                 <span className={
-                  (side === 'buy' ? state.cash - liveQuote.totalCost : state.cash + (liveQuote.taxBreakdown?.netAfterTax ?? liveQuote.totalCost)) < 0
+                  (side === 'buy' ? availableCash(state) - liveQuote.totalCost : availableCash(state) + (liveQuote.settlementDay > state.dayIndex ? 0 : (liveQuote.taxBreakdown?.netAfterTax ?? liveQuote.totalCost))) < 0
                     ? 'text-destructive' : 'text-foreground'
                 }>
-                  {formatCurrency(side === 'buy' ? state.cash - liveQuote.totalCost : state.cash + (liveQuote.taxBreakdown?.netAfterTax ?? liveQuote.totalCost))}
+                  {formatCurrency(side === 'buy' ? availableCash(state) - liveQuote.totalCost : availableCash(state) + (liveQuote.settlementDay > state.dayIndex ? 0 : (liveQuote.taxBreakdown?.netAfterTax ?? liveQuote.totalCost)))}
                 </span>
               </div>
               {!liveQuote.canExecute && liveQuote.reason && (
@@ -446,7 +450,7 @@ export default function Trade() {
         title={locale === 'pt-BR' ? 'Negociação' : 'Trading'}
         subtitle={locale === 'pt-BR' ? 'Compre e venda ativos.' : 'Buy and sell assets.'}
       >
-        <KPIChip label={locale === 'pt-BR' ? 'Caixa' : 'Cash'} value={formatCompact(state.cash)} />
+        <KPIChip label={locale === 'pt-BR' ? 'Caixa disponível' : 'Available cash'} value={formatCompact(availableCash(state))} />
       </PageHeader>
 
       <ContextualTip
@@ -463,7 +467,7 @@ export default function Trade() {
               <div className="space-y-3">
                 {bookbuildingIPOs.map((ipo) => {
                   const rqty = parseInt(ipoReserveQty[ipo.ticker] || '0') || 0;
-                  const maxQty = Math.floor(state.cash / ipo.offerPrice);
+                  const maxQty = Math.floor(availableCash(state) / ipo.offerPrice);
                   const daysLeft = ipo.listingDay - state.dayIndex;
                   return (
                     <div key={ipo.ticker} className="bg-muted/30 rounded-md px-3 py-3 space-y-2">
@@ -504,6 +508,9 @@ export default function Trade() {
                         {ipo.playerReservation > 0 ? (
                           <div className="text-[10px] text-primary font-mono font-semibold">
                             ✓ {locale === 'pt-BR' ? 'Reservado' : 'Reserved'}: {ipo.playerReservation}
+                            <Button variant="ghost" size="sm" onClick={() => reserveIPO(ipo.ticker, 0)}>
+                              {locale === 'pt-BR' ? 'Cancelar reserva' : 'Cancel reservation'}
+                            </Button>
                           </div>
                         ) : (
                           <div className="flex items-center gap-1.5">
@@ -700,10 +707,10 @@ export default function Trade() {
                       <span className="text-muted-foreground">{side === 'buy' ? (locale === 'pt-BR' ? 'Custo total' : 'Total cost') : (locale === 'pt-BR' ? 'Valor líquido' : 'Net proceeds')}</span>
                       <span className="text-foreground">{formatCurrency(liveQuote.totalCost)}</span>
                     </div>
-                    {side === 'sell' && liveQuote.taxBreakdown && liveQuote.taxBreakdown.totalTax > 0.01 && (
+                    {side === 'sell' && liveQuote.taxBreakdown && Math.abs(liveQuote.taxBreakdown.totalTax) > 0.01 && (
                       <div className="flex justify-between text-[hsl(var(--terminal-red))]">
                         <span>{t('tax.total_tax')}</span>
-                        <span>−{formatCurrency(liveQuote.taxBreakdown.totalTax)}</span>
+                        <span>{liveQuote.taxBreakdown.totalTax < 0 ? '+' : '−'}{formatCurrency(Math.abs(liveQuote.taxBreakdown.totalTax))}</span>
                       </div>
                     )}
                     {side === 'sell' && liveQuote.taxBreakdown && liveQuote.taxBreakdown.isExempt && liveQuote.taxBreakdown.exemptionReason && (
@@ -711,10 +718,11 @@ export default function Trade() {
                         ✓ {t(liveQuote.taxBreakdown.exemptionReason)}
                       </div>
                     )}
+                    {settlementNotice}
                     <div className="flex justify-between">
-                      <span className="text-muted-foreground">{locale === 'pt-BR' ? 'Caixa após' : 'Cash after'}</span>
+                      <span className="text-muted-foreground">{locale === 'pt-BR' ? 'Caixa disponível após' : 'Available cash after'}</span>
                       <span className="text-foreground">
-                        {formatCurrency(side === 'buy' ? state.cash - liveQuote.totalCost : state.cash + (liveQuote.taxBreakdown?.netAfterTax ?? liveQuote.totalCost))}
+                        {formatCurrency(side === 'buy' ? availableCash(state) - liveQuote.totalCost : availableCash(state) + (liveQuote.settlementDay > state.dayIndex ? 0 : (liveQuote.taxBreakdown?.netAfterTax ?? liveQuote.totalCost)))}
                       </span>
                     </div>
                   </>

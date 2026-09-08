@@ -35,6 +35,7 @@ import { KPIChip } from '@/components/ui/KPIChip';
 import { cn } from '@/lib/utils';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import OnboardingTutorial, { openTutorial } from '@/components/game/OnboardingTutorial';
+import CashBalances from '@/components/game/CashBalances';
 import BottomNav from '@/components/game/BottomNav';
 import { loadTheme, saveTheme, type AppTheme } from '@/engine/persistence';
 import { Slider } from '@/components/ui/slider';
@@ -169,7 +170,10 @@ export default function AppLayout() {
       toast.error(locale === 'pt-BR' ? 'Seed inválida. Use um número inteiro positivo.' : 'Invalid seed. Use a positive integer.');
       return;
     }
-    newGame(seed);
+    if (!newGame(seed)) {
+      toast.error(locale === 'pt-BR' ? 'Não foi possível iniciar um novo jogo. A partida atual foi mantida. Tente novamente.' : 'Could not start a new game. Your current game was kept. Please retry.');
+      return;
+    }
     setNewGameOpen(false);
     toast.success(locale === 'pt-BR' ? 'Novo jogo iniciado!' : 'New game started!');
   };
@@ -282,6 +286,7 @@ export default function AppLayout() {
 
         {/* Page content — extra bottom padding on mobile for BottomNav */}
         <main className="flex-1 overflow-auto p-3 sm:p-4 pb-20 md:pb-4 scrollbar-terminal">
+          <CashBalances />
           <Outlet />
         </main>
 
