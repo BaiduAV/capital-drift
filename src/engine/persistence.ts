@@ -2,7 +2,7 @@
 
 import type { GameState } from './types';
 import { initializeMonetaryPolicy } from './monetaryPolicy';
-import { initializeFixedIncome } from './fixedIncome';
+import { initializeFixedIncome, migrateFixedIncomeCurves } from './fixedIncome';
 import { annualToDaily, simulatedCDI } from './financialCalendar';
 import { saveSchema } from './saveSchema';
 import { normalizeReservations } from './cash';
@@ -58,7 +58,8 @@ function decode(raw: string): GameState {
     state.pendingSettlements ??= [];
     initializeFixedIncome(state, (state.saveVersion ?? 1) < 2);
     initializeMonetaryPolicy(state);
-    state.saveVersion = 3;
+    if ((state.saveVersion ?? 1) < 4) migrateFixedIncomeCurves(state);
+    state.saveVersion = 4;
     return state;
 }
 
@@ -88,7 +89,7 @@ export function loadGame(): GameState | null {
 
 /** Never replace unreadable data unless the player explicitly requests recovery/reset. */
 export function saveGame(state: GameState, replaceInvalid = false): SaveResult {
-  const candidate = { ...state, saveVersion: 3 };
+  const candidate = { ...state, saveVersion: 4 };
   if (!saveSchema.safeParse(candidate).success) return { ok: false, reason: 'invalid' };
   try {
     const raw = localStorage.getItem(STORAGE_KEY);

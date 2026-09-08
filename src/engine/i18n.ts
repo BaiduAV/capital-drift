@@ -11,7 +11,7 @@ const translations: Record<Locale, Record<string, string>> = {
     'asset.tselic': 'Tesouro Selic',
     'asset.cdb100': 'CDB 100% CDI',
     'asset.cdb110': 'CDB 110% CDI',
-    'asset.cdbpre': 'CDB Pré 12%',
+    'asset.cdbpre': 'CDB Prefixado',
     'asset.tpre': 'Tesouro Pré',
     'asset.tipca': 'Tesouro IPCA+',
     'asset.debaa': 'Debênture AA',
@@ -152,7 +152,7 @@ const translations: Record<Locale, Record<string, string>> = {
     'trade.no_liquidity': 'No buyer or quantity exceeds available market depth today.',
     'trade.locked': 'Investment is settling or locked; check available lots.',
     'asset.tselic': 'Treasury Selic', 'asset.cdb100': 'CDB 100% CDI', 'asset.cdb110': 'CDB 110% CDI',
-    'asset.cdbpre': 'CDB Pre 12%', 'asset.tpre': 'Treasury Pre', 'asset.tipca': 'Treasury IPCA+',
+    'asset.cdbpre': 'Fixed-rate CDB', 'asset.tpre': 'Treasury Pre', 'asset.tipca': 'Treasury IPCA+',
     'asset.debaa': 'Debenture AA', 'asset.debbbb': 'Debenture BBB',
     // ETFs
     'asset.bova11': 'Ibovespa ETF', 'asset.divo11': 'Dividend ETF',

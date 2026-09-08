@@ -1,3 +1,4 @@
+import { positionMarketValue, positionUnitValue } from '@/engine/valuation';
 import { useState, useMemo, useCallback } from 'react';
 import { useGame } from '@/context/GameContext';
 import { INITIAL_CASH } from '@/engine/params';
@@ -113,15 +114,14 @@ export default function Dashboard() {
   const topPositions = useMemo(() => {
     return Object.entries(state.portfolio)
       .map(([id, pos]) => {
-        const asset = state.assets[id];
         const costBasis = pos.quantity * pos.avgPrice;
-        const marketValue = pos.quantity * asset.price;
+        const marketValue = positionMarketValue(state, id);
         const pnl = marketValue - costBasis;
-        return { id, quantity: pos.quantity, avgPrice: pos.avgPrice, price: asset.price, pnl, marketValue };
+        return { id, quantity: pos.quantity, avgPrice: pos.avgPrice, price: positionUnitValue(state, id), pnl, marketValue };
       })
       .sort((a, b) => b.marketValue - a.marketValue)
       .slice(0, 3);
-  }, [state.portfolio, state.assets]);
+  }, [state]);
 
   return (
     <div className="space-y-4">

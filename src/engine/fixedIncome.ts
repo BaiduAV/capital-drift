@@ -1,6 +1,7 @@
 import type { FixedIncomeInstrument, FixedIncomeLot, FixedIncomeTerms, GameState, TradeQuote, EventCard } from './types';
 import type { RNG } from './rng';
-import { expectedInflation, expectedPolicyRate, inflationAccrualFactor } from './monetaryPolicy';
+import { inflationAccrualFactor } from './monetaryPolicy';
+import { curveYield, initializeYieldCurves } from './yieldCurves';
 import { annualToDaily, simulatedCDI, gameDate, dateAtDay, calendarDaysBetween, addBusinessDays, taxMonth, START_DATE } from './financialCalendar';
 import { getFixedIncomeIRRate, getIOFRate } from './fixedIncomeTax';
 
@@ -21,11 +22,17 @@ export const FIXED_INCOME_CONTRACTS: Record<string, FixedIncomeTerms> = {
   DEBBBB: terms({ kind: 'CORPORATE', indexer: 'CDI', annualRate: 0.04, termBusinessDays: 756, redemption: 'SECONDARY', settlementBusinessDays: 1, issuer: 'Indústria Horizonte (simulada)', fgcCovered: false }),
 };
 
-export function marketYield(state: GameState, t: FixedIncomeTerms): number {
-  const riskPremium = (state.macro.riskIndex - 0.35) * (t.kind === 'CORPORATE' ? 0.10 : 0.02);
+export function marketYield(state: GameState, t: FixedIncomeTerms, remaining = t.termBusinessDays): number {
+  const riskPremium = (state.macro.riskIndex - 0.35) * 0.10;
   if (t.kind === 'CORPORATE') return Math.max(0, t.annualRate + riskPremium);
-  if (t.indexer === 'IPCA') return Math.max(-0.01, (1 + expectedPolicyRate(state)) / (1 + expectedInflation(state)) - 1 + 0.005 + riskPremium);
-  return Math.max(0, expectedPolicyRate(state) + 0.01 + riskPremium);
+  return curveYield(state, t.indexer === 'IPCA' ? 'real' : t.indexer === 'SELIC' ? 'selicSpread' : 'nominal', remaining);
+}
+
+export function fixedIncomeOfferRate(state: GameState, id: string): number | undefined {
+  const t = state.assetCatalog[id]?.fixedIncome;
+  if (t?.kind !== 'BANK' || t.indexer !== 'FIXED') return undefined;
+  // A simulated bank funding premium, quoted in basis points for new deposits only.
+  return Math.round(Math.max(0, marketYield(state, t) + .005 + (state.macro.riskIndex - .35) * .01) * 10000) / 10000;
 }
 function newInstrument(state: GameState, id: string): FixedIncomeInstrument {
   const t = state.assetCatalog[id].fixedIncome!;
@@ -33,7 +40,33 @@ function newInstrument(state: GameState, id: string): FixedIncomeInstrument {
   const yieldRate = marketYield(state, t);
   return { maturityDay: state.dayIndex + t.termBusinessDays,
     faceValue: price * Math.pow(1 + yieldRate, t.termBusinessDays / 252),
-    bookValue: price, inflationFactor: 1, issuedYield: yieldRate, marketYield: yieldRate };
+    bookValue: t.indexer === 'SELIC' ? price * Math.pow(1 + yieldRate, t.termBusinessDays / 252) : price,
+    inflationFactor: 1, issuedYield: yieldRate, marketYield: yieldRate, curveYieldAdjustment: 0 };
+}
+
+/** Preserve legacy prices and promised cash flows; use a constant yield offset prospectively. */
+export function migrateFixedIncomeCurves(state: GameState): void {
+  initializeYieldCurves(state);
+  for (const [id, def] of Object.entries(state.assetCatalog)) {
+    const t = def.fixedIncome, instrument = state.assets[id]?.fixedIncome;
+    if (!t || !instrument) continue;
+    if (t.kind === 'TREASURY' && !state.assets[id].isBankrupt) {
+      const remaining = Math.max(0, instrument.maturityDay - state.dayIndex);
+      const value = t.indexer === 'SELIC' ? instrument.bookValue
+        : instrument.faceValue * (t.indexer === 'IPCA' ? instrument.inflationFactor : 1);
+      const implied = remaining > 0 && state.assets[id].price > 0
+        ? Math.expm1(Math.log(value / state.assets[id].price) * 252 / remaining) : 0;
+      instrument.curveYieldAdjustment = implied - marketYield(state, t, remaining);
+      instrument.marketYield = implied;
+    }
+    if (t.kind === 'BANK' && t.indexer === 'FIXED') {
+      for (const lot of fixedIncomeLots(state, id)) {
+        lot.fixedAnnualRate ??= t.annualRate;
+        lot.bookUnitValue ??= state.assets[id].price;
+        lot.valuationDay ??= Math.min(state.dayIndex, lot.maturityDay);
+      }
+    }
+  }
 }
 
 /** Migration is prospective: retain prices, quantities and costs; never fabricate historical lots. */
@@ -84,7 +117,23 @@ export function recordFixedIncomeBuy(state: GameState, id: string, quantity: num
   state.portfolio[id].fixedIncomeLots = [...previousLots, { quantity, unitCost,
     purchaseDay: state.dayIndex + settlement, purchaseDate: dateAtDay(state, state.dayIndex + settlement),
     maturityDay: t.kind === 'BANK' ? state.dayIndex + t.termBusinessDays : state.assets[id].fixedIncome!.maturityDay,
-    custodyAccrued: 0 }];
+    custodyAccrued: 0,
+    ...(t.kind === 'BANK' && t.indexer === 'FIXED' ? {
+      fixedAnnualRate: fixedIncomeOfferRate(state, id), bookUnitValue: unitCost, valuationDay: state.dayIndex,
+    } : {}) }];
+}
+
+export function accrueFixedIncomeLots(state: GameState, id: string): void {
+  const t = state.assetCatalog[id]?.fixedIncome;
+  if (t?.kind !== 'BANK' || t.indexer !== 'FIXED') return;
+  for (const lot of fixedIncomeLots(state, id)) {
+    const end = Math.min(state.dayIndex + 1, lot.maturityDay);
+    const from = lot.valuationDay ?? state.dayIndex;
+    lot.fixedAnnualRate ??= t.annualRate;
+    lot.bookUnitValue ??= state.assets[id].price;
+    if (end > from) lot.bookUnitValue *= Math.pow(1 + lot.fixedAnnualRate, (end - from) / 252);
+    lot.valuationDay = Math.max(from, end);
+  }
 }
 
 /** Value one business day forward after macro changes; no unrelated random price noise. */
@@ -96,13 +145,16 @@ export function projectFixedIncome(state: GameState, id: string): { price: numbe
   const cdi = annualToDaily(simulatedCDI(state));
   if (t.indexer === 'SELIC') instrument.bookValue *= 1 + annualToDaily(state.macro.baseRateAnnual);
   if (t.indexer === 'CDI') instrument.bookValue *= (1 + cdi * t.cdiPercent) * Math.pow(1 + t.annualRate, 1 / 252);
-  if (t.indexer === 'FIXED' && t.kind === 'BANK') instrument.bookValue *= 1 + annualToDaily(t.annualRate);
-  instrument.marketYield = marketYield(state, t);
+  instrument.marketYield = marketYield(state, t, remaining) + (instrument.curveYieldAdjustment ?? 0);
   if (t.kind === 'CORPORATE') instrument.marketYield += instrument.creditSpreadAdjustment ?? 0;
   let price = instrument.bookValue;
   if (t.indexer === 'IPCA') instrument.inflationFactor *= inflationAccrualFactor(state);
   if (t.kind === 'TREASURY' && t.indexer !== 'SELIC') {
     price = instrument.faceValue * (t.indexer === 'IPCA' ? instrument.inflationFactor : 1) / Math.pow(1 + instrument.marketYield, remaining / 252);
+  } else if (t.indexer === 'SELIC') {
+    price /= Math.pow(1 + instrument.marketYield, remaining / 252);
+  } else if (t.kind === 'BANK' && t.indexer === 'FIXED') {
+    price = state.assets[id].price;
   } else if (t.kind === 'CORPORATE') {
     // Floating-rate credit: accrued contractual value plus repricing of credit spread.
     price *= Math.pow((1 + t.annualRate) / (1 + instrument.marketYield), remaining / 252);
@@ -232,7 +284,9 @@ export function settleFixedIncomeMaturities(state: GameState): void {
     const lots = fixedIncomeLots(state, id);
     const matured = lots.filter(l => l.maturityDay <= state.dayIndex);
     if (matured.length) {
-      const amount = bookRedemption(state, id, matured, state.assets[id].price, state.dayIndex);
+      const amount = def.fixedIncome.kind === 'BANK' && def.fixedIncome.indexer === 'FIXED'
+        ? matured.reduce((sum, lot) => sum + bookRedemption(state, id, [lot], lot.bookUnitValue ?? state.assets[id].price, state.dayIndex), 0)
+        : bookRedemption(state, id, matured, state.assets[id].price, state.dayIndex);
       updatePosition(state, id, lots.filter(l => l.maturityDay > state.dayIndex));
       state.fixedIncomeLog ??= [];
       state.fixedIncomeLog.push({ day: state.dayIndex, assetId: id, type: 'MATURITY', amount });
@@ -267,7 +321,8 @@ export function defaultFixedIncomeIssuer(state: GameState, issuer: string, recov
     if (t?.issuer !== issuer) continue;
     let payment = 0;
     for (const lot of fixedIncomeLots(state, id)) {
-      const gross = lot.quantity * state.assets[id].fixedIncome!.bookValue;
+      const unitValue = t.kind === 'BANK' && t.indexer === 'FIXED' ? lot.bookUnitValue ?? state.assets[id].price : state.assets[id].fixedIncome!.bookValue;
+      const gross = lot.quantity * unitValue;
       const guaranteed = t.fgcCovered ? Math.min(coverage, gross) : 0;
       coverage -= guaranteed; covered += guaranteed;
       const recovered = guaranteed + (gross - guaranteed) * recoveryFraction;

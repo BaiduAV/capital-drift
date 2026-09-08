@@ -1,3 +1,5 @@
+import { computeEquity } from '@/engine/invariants';
+import { positionMarketValue } from '@/engine/valuation';
 import { useState, useMemo } from 'react';
 import { useGame } from '@/context/GameContext';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -61,12 +63,12 @@ export default function RebalancePanel() {
       if (pos.quantity <= 0) continue;
       const cat = state.assetCatalog[id];
       if (!cat) continue;
-      const val = pos.quantity * (state.assets[id]?.price ?? 0);
+      const val = positionMarketValue(state, id);
       const group = classGroupOf(cat.class);
       if (group in alloc) alloc[group] += val / equity;
     }
     return alloc;
-  }, [state.portfolio, state.assets, state.assetCatalog, state.cash, equity]);
+  }, [state, equity]);
 
   const recommendations = useMemo(
     () => generateRecommendations(state, equity),
@@ -124,13 +126,13 @@ export default function RebalancePanel() {
         const currentPct = (() => {
           const s = getState();
           let val = 0;
-          const eq = s.cash + Object.entries(s.portfolio).reduce((sum, [id, p]) => sum + p.quantity * (s.assets[id]?.price ?? 0), 0);
+          const eq = computeEquity(s);
           for (const [id, pos] of Object.entries(s.portfolio)) {
             if (pos.quantity <= 0) continue;
             const cat = s.assetCatalog[id];
             if (!cat) continue;
             if (CLASS_MAP[group]?.some(c => c === cat.class)) {
-              val += pos.quantity * (s.assets[id]?.price ?? 0);
+              val += positionMarketValue(s, id);
             }
           }
           return eq > 0 ? val / eq : 0;
@@ -140,7 +142,7 @@ export default function RebalancePanel() {
         if (currentPct >= targetPct - 0.02) continue;
 
         const s = getState();
-        const currentEq = s.cash + Object.entries(s.portfolio).reduce((sum, [id, p]) => sum + p.quantity * (s.assets[id]?.price ?? 0), 0);
+        const currentEq = computeEquity(s);
         const deficit = (targetPct - currentPct) * currentEq;
         const targets = representativeAssets[group] || [];
         const perTarget = deficit / Math.max(targets.length, 1);

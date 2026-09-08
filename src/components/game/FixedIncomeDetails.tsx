@@ -1,6 +1,6 @@
 import { useGame } from '@/context/GameContext';
 import { dateAtDay, gameDate, calendarDaysBetween } from '@/engine/financialCalendar';
-import { fixedIncomeLots, fixedIncomeSellCapacity } from '@/engine/fixedIncome';
+import { fixedIncomeLots, fixedIncomeSellCapacity, fixedIncomeOfferRate } from '@/engine/fixedIncome';
 
 export default function FixedIncomeDetails({ assetId }: { assetId: string }) {
   const { state, locale } = useGame();
@@ -12,14 +12,21 @@ export default function FixedIncomeDetails({ assetId }: { assetId: string }) {
   const money = (v: number) => new Intl.NumberFormat(locale, { style: 'currency', currency: 'BRL' }).format(v);
   const date = (v: string) => new Date(v + 'T12:00:00Z').toLocaleDateString(locale, { timeZone: 'UTC' });
   const lots = fixedIncomeLots(state, assetId);
+  const offerRate = fixedIncomeOfferRate(state, assetId);
   const rate = terms.indexer === 'CDI' ? `${pct(terms.cdiPercent)} CDI${terms.annualRate ? ` + ${pct(terms.annualRate)} a.a.` : ''}`
     : terms.indexer === 'SELIC' ? 'Selic'
-    : `${terms.indexer === 'IPCA' ? 'IPCA + ' : ''}${pct(terms.kind === 'BANK' ? terms.annualRate : instrument.marketYield)} a.a.`;
+    : `${terms.indexer === 'IPCA' ? 'IPCA + ' : ''}${pct(offerRate ?? instrument.marketYield)} a.a.`;
   const liquidity = terms.redemption === 'MATURITY' ? (pt ? 'Somente no vencimento' : 'At maturity only')
     : terms.redemption === 'SECONDARY' ? (pt ? 'Venda no mercado secundário; depende de comprador. Liquidação D+1.' : 'Secondary market sale, subject to a buyer. T+1 settlement.')
     : (pt ? `Diária${terms.lockCalendarDays ? ` após ${terms.lockCalendarDays} dias corridos por aplicação` : ''}` : `Daily${terms.lockCalendarDays ? ` after ${terms.lockCalendarDays} calendar days per deposit` : ''}`);
   return <section aria-label={pt ? 'Contrato de renda fixa' : 'Fixed income contract'} className="rounded-md border p-3 text-xs space-y-2">
     <p className="font-semibold">{pt ? 'Remuneração bruta' : 'Gross remuneration'}: {rate}</p>
+    {offerRate !== undefined && <p>{pt ? 'Taxa da nova aplicação. Cada lote mantém a taxa contratada até seu vencimento; o preço de compra representa o valor aplicado por unidade.' : 'Rate for a new deposit. Each lot keeps its contracted rate until maturity; the purchase price is the deposit amount per unit.'}</p>}
+    {terms.indexer === 'SELIC' && <>
+      <p>{pt ? 'Taxa de ágio/deságio' : 'Premium/discount yield'}: {pct(instrument.marketYield)} a.a.</p>
+      <p>{pt ? 'Valor nominal atualizado por unidade' : 'Updated nominal value per unit'}: {money(instrument.bookValue)}.</p>
+      <p>{pt ? 'O preço desconta essa taxa até o vencimento. Deságio positivo reduz o preço; ágio eleva o preço acima do valor nominal atualizado. A venda antecipada pode ter perda.' : 'The price discounts this yield to maturity. A positive discount reduces the price; a premium raises it above the updated nominal value. An early sale can realize a loss.'}</p>
+    </>}
     <p>{pt ? 'Emissor' : 'Issuer'}: {terms.issuer}</p>
     <p>{liquidity}</p>
     <p>{pt ? 'Vencimento' : 'Maturity'}: {terms.kind === 'BANK'
@@ -36,6 +43,7 @@ export default function FixedIncomeDetails({ assetId }: { assetId: string }) {
         {lots.map((lot, index) => <p key={`${lot.purchaseDate}-${index}`}>
           {lot.quantity} × {money(lot.unitCost)} — {date(lot.purchaseDate)} ({Math.max(0, calendarDaysBetween(lot.purchaseDate, gameDate(state)))} {pt ? 'dias corridos' : 'calendar days'});
           {' '}{pt ? 'vence' : 'matures'} {date(dateAtDay(state, lot.maturityDay))}{lot.custodyAccrued > 0 ? `; ${pt ? 'custódia' : 'custody'} ${money(lot.custodyAccrued)}` : ''}
+          {lot.fixedAnnualRate !== undefined && <>{'; '}{pt ? 'taxa contratada' : 'contracted rate'} {pct(lot.fixedAnnualRate)} a.a.; {pt ? 'saldo bruto' : 'gross balance'} {money(lot.quantity * (lot.bookUnitValue ?? lot.unitCost))}</>}
         </p>)}
       </div>
     </>}

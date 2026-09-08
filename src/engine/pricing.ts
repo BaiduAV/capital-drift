@@ -1,6 +1,6 @@
 // ── Price generation with correlated market factors + macro tilt ──
 
-import { projectFixedIncome } from './fixedIncome';
+import { accrueFixedIncomeLots, projectFixedIncome } from './fixedIncome';
 import type { GameState } from './types';
 import type { RNG } from './rng';
 import { DRIFT_VOL, CORR_STRENGTH, CRISIS_CRYPTO_CROSS_LINK, MACRO_TILT, MACRO, IPO } from './params';
@@ -129,6 +129,7 @@ export function applyReturnsToPrices(state: GameState, returns: Record<string, n
       asset.lastReturn = projected.price / asset.price - 1;
       asset.price = projected.price;
       asset.fixedIncome = projected.instrument;
+      accrueFixedIncomeLots(state, assetId);
       continue;
     }
     asset.lastReturn = ret;

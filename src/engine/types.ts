@@ -41,6 +41,9 @@ export interface FixedIncomeTerms {
 }
 
 export interface FixedIncomeLot {
+  fixedAnnualRate?: number;
+  bookUnitValue?: number;
+  valuationDay?: number;
   quantity: number;
   unitCost: number;
   purchaseDay: number;
@@ -50,6 +53,7 @@ export interface FixedIncomeLot {
 }
 
 export interface FixedIncomeInstrument {
+  curveYieldAdjustment?: number;
   creditSpreadAdjustment?: number;
   volumeDay?: number;
   volumeSold?: number;
@@ -146,6 +150,7 @@ export interface TaxState {
 }
 
 export interface GameState {
+  yieldCurves?: YieldCurveState;
   saveVersion?: number;
   calendarDate?: string;
   fixedIncomeMigrationDay?: number;
@@ -266,6 +271,7 @@ export interface PeriodResult {
 }
 
 export interface TradeQuote {
+  fixedIncomeAnnualRate?: number;
   assetId: string;
   quantity: number;
   unitPrice: number;
@@ -288,4 +294,19 @@ export interface TradeQuote {
     exemptionReason?: string;
     lossOffset: number;
   };
+}
+
+export interface YieldCurvePoint {
+  businessDays: number;
+  annualRate: number;
+}
+
+export interface YieldCurveState {
+  nominal: YieldCurvePoint[];
+  real: YieldCurvePoint[];
+  selicSpread: YieldCurvePoint[];
+  referencePolicyRate: number;
+  referenceInflationExpectation: number;
+  referenceRiskIndex: number;
+  referenceActivity: number;
 }

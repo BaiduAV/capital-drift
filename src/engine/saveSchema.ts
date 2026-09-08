@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { CURVE_TENORS } from './yieldCurves';
 
 const num = z.number().finite();
 const nonnegative = num.nonnegative();
@@ -21,8 +22,13 @@ const terms = z.object({
   lockCalendarDays: day, redemption: z.enum(['DAILY', 'MATURITY', 'SECONDARY']), settlementBusinessDays: day,
   issuer: z.string().min(1), fgcCovered: z.boolean(), taxExempt: z.boolean(), custodyAnnual: nonnegative.max(1),
 });
-const lot = z.object({ quantity: nonnegative.positive().max(Number.MAX_SAFE_INTEGER), unitCost: nonnegative, purchaseDay: day, purchaseDate: date, maturityDay: day, custodyAccrued: nonnegative });
-const instrument = z.object({ maturityDay: day, faceValue: nonnegative, bookValue: nonnegative, inflationFactor: num.positive(), issuedYield: num.min(-0.99), marketYield: num.min(-0.99), creditSpreadAdjustment: nonnegative.optional(), volumeDay: day.optional(), volumeSold: nonnegative.optional() });
+const curve = z.array(z.object({ businessDays: day.positive(), annualRate: num.min(-.02).max(.4) }))
+  .length(CURVE_TENORS.length).refine(points => points.every((p, i) => p.businessDays === CURVE_TENORS[i]));
+const yieldCurves = z.object({ nominal: curve, real: curve, selicSpread: curve,
+  referencePolicyRate: num, referenceInflationExpectation: num, referenceRiskIndex: num, referenceActivity: num });
+const lot = z.object({ quantity: nonnegative.positive().max(Number.MAX_SAFE_INTEGER), unitCost: nonnegative, purchaseDay: day, purchaseDate: date, maturityDay: day, custodyAccrued: nonnegative,
+  fixedAnnualRate: num.min(0).max(1).optional(), bookUnitValue: nonnegative.optional(), valuationDay: day.optional() });
+const instrument = z.object({ maturityDay: day, faceValue: nonnegative, bookValue: nonnegative, inflationFactor: num.positive(), issuedYield: num.min(-0.99), marketYield: num.min(-0.99), curveYieldAdjustment: num.optional(), creditSpreadAdjustment: nonnegative.optional(), volumeDay: day.optional(), volumeSold: nonnegative.optional() });
 const classes = z.enum(['RF_POS', 'RF_PRE', 'RF_IPCA', 'DEBENTURE', 'STOCK', 'ETF', 'FII', 'CRYPTO_MAJOR', 'CRYPTO_ALT', 'FX']);
 const sector = z.enum(['ENERGIA', 'BANCOS', 'VAREJO', 'AGRO', 'TECH', 'MINERACAO', 'SAUDE', 'INDUSTRIA', 'UTILITIES', 'IMOB', 'TELECOM', 'LOGISTICA', 'TOTAL_MARKET', 'DIVIDENDS', 'SMALL_CAPS', 'BRICK', 'PAPER', 'HYBRID', 'NONE']);
 const definition = z.object({
@@ -36,7 +42,8 @@ const ledger = z.object({ gain: num, openingLoss: num.max(0), taxPaid: nonnegati
 
 /** Validate storage at runtime; TypeScript casts do not validate JSON. */
 export const saveSchema = z.object({
-  saveVersion: z.union([z.literal(1), z.literal(2), z.literal(3)]).optional(),
+  saveVersion: z.union([z.literal(1), z.literal(2), z.literal(3), z.literal(4)]).optional(),
+  yieldCurves: yieldCurves.optional(),
   calendarDate: date.optional(), fixedIncomeMigrationDay: day.optional(),
   issuerDefaults: z.record(z.object({ day, recoveryFraction: num.min(0).max(1) })).optional(),
   fgcWindowStart: date.optional(), fgcHistory: z.array(z.object({ date, amount: nonnegative })).optional(),
@@ -75,7 +82,8 @@ export const saveSchema = z.object({
   }).optional(),
 }).passthrough().superRefine((state, ctx) => {
   if ((state.saveVersion ?? 1) >= 2 && !state.calendarDate) ctx.addIssue({ code: 'custom', message: 'Missing financial calendar' });
-  if (state.saveVersion === 3 && !state.macro.dynamics) ctx.addIssue({ code: 'custom', message: 'Missing monetary state' });
+  if ((state.saveVersion ?? 1) >= 3 && !state.macro.dynamics) ctx.addIssue({ code: 'custom', message: 'Missing monetary state' });
+  if (state.saveVersion === 4 && !state.yieldCurves) ctx.addIssue({ code: 'custom', message: 'Missing yield curves' });
   if (state.macro.dynamics) {
     const annual = state.macro.dynamics.inflationMonths.reduce((acc, r) => acc * (1 + r), 1) - 1;
     if (Math.abs(annual - state.macro.inflationAnnual) > 1e-8) ctx.addIssue({ code: 'custom', message: 'Inconsistent trailing inflation' });
@@ -87,6 +95,12 @@ export const saveSchema = z.object({
       const cost = pos.fixedIncomeLots.reduce((sum, l) => sum + l.quantity * l.unitCost, 0);
       if (Math.abs(quantity - pos.quantity) > 1e-8 * Math.max(1, pos.quantity) || Math.abs(cost - pos.quantity * pos.avgPrice) > 1e-8 * Math.max(1, cost)) ctx.addIssue({ code: 'custom', message: `Inconsistent lots for ${id}` });
       if (pos.fixedIncomeLots.some(l => l.maturityDay < l.purchaseDay)) ctx.addIssue({ code: 'custom', message: `Invalid maturity for ${id}` });
+      const t = state.assetCatalog[id]?.fixedIncome;
+      if (state.saveVersion === 4 && t?.kind === 'BANK' && t.indexer === 'FIXED'
+        && pos.fixedIncomeLots.some(l => l.fixedAnnualRate === undefined || l.bookUnitValue === undefined
+          || l.valuationDay === undefined || l.valuationDay < l.purchaseDay || l.valuationDay > Math.min(state.dayIndex, l.maturityDay))) {
+        ctx.addIssue({ code: 'custom', message: `Missing or invalid deposit balance for ${id}` });
+      }
     }
     if ((state.saveVersion ?? 1) >= 2 && state.assetCatalog[id]?.fixedIncome && !pos.fixedIncomeLots) ctx.addIssue({ code: 'custom', message: `Missing lots for ${id}` });
     if (!state.assets[id] || !state.assetCatalog[id]) ctx.addIssue({ code: 'custom', message: `Missing asset for position ${id}` });

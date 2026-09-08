@@ -41,8 +41,10 @@ describe('contractual fixed income returns', () => {
   it('Selic follows the target while CDB follows a distinct DI index', () => {
     const s = createGameState(1);
     s.macro.baseRateAnnual = 0.12;
+    const initialNominal = s.assets.TSELIC.fixedIncome!.bookValue;
     advance(s, 252);
-    expect(s.assets.TSELIC.price).toBeCloseTo(112, 8);
+    expect(s.assets.TSELIC.fixedIncome!.bookValue).toBeCloseTo(initialNominal * 1.12, 8);
+    expect(s.assets.TSELIC.price).toBeLessThan(s.assets.TSELIC.fixedIncome!.bookValue);
     expect(s.assets.CDB100.price).toBeCloseTo(111.9, 8);
   });
   it('higher Selic changes post-fixed accrual immediately, independently of RNG', () => {
@@ -54,10 +56,12 @@ describe('contractual fixed income returns', () => {
     expect(generateReturns(low, createRNG(999)).CDB100).toBe(a.CDB100);
   });
   it('CDB Pré preserves the 12% contract through macro and regime changes', () => {
-    const s = createGameState(1);
+    const s = createGameState(1); buy(s, 'CDBPRE');
     s.regime = 'CRISIS'; s.macro.riskIndex = 0.95; s.macro.baseRateAnnual = 0.20;
-    advance(s, 252);
-    expect(s.assets.CDBPRE.price).toBeCloseTo(112, 8);
+    advance(s, 251);
+    expect(s.portfolio.CDBPRE.fixedIncomeLots![0].fixedAnnualRate).toBe(.12);
+    expect(s.portfolio.CDBPRE.fixedIncomeLots![0].bookUnitValue).toBeCloseTo(100 * 1.12 ** (251 / 252), 8);
+    expect(s.assets.CDBPRE.price).toBe(100);
   });
   it('fixed Treasury prices fall when yields rise and rise when yields fall', () => {
     const s = createGameState(1), lower = structuredClone(s);
@@ -88,8 +92,9 @@ describe('contractual fixed income returns', () => {
     const high = structuredClone(s); high.macro.dynamics!.inflationExpectationAnnual = 0.10;
     expect(generateReturns(high, createRNG(1)).TIPCA).toBeGreaterThan(r.TIPCA);
   });
-  it('risk held constant does not create a recurring loss in unchanged Treasury yields', () => {
+  it('flat unchanged Treasury yields produce only the contracted carry', () => {
     const s = createGameState(1);
+    s.yieldCurves!.nominal.forEach(p => { p.annualRate = s.assets.TPRE.fixedIncome!.issuedYield; });
     expect(generateReturns(s, createRNG(1)).TPRE).toBeCloseTo(annualToDaily(s.assets.TPRE.fixedIncome!.issuedYield), 12);
   });
 });
@@ -285,7 +290,7 @@ describe('issuer failures, guarantees and migration', () => {
     s.dayIndex = 50; s.portfolio.TIPCA = { quantity: 2, avgPrice: 90, avgPurchaseDay: 10 };
     localStorage.setItem('patrimonio_save', JSON.stringify(s));
     const loaded = loadGame()!;
-    expect(loaded.saveVersion).toBe(3);
+    expect(loaded.saveVersion).toBe(4);
     expect(computeEquity(loaded)).toBe(computeEquity(s));
     expect(loaded.portfolio.TIPCA.avgPrice).toBe(90);
     expect(loaded.fixedIncomeMigrationDay).toBe(50);

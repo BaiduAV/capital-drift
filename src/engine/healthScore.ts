@@ -1,3 +1,4 @@
+import { positionMarketValue } from './valuation';
 import type { GameState, AssetClass } from './types';
 
 export interface HealthScoreBreakdown {
@@ -64,7 +65,7 @@ export function computeHealthScore(
   const positions = Object.entries(state.portfolio).filter(([, p]) => p.quantity > 0);
   let assetDivScore = 0;
   if (positions.length > 0 && equity > 0) {
-    const values = positions.map(([id, p]) => p.quantity * (state.assets[id]?.price ?? 0));
+    const values = positions.map(([id]) => positionMarketValue(state, id));
     const total = values.reduce((a, b) => a + b, 0);
     if (total > 0) {
       let hhi = 0;
@@ -84,10 +85,10 @@ export function computeHealthScore(
   if (positions.length > 0 && equity > 0) {
     const classValues: Record<string, number> = {};
     let totalInvested = 0;
-    for (const [id, p] of positions) {
+    for (const [id] of positions) {
       const ac = state.assetCatalog[id]?.class;
       if (!ac) continue;
-      const val = p.quantity * (state.assets[id]?.price ?? 0);
+      const val = positionMarketValue(state, id);
       const group = classGroupOf(ac);
       classValues[group] = (classValues[group] ?? 0) + val;
       totalInvested += val;

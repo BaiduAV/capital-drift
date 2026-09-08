@@ -151,7 +151,7 @@ describe('monetary save migration', () => {
     const before = computeEquity(s), history = structuredClone(s.history);
     localStorage.setItem('patrimonio_save', JSON.stringify(s));
     const loaded = loadGame()!;
-    expect(loaded.saveVersion).toBe(3); expect(computeEquity(loaded)).toBe(before);
+    expect(loaded.saveVersion).toBe(4); expect(computeEquity(loaded)).toBe(before);
     expect(loaded.history).toEqual(history); expect(loaded.macro.inflationAnnual).toBe(.10);
     expect(loaded.macro.baseRateAnnual).toBe(.11); expect(loaded.macro.dynamics!.estimatedHistoryMonths).toBe(12);
     expect(saveGame(loaded).ok).toBe(true);

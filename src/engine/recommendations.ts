@@ -1,3 +1,4 @@
+import { positionMarketValue } from './valuation';
 import type { GameState, AssetClass } from './types';
 
 export interface Recommendation {
@@ -32,7 +33,7 @@ function getAllocationPcts(state: GameState, equity: number) {
     if (pos.quantity <= 0) continue;
     const cat = state.assetCatalog[id];
     if (!cat) continue;
-    const val = pos.quantity * (state.assets[id]?.price ?? 0);
+    const val = positionMarketValue(state, id);
     const group = classGroupOf(cat.class);
     if (group in alloc) alloc[group] += val / equity;
   }
@@ -204,8 +205,8 @@ export function generateRecommendations(
 
   // ── Concentration in single asset ──
   if (equity > 0 && positions.length > 0) {
-    for (const [id, pos] of positions) {
-      const val = pos.quantity * (state.assets[id]?.price ?? 0);
+    for (const [id] of positions) {
+      const val = positionMarketValue(state, id);
       if (val / equity > 0.40) {
         recs.push({
           icon: '⚖️', priority: 2, actionType: 'sell',

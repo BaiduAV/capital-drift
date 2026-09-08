@@ -9,6 +9,7 @@ import { updateSectorBubble } from './bubbles';
 import { generateAssetIdentity, generateFIIIdentity } from './naming';
 import { maybeBankruptAsset } from './bankruptcy';
 import { generateReturns, applyReturnsToPrices } from './pricing';
+import { updateYieldCurves } from './yieldCurves';
 import { rollEvents, applyEventMacro, mergeEventImpacts } from './events';
 import { processCreditWatchAndDefaults } from './credit';
 import { applyDividendsAndDistributions } from './dividends';
@@ -276,6 +277,8 @@ function phaseShocks(state: SimulationState, ctx: DayContext): { next: Simulatio
 
 function phaseMarketClearing(state: SimulationState, ctx: DayContext): { next: SimulationState, returns: Record<string, number> } {
   const next = structuredClone(state);
+
+  updateYieldCurves(next);
 
   // 5. Base returns generation
   let returns = generateReturns(next, ctx.rng.market);

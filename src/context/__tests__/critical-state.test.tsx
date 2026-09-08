@@ -19,7 +19,7 @@ describe('save protection and recovery', () => {
   });
 
   it.each([
-    { cash: 'invalid' }, { cash: -1 }, { dayIndex: 0.5 }, { saveVersion: 4 },
+    { cash: 'invalid' }, { cash: -1 }, { dayIndex: 0.5 }, { saveVersion: 5 },
     { portfolio: { MISSING: { quantity: 1, avgPrice: 100 } } },
     { pendingSettlements: [{ assetId: 'TSELIC', amount: -100, dueDay: 7 }] },
   ])('rejects invalid or unsupported persisted state: %j', patch => {
@@ -50,7 +50,7 @@ describe('save protection and recovery', () => {
     state.cash = 4000;
     expect(saveGame(state).ok).toBe(true);
     expect(JSON.parse(localStorage.getItem('patrimonio_save_backup')!).cash).toBe(5000);
-    expect(loadGame()!.saveVersion).toBe(3);
+    expect(loadGame()!.saveVersion).toBe(4);
   });
 
   it('reports storage failure visibly without replacing the original', () => {
