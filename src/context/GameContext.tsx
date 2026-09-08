@@ -24,7 +24,7 @@ interface GameContextType {
   getSellQuote: (assetId: string, qty: number) => TradeQuote;
   buy: (assetId: string, qty: number) => { success: boolean; quote: TradeQuote };
   sell: (assetId: string, qty: number) => { success: boolean; quote: TradeQuote };
-  batchTrades: (fn: (ops: { buy: (id: string, qty: number) => boolean; sell: (id: string, qty: number) => boolean; getState: () => GameState }) => void) => void;
+  batchTrades: (fn: (ops: { buy: (id: string, qty: number) => boolean; sell: (id: string, qty: number) => boolean; getState: () => GameState }) => void) => { executed: number; rejected: number };
   reserveIPO: (ticker: string, qty: number) => boolean;
   newGame: (seed?: number) => boolean;
   switchLocale: () => void;
@@ -170,19 +170,18 @@ export function GameProvider({ children }: { children: ReactNode }) {
 
   const batchTrades = useCallback((fn: (ops: { buy: (id: string, qty: number) => boolean; sell: (id: string, qty: number) => boolean; getState: () => GameState }) => void) => {
     const stateCopy = structuredClone(stateRef.current);
-    fn({
-      buy: (id, qty) => {
-        const quote = quoteBuy(stateCopy, id, qty);
-        return executeBuy(stateCopy, quote);
-      },
-      sell: (id, qty) => {
-        const quote = quoteSell(stateCopy, id, qty);
-        return executeSell(stateCopy, quote);
-      },
-      getState: () => stateCopy,
-    });
-    commit(stateCopy);
-  }, [commit]);
+    const result = { executed: 0, rejected: 0 };
+    const trade = (side: 'buy' | 'sell', id: string, qty: number) => {
+      const quote = side === 'buy' ? quoteBuy(stateCopy, id, qty) : quoteSell(stateCopy, id, qty);
+      const success = side === 'buy' ? executeBuy(stateCopy, quote) : executeSell(stateCopy, quote);
+      result[success ? 'executed' : 'rejected']++;
+      return success;
+    };
+    fn({ buy: (id, qty) => trade('buy', id, qty), sell: (id, qty) => trade('sell', id, qty), getState: () => stateCopy });
+    // Publish achievements and state only after the entire callback has completed.
+    if (result.executed > 0) { unlockTradeAchievement(stateCopy); commit(stateCopy); }
+    return result;
+  }, [commit, unlockTradeAchievement]);
 
   const reserveIPO = useCallback((ticker: string, qty: number): boolean => {
     const stateCopy = structuredClone(stateRef.current);

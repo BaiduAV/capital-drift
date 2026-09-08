@@ -53,7 +53,9 @@ describe('separate monthly exemption counters', () => {
   });
 });
 
-describe('IOF on weighted holding periods', () => {
+// Legacy assets without fixedIncome use the old weighted-age tax path.
+// Current bank contracts are covered per lot in fixedIncome.test.ts.
+describe('legacy compatibility: IOF on weighted holding periods', () => {
   it.each([[0, 0.96], [1, 0.96], [1.3333, 0.96], [2, 0.93], [29.9, 0.03], [30, 0]])('uses complete days for %s days', (days, rate) => {
     expect(getIOFRate(days)).toBe(rate);
   });

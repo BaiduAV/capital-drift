@@ -1,3 +1,6 @@
+import { availableCash } from '@/engine/cash';
+import { maxAffordableBuyQuantity } from '@/engine/trading';
+import { notifyBatchResult } from '@/utils/notifyBatchResult';
 import { useState } from 'react';
 import { useGame } from '@/context/GameContext';
 import { Button } from '@/components/ui/button';
@@ -12,7 +15,7 @@ export default function QuickActions() {
   const [pending, setPending] = useState<Strategy | null>(null);
 
   const executeStrategy = (strategy: Strategy) => {
-    batchTrades(({ buy, sell, getState }) => {
+    const result = batchTrades(({ buy, sell, getState }) => {
       const catalog = state.assetCatalog;
       const rfAssets = Object.keys(catalog).filter(id => catalog[id].corrGroup === 'FIXED_INCOME');
       const eqAssets = Object.keys(catalog).filter(id => catalog[id].corrGroup === 'EQUITY');
@@ -25,7 +28,7 @@ export default function QuickActions() {
         }
         const s = getState();
         const price = s.assets['TSELIC']?.price ?? 100;
-        const qty = Math.floor((s.cash * 0.9) / price);
+        const qty = Math.min(Math.floor((availableCash(s) * 0.9) / price), maxAffordableBuyQuantity(s, 'TSELIC'));
         if (qty > 0) buy('TSELIC', qty);
       } else if (strategy === 'aggressive') {
         for (const id of rfAssets) {
@@ -37,10 +40,10 @@ export default function QuickActions() {
         const etf = Object.keys(catalog).find(id => catalog[id].class === 'ETF' && catalog[id].sector === 'TOTAL_MARKET') || eqAssets[0];
         const crypto = crAssets[0];
         const targets = [etf, crypto].filter(Boolean) as string[];
-        const perTarget = s.cash * 0.9 / targets.length;
+        const perTarget = availableCash(s) * 0.9 / targets.length;
         for (const id of targets) {
           const price = s.assets[id]?.price ?? 50;
-          const qty = Math.floor(perTarget / price);
+          const qty = Math.min(Math.floor(perTarget / price), maxAffordableBuyQuantity(getState(), id));
           if (qty > 0) buy(id, qty);
         }
       } else {
@@ -54,26 +57,16 @@ export default function QuickActions() {
         const fii = Object.keys(catalog).find(id => catalog[id].class === 'FII') || eqAssets[0];
         const crypto = crAssets[0];
         const targets = ['TSELIC', etf, fii, crypto].filter(Boolean) as string[];
-        const perTarget = s.cash * 0.9 / targets.length;
+        const perTarget = availableCash(s) * 0.9 / targets.length;
         for (const id of targets) {
           const price = s.assets[id]?.price ?? 50;
-          const qty = Math.floor(perTarget / price);
+          const qty = Math.min(Math.floor(perTarget / price), maxAffordableBuyQuantity(getState(), id));
           if (qty > 0) buy(id, qty);
         }
       }
     });
 
-    const labels = {
-      defensive: locale === 'pt-BR' ? 'Defensiva' : 'Defensive',
-      balanced: locale === 'pt-BR' ? 'Balanceada' : 'Balanced',
-      aggressive: locale === 'pt-BR' ? 'Agressiva' : 'Aggressive',
-    };
-    toast.success(
-      locale === 'pt-BR'
-        ? `Estratégia ${labels[strategy]} executada!`
-        : `${labels[strategy]} strategy executed!`,
-      { duration: 3000 }
-    );
+    notifyBatchResult(result, locale);
     setPending(null);
   };
 

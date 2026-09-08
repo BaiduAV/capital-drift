@@ -5,6 +5,7 @@ import { simulatePeriod } from '../simulatePeriod';
 import { quoteBuy, quoteSell, executeBuy, executeSell } from '../trading';
 import { computeEquity, checkInvariants } from '../invariants';
 import { createRNG } from '../rng';
+import { buyFixture } from '@/test/factories/game';
 
 const SEED = 42;
 
@@ -79,8 +80,8 @@ describe('Engine - Invariants', () => {
   it('equity is consistent', () => {
     let state = createGameState(SEED);
     // Buy some assets first
-    const quote = quoteBuy(state, 'CRBTC', 5);
-    if (quote.canExecute) executeBuy(state, quote);
+    buyFixture(state, 'BOVA11', 5);
+    expect(state.portfolio.BOVA11.quantity).toBe(5);
 
     for (let i = 0; i < 30; i++) {
       state = simulateDay(state).state;
@@ -88,78 +89,11 @@ describe('Engine - Invariants', () => {
 
     const equity = computeEquity(state);
     expect(isNaN(equity)).toBe(false);
-    expect(equity).toBeGreaterThan(0);
+    const invested = Object.entries(state.portfolio).reduce((sum, [id, position]) => sum + position.quantity * state.assets[id].price, 0);
+    expect(invested).toBeGreaterThan(0);
+    expect(equity).toBeCloseTo(state.cash + invested, 8);
   });
 });
-
-describe('Engine - Correlation in crisis', () => {
-  it.skip('crisis regime increases effective correlation', () => {
-    // Run many days in crisis and check correlation of returns
-    let state = createGameState(SEED);
-    state.regime = 'CRISIS';
-
-    const returns: Record<string, number[]> = {};
-    for (let i = 0; i < 100; i++) {
-      state = simulateDay(state).state;
-      state.regime = 'CRISIS'; // force crisis
-      for (const [id, a] of Object.entries(state.assets)) {
-        if (!returns[id]) returns[id] = [];
-        returns[id].push(a.lastReturn);
-      }
-    }
-
-    // Check that equity assets have higher pairwise correlation than in calm
-    let stateCalm = createGameState(SEED + 100);
-    stateCalm.regime = 'CALM';
-    const returnsCalm: Record<string, number[]> = {};
-    for (let i = 0; i < 100; i++) {
-      stateCalm = simulateDay(stateCalm).state;
-      stateCalm.regime = 'CALM';
-      for (const [id, a] of Object.entries(stateCalm.assets)) {
-        if (!returnsCalm[id]) returnsCalm[id] = [];
-        returnsCalm[id].push(a.lastReturn);
-      }
-    }
-
-    // Compute average pairwise correlation for stocks
-    const stockIds = Object.keys(state.assetCatalog).filter(id => state.assetCatalog[id].class === 'STOCK');
-    const corrCrisis = avgPairwiseCorr(stockIds, returns);
-    const corrCalm = avgPairwiseCorr(stockIds, returnsCalm);
-
-    expect(corrCrisis).toBeGreaterThan(corrCalm);
-  });
-});
-
-function avgPairwiseCorr(ids: string[], returns: Record<string, number[]>): number {
-  let total = 0;
-  let count = 0;
-  for (let i = 0; i < ids.length; i++) {
-    for (let j = i + 1; j < ids.length; j++) {
-      const a = returns[ids[i]];
-      const b = returns[ids[j]];
-      if (a && b) {
-        total += pearson(a, b);
-        count++;
-      }
-    }
-  }
-  return count > 0 ? total / count : 0;
-}
-
-function pearson(x: number[], y: number[]): number {
-  const n = Math.min(x.length, y.length);
-  const mx = x.reduce((a, b) => a + b, 0) / n;
-  const my = y.reduce((a, b) => a + b, 0) / n;
-  let num = 0, dx = 0, dy = 0;
-  for (let i = 0; i < n; i++) {
-    const xi = x[i] - mx;
-    const yi = y[i] - my;
-    num += xi * yi;
-    dx += xi * xi;
-    dy += yi * yi;
-  }
-  return dx > 0 && dy > 0 ? num / Math.sqrt(dx * dy) : 0;
-}
 
 describe('Engine - Fast forward equivalence', () => {
   it('simulatePeriod N = simulateDay N times (no trades)', () => {

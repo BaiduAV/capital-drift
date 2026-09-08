@@ -153,3 +153,14 @@ describe('serialized game commands', () => {
     expect(hook.result.current.state.portfolio.TSELIC.quantity).toBe(1);
   });
 });
+
+it('archives an unreadable save from the recovery banner before starting a new game', () => {
+  localStorage.setItem(KEY, '{broken');
+  const hook = setup();
+  fireEvent.click(screen.getByRole('button', { name: 'Arquivar save original e iniciar nova partida' }));
+  expect(localStorage.getItem('patrimonio_save_recovery')).toBe('{broken');
+  expect(loadGame()!.dayIndex).toBe(0);
+  expect(loadGame()!.cash).toBe(5000);
+  expect(loadGame()).toMatchObject(hook.result.current.state);
+  expect(screen.queryByRole('alert')).toBeNull();
+});

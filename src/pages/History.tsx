@@ -21,12 +21,14 @@ export default function History() {
 
   const formatCurrency = (v: number) =>
     new Intl.NumberFormat(locale, { style: 'currency', currency: 'BRL', minimumFractionDigits: 2 }).format(v);
-  const formatPct = (v: number) => (v >= 0 ? '+' : '') + (v * 100).toFixed(2) + '%';
+  const formatPct = (v: number | null) => v == null ? '—' : (v >= 0 ? '+' : '') + (v * 100).toFixed(2) + '%';
 
   const eqData = state.history.equity;
   const ddData = state.history.drawdown;
   const cdiData = state.history.cdiAccumulated;
   const len = eqData.length;
+  const sharpe = sharpeRatio(eqData, cdiData);
+  const wins = winRate(eqData);
 
   const displayStart = Math.max(0, len - range);
 
@@ -126,7 +128,7 @@ export default function History() {
         <div className="space-y-4 animate-fade-in">
           {/* Range selector */}
           <div className="flex gap-1">
-            {[30, 100, 365, len].map(r => (
+            {[...new Set([30, 100, 365, len])].map(r => (
               <Button
                 key={r}
                 variant={range === r ? 'secondary' : 'ghost'}
@@ -177,7 +179,7 @@ export default function History() {
           {/* Drawdown */}
           <SectionCard
             title="Drawdown"
-            action={<span className="price-down text-xs font-mono">{formatPct(-Math.max(...ddData))}</span>}
+            action={<span className="price-down text-xs font-mono">{formatPct(ddData.length ? -Math.max(...ddData) : null)}</span>}
           >
             <ResponsiveContainer width="100%" height={120}>
               <AreaChart data={ddChartData} margin={{ top: 4, right: 4, bottom: 0, left: 0 }}>
@@ -204,7 +206,7 @@ export default function History() {
         <div className="space-y-4 animate-fade-in">
           {/* Range selector */}
           <div className="flex gap-1">
-            {[30, 100, 365, len].map(r => (
+            {[...new Set([30, 100, 365, len])].map(r => (
               <Button
                 key={r}
                 variant={range === r ? 'secondary' : 'ghost'}
@@ -350,15 +352,15 @@ export default function History() {
               value={formatPct((currentEquity - INITIAL_CASH) / INITIAL_CASH)}
               trend={currentEquity >= INITIAL_CASH ? 'up' : 'down'}
             />
-            <StatCard label="Sharpe" value={sharpeRatio(eqData, cdiData).toFixed(2)} trend={sharpeRatio(eqData, cdiData) > 0 ? 'up' : 'down'} />
-            <StatCard label="Win Rate" value={`${(winRate(eqData) * 100).toFixed(1)}%`} trend={winRate(eqData) > 0.5 ? 'up' : 'down'} />
+            <StatCard label="Sharpe" value={sharpe == null ? '—' : sharpe.toFixed(2)} trend={sharpe == null ? 'neutral' : sharpe > 0 ? 'up' : 'down'} />
+            <StatCard label="Win Rate" value={wins == null ? '—' : `${(wins * 100).toFixed(1)}%`} trend={wins == null ? 'neutral' : wins > 0.5 ? 'up' : 'down'} />
           </div>
 
           <SectionCard title={locale === 'pt-BR' ? 'Estatísticas Detalhadas' : 'Detailed Statistics'}>
             <div className="grid grid-cols-2 gap-x-8 gap-y-2 text-xs font-mono">
               <StatRow label={locale === 'pt-BR' ? 'Retorno CDI' : 'CDI Return'} value={formatPct((currentCDI - INITIAL_CASH) / INITIAL_CASH)} className="text-terminal-cyan" />
               <StatRow label="vs CDI" value={formatCurrency(currentEquity - currentCDI)} className={beatingCDI ? 'price-up' : 'price-down'} />
-              <StatRow label="Max DD" value={formatPct(-Math.max(...ddData))} className="price-down" />
+              <StatRow label="Max DD" value={formatPct(ddData.length ? -Math.max(...ddData) : null)} className="price-down" />
               <StatRow label={locale === 'pt-BR' ? 'Pico' : 'Peak'} value={formatCurrency(Math.max(...eqData))} />
               <StatRow label={locale === 'pt-BR' ? 'Volatilidade' : 'Volatility'} value={formatPct(volatility(eqData))} />
               <StatRow label={locale === 'pt-BR' ? 'Melhor dia' : 'Best Day'} value={formatPct(bestDay(eqData))} className="price-up" />

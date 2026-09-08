@@ -1,3 +1,4 @@
+import { beforeEach, expect } from 'vitest';
 import "@testing-library/jest-dom";
 
 Object.defineProperty(window, "matchMedia", {
@@ -13,3 +14,5 @@ Object.defineProperty(window, "matchMedia", {
     dispatchEvent: () => {},
   }),
 });
+
+beforeEach(() => expect.hasAssertions());
