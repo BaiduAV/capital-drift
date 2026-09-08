@@ -1,73 +1,44 @@
-# Welcome to your Lovable project
+# Capital Drift
 
-## Project info
+Simulador de investimentos com ações, fundos imobiliários, criptoativos e renda fixa, evolução do cenário econômico e gestão de carteira. A aplicação usa React, TypeScript, Vite, Tailwind CSS e shadcn/ui, com suporte a PWA.
 
-**URL**: https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID
+## Desenvolvimento local
 
-## How can I edit this code?
-
-There are several ways of editing your application.
-
-**Use Lovable**
-
-Simply visit the [Lovable Project](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and start prompting.
-
-Changes made via Lovable will be committed automatically to this repo.
-
-**Use your preferred IDE**
-
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
-
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
-
-Follow these steps:
+Use Node.js 22, como no CI, e npm. O `package-lock.json` é o único lock de dependências do projeto.
 
 ```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
-
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
-
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
+git clone https://github.com/BaiduAV/capital-drift.git
+cd capital-drift
+npm ci
 npm run dev
 ```
 
-**Edit a file directly in GitHub**
+O servidor de desenvolvimento usa a porta 8080. O estado do jogo é salvo no `localStorage` do navegador.
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+## Validação
 
-**Use GitHub Codespaces**
+```sh
+npm run typecheck
+npm run lint
+npm run test:coverage
+npm run build
+```
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+O TypeScript verifica a aplicação e as configurações de Vite, Vitest e Tailwind. O lint exige zero avisos. O CI executa esses mesmos comandos em pull requests e em pushes para `main` e `release`.
 
-## What technologies are used for this project?
+Para executar os testes sem cobertura, use `npm test`; para acompanhar alterações, `npm run test:watch`. Veja [Testes e cobertura](docs/testing.md) para ambientes, fixtures e limites de cobertura.
 
-This project is built with:
+## Build e publicação
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+`npm run build` gera a aplicação estática em `dist/`, incluindo o manifesto PWA e o service worker. Use `npm run preview` para inspecionar o build localmente. A hospedagem deve servir `dist/` e encaminhar as rotas da aplicação para `index.html`.
 
-## How can I deploy this project?
+## Configurações
 
-Simply open [Lovable](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and click on Share -> Publish.
+- `vite.config.ts`: servidor, aliases, plugins e PWA.
+- `vitest.config.ts`: ambientes Node/jsdom e limites de cobertura.
+- `tsconfig.json`: referências dos projetos TypeScript e alias usado pelas ferramentas; as opções de compilação ficam em `tsconfig.app.json` e `tsconfig.node.json`.
+- `tailwind.config.ts` e `postcss.config.js`: tema, busca de classes e processamento CSS.
+- `components.json`: configuração para adicionar componentes pelo CLI do shadcn/ui.
+- `eslint.config.js` e `.github/workflows/ci.yml`: regras de qualidade e validação automatizada.
 
-## Can I connect a custom domain to my Lovable project?
-
-Yes, you can!
-
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
-
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+A integração `lovable-tagger` permanece disponível no modo de desenvolvimento para edição no Lovable. Sua retirada deve acompanhar a descontinuação desse fluxo de edição.

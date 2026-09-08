@@ -19,9 +19,12 @@ export default defineConfig({
       reporter: ['text', 'html', 'json-summary', 'json', 'lcov'],
       thresholds: {
         lines: 90, statements: 90, functions: 70, branches: 75,
-        'src/engine/{fixedIncome,trading,marginCall,monetaryPolicy,yieldCurves}.ts': {
-          perFile: true, lines: 93, statements: 93, functions: 100, branches: 85,
-        },
+        // Separate entries enforce each module independently of the global aggregate.
+        'src/engine/fixedIncome.ts': { lines: 93, statements: 93, functions: 100, branches: 85 },
+        'src/engine/trading.ts': { lines: 93, statements: 93, functions: 100, branches: 85 },
+        'src/engine/marginCall.ts': { lines: 93, statements: 93, functions: 100, branches: 85 },
+        'src/engine/monetaryPolicy.ts': { lines: 93, statements: 93, functions: 100, branches: 85 },
+        'src/engine/yieldCurves.ts': { lines: 93, statements: 93, functions: 100, branches: 85 },
         'src/engine/stats.ts': { lines: 90, statements: 90, functions: 100, branches: 85 },
         'src/context/GameContext.tsx': { lines: 90, statements: 90, functions: 90, branches: 80 },
       },

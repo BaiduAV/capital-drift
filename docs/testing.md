@@ -1,6 +1,6 @@
 # Testes e cobertura
 
-Use Node 22 e `npm ci`. O CI usa `package-lock.json`; o lock antigo do Bun não é a referência desse fluxo.
+Use Node 22 e `npm ci`. O `package-lock.json` é o único lock versionado e a referência para instalações locais e no CI.
 
 ```sh
 npm run test:engine   # regras puras, em Node
@@ -11,6 +11,8 @@ npm run typecheck
 npm run lint
 npm run build
 ```
+
+O comando `typecheck` verifica tanto a aplicação (`tsconfig.app.json`) quanto as configurações de Vite, Vitest e Tailwind (`tsconfig.node.json`).
 
 O lint exige zero avisos (`--max-warnings 0`) e ignora apenas saídas geradas de build, cobertura e testes. Componentes React exportam componentes; o contexto e o hook compartilhados ficam em `src/context/game-context.ts`, com o provider em `GameContext.tsx`.
 
@@ -38,6 +40,6 @@ Casos de regressão incluem limite de isenção e venda parcial em margin call, 
 
 O V8 inclui arquivos de produção que nenhum teste importou. Exclui testes, fixtures, declarações de tipos e os componentes de UI base em `src/components/ui`; estes continuam sendo exercitados pelos fluxos, mas não entram no percentual. Páginas e componentes de jogo entram normalmente.
 
-Além do piso global, há pisos específicos para negociação, renda fixa, margin call, política monetária, curvas, estatísticas e GameContext. Os valores exatos ficam em `vitest.config.ts`. Não reduza os pisos para acomodar uma regressão. Ao comparar relatórios, mantenha os mesmos filtros: o percentual global não é comparável a auditorias que incluam os componentes de UI base.
+Além do piso global, há pisos específicos para negociação, renda fixa, margin call, política monetária, curvas, estatísticas e GameContext. Cada um dos cinco módulos financeiros tem sua própria entrada de limite, impedindo que a cobertura de um compense a de outro. Os valores exatos ficam em `vitest.config.ts`. Não reduza os pisos para acomodar uma regressão. Ao comparar relatórios, mantenha os mesmos filtros: o percentual global não é comparável a auditorias que incluam os componentes de UI base.
 
 Os testes em jsdom verificam estado e interações, mas não substituem validação em navegador de layout responsivo, gestos reais, áudio, instalação PWA, service worker e atualização offline. Essas continuam sendo verificações de release.
