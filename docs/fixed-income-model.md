@@ -22,7 +22,7 @@ Uma taxa anual efetiva `r` vira taxa diária por `(1+r)^(1/252)-1`. O CDB110 mul
 
 Prefixados do Tesouro são avaliados como valor presente do fluxo no vencimento. IPCA+ atualiza o nominal pelo índice de inflação e desconta o fluxo pela taxa real. Alta da taxa de desconto reduz o preço; o evento macro não aplica um segundo choque ao título. Não existe desconto diário arbitrário pelo nível de risco. CDB prefixado acumula a taxa contratada e não recebe oscilações de títulos negociados em mercado secundário.
 
-A curva nominal é aproximada pela Selic mais prêmio de prazo e risco; a real usa a relação de Fisher mais prêmio. Não há curva de juros observada, previsão de Copom, convexidade aproximada por choque ou importação de cotações. A precificação usa diretamente o desconto composto do fluxo. A inflação simulada acumula em base de dias corridos/365, sem a defasagem e o calendário de divulgação do VNA oficial. Esses detalhes são aproximações explícitas; a relação entre preço, juros e pagamento contratado é preservada.
+A curva nominal é aproximada pela Selic mais prêmio de prazo e risco; a real usa a relação de Fisher mais prêmio. Não há curva de juros observada, previsão de Copom, convexidade aproximada por choque ou importação de cotações. A precificação usa diretamente o desconto composto do fluxo. A inflação simulada acumula em base de dias corridos/365, com fechamento mensal e expectativa separados, sem a defasagem e o calendário de divulgação do VNA oficial. A dinâmica de juros e inflação foi atualizada no save v3: veja [o modelo monetário](monetary-policy-model.md). Esses detalhes são aproximações explícitas; a relação entre preço, juros e pagamento contratado é preservada.
 
 ## Calendário e impostos
 

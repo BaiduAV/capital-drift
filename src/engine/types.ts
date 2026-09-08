@@ -102,11 +102,27 @@ export interface CreditWatchState {
 }
 
 export interface MacroState {
+  dynamics?: MacroDynamics;
   baseRateAnnual: number;
   inflationAnnual: number;
   fxUSDBRL: number;
   activityAnnual: number;
   riskIndex: number;
+}
+
+export interface MacroDynamics {
+  inflationExpectationAnnual: number;
+  laggedRealRate: number;
+  policyExpectationAdjustment: number;
+  nextPolicyDate: string;
+  pendingPolicy?: { rate: number; effectiveDate: string };
+  lastPolicy?: { date: string; rate: number; effectiveDate: string };
+  inflationMonths: number[];
+  inflationReferenceMonth: string;
+  inflationCurrentMonth: string;
+  inflationMonthFactor: number;
+  estimatedHistoryMonths: number;
+  inflationStep?: { from: string; to: string; factor: number };
 }
 
 
@@ -186,7 +202,7 @@ export interface PersistentEvent {
 
 export type SimulationState = GameState;
 
-export type EventType = 'RATE_HIKE' | 'RATE_CUT' | 'INFLATION_UP' | 'INFLATION_DOWN' | 'SECTOR_BOOM' | 'SECTOR_BUST' | 'CRYPTO_HACK' | 'CRYPTO_EUPHORIA_EVENT' | 'CRYPTO_RUG_PULL' | 'CREDIT_DOWNGRADE' | 'FX_SHOCK' | 'FISCAL_STRESS' | 'COMMODITY_BOOM' | 'SECTOR_CRASH' | 'FLASH_CRASH' | 'MARGIN_CALL' | 'IPO_ANNOUNCED' | 'IPO_BOOKBUILDING' | 'IPO_LISTED';
+export type EventType = 'RATE_HIKE' | 'RATE_CUT' | 'RATE_HOLD' | 'INFLATION_RELEASE' | 'INFLATION_UP' | 'INFLATION_DOWN' | 'SECTOR_BOOM' | 'SECTOR_BUST' | 'CRYPTO_HACK' | 'CRYPTO_EUPHORIA_EVENT' | 'CRYPTO_RUG_PULL' | 'CREDIT_DOWNGRADE' | 'FX_SHOCK' | 'FISCAL_STRESS' | 'COMMODITY_BOOM' | 'SECTOR_CRASH' | 'FLASH_CRASH' | 'MARGIN_CALL' | 'IPO_ANNOUNCED' | 'IPO_BOOKBUILDING' | 'IPO_LISTED';
 
 export interface EventCard {
   type: EventType;

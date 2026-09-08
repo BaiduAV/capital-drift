@@ -4,6 +4,7 @@ import type { GameState, AssetState } from './types';
 import { buildAssetCatalog } from './assets';
 import { MACRO, INITIAL_CASH, INITIAL_REGIME, DIVIDENDS, MARGIN_CALL } from './params';
 import { createRNG } from './rng';
+import { initializeMonetaryPolicy } from './monetaryPolicy';
 import { initializeFixedIncome } from './fixedIncome';
 import { initDividendSchedules } from './dividends';
 
@@ -24,7 +25,7 @@ export function createGameState(seed: number): GameState {
   }
 
   const state: GameState = {
-    saveVersion: 2,
+    saveVersion: 3,
     dayIndex: 0,
     cash: INITIAL_CASH,
     portfolio: {},
@@ -63,5 +64,6 @@ export function createGameState(seed: number): GameState {
   initDividendSchedules(state);
   initializeFixedIncome(state);
 
+  initializeMonetaryPolicy(state);
   return state;
 }

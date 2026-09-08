@@ -265,12 +265,12 @@ export default function AppLayout() {
           <div className="flex items-center gap-2 sm:gap-3 shrink-0">
             <KPIChip
               className="hidden sm:inline-flex"
-              label={locale === 'pt-BR' ? 'SELIC' : 'RATE'}
+              label={locale === 'pt-BR' ? 'SELIC META' : 'RATE TARGET'}
               value={`${(state.macro.baseRateAnnual * 100).toFixed(2)}%`}
             />
             <KPIChip
               className="hidden sm:inline-flex"
-              label="IPCA"
+              label="IPCA 12m"
               value={`${(state.macro.inflationAnnual * 100).toFixed(2)}%`}
             />
             <KPIChip

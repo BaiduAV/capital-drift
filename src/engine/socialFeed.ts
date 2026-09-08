@@ -116,11 +116,13 @@ type TemplateSet = {
 };
 
 const TEMPLATES_PT: Record<EventType, TemplateSet> = {
+  RATE_HOLD: { media: ['Copom mantém a Selic meta em {rate}% a.a.'], reactions: {}, sentiment: 'neutral' },
+  INFLATION_RELEASE: { media: ['Inflação simulada de {month}: {monthly}% no mês e {annual}% em 12 meses.'], reactions: {}, sentiment: 'neutral' },
   RATE_HIKE: {
     media: [
-      '🔴 URGENTE: Banco Central eleva a Selic. Mercado reage com cautela.',
-      '🔴 BREAKING: Copom decide por nova alta na taxa básica de juros.',
-      '🔴 BC sobe juros novamente. Renda fixa ganha tração entre investidores.',
+      '🔴 Copom anuncia Selic de {rate}% a.a., vigente em {date}.',
+      '🔴 Copom decide por alta: meta de {rate}% a.a. a partir de {date}.',
+      '🔴 Alta anunciada: Selic de {rate}% a.a., com vigência em {date}.',
     ],
     reactions: {
       analistamacro: [
@@ -140,9 +142,9 @@ const TEMPLATES_PT: Record<EventType, TemplateSet> = {
   },
   RATE_CUT: {
     media: [
-      '🟢 URGENTE: Banco Central reduz a Selic. Bolsa reage em alta.',
-      '🟢 BREAKING: Copom corta taxa de juros. Mercado comemora.',
-      '🟢 BC inicia ciclo de cortes. Expectativa de migração para renda variável.',
+      '🟢 Copom anuncia corte: Selic de {rate}% a.a. a partir de {date}.',
+      '🟢 Copom define meta de {rate}% a.a., vigente em {date}.',
+      '🟢 Corte anunciado: Selic de {rate}% a.a., com vigência em {date}.',
     ],
     reactions: {
       analistamacro: [
@@ -162,14 +164,14 @@ const TEMPLATES_PT: Record<EventType, TemplateSet> = {
   },
   INFLATION_UP: {
     media: [
-      '🔥 Inflação acelera e preocupa o mercado. Custo de vida pressiona famílias.',
-      '🔥 IPCA sobe acima das expectativas. Analistas revisam projeções.',
-      '🔥 Inflação em alta: alimentos e combustíveis lideram os aumentos.',
+      '🔥 Pressão inflacionária eleva a expectativa de inflação do cenário.',
+      '🔥 Analistas revisam a inflação esperada para cima; IPCA mensal ainda será apurado.',
+      '🔥 Novas pressões de custos pioram as perspectivas de inflação.',
     ],
     reactions: {
       analistamacro: [
         'Inflação acima do esperado pressiona o BC a manter juros altos por mais tempo. Cenário desafiador.',
-        'Dados de inflação preocupantes. Títulos IPCA+ ficam mais atrativos nesse cenário.',
+        'Expectativas de inflação preocupantes. Títulos IPCA+ ficam mais atrativos nesse cenário.',
       ],
       naborges: [
         'Inflação alta come o seu dinheiro parado. NUNCA deixe na poupança. Tesouro IPCA+ é o mínimo!',
@@ -180,14 +182,14 @@ const TEMPLATES_PT: Record<EventType, TemplateSet> = {
   },
   INFLATION_DOWN: {
     media: [
-      '❄️ Inflação desacelera e alivia pressão sobre o BC.',
-      '❄️ IPCA vem abaixo do esperado. Mercado celebra dados positivos.',
-      '❄️ Arrefecimento da inflação abre espaço para cortes de juros.',
+      '❄️ Expectativas de inflação recuam e aliviam a pressão sobre o BC.',
+      '❄️ Perspectiva de inflação melhora; o índice realizado será apurado no fechamento mensal.',
+      '❄️ Menor inflação esperada pode abrir espaço para cortes nas próximas reuniões.',
     ],
     reactions: {
       analistamacro: [
         'Inflação cedendo é o cenário ideal para início de cortes. Mercado deve precificar isso rapidamente.',
-        'Dados positivos de inflação. Curva de juros deve fechar, beneficiando prefixados.',
+        'Melhora na expectativa de inflação. Curva de juros deve fechar, beneficiando prefixados.',
       ],
       thiagofinancas: [
         'Inflação caindo! A maré tá mudando, pessoal. Quem se posicionar agora colhe lá na frente! 🌊',
@@ -437,11 +439,13 @@ const TEMPLATES_PT: Record<EventType, TemplateSet> = {
 };
 
 const TEMPLATES_EN: Record<EventType, TemplateSet> = {
+  RATE_HOLD: { media: ['Copom holds the Selic target at {rate}% annually.'], reactions: {}, sentiment: 'neutral' },
+  INFLATION_RELEASE: { media: ['Simulated inflation for {month}: {monthly}% monthly and {annual}% over 12 months.'], reactions: {}, sentiment: 'neutral' },
   RATE_HIKE: {
     media: [
-      '🔴 BREAKING: Central Bank raises interest rates. Markets react with caution.',
-      '🔴 URGENT: Monetary policy committee announces another rate hike.',
-      '🔴 Rates up again. Fixed income gains traction among investors.',
+      '🔴 Copom announces a {rate}% annual Selic target, effective {date}.',
+      '🔴 Rate hike announced: {rate}% annually, effective {date}.',
+      '🔴 Copom raises the target to {rate}% annually starting {date}.',
     ],
     reactions: {
       analistamacro: [
@@ -461,9 +465,9 @@ const TEMPLATES_EN: Record<EventType, TemplateSet> = {
   },
   RATE_CUT: {
     media: [
-      '🟢 BREAKING: Central Bank cuts interest rates. Stock market rallies.',
-      '🟢 URGENT: Rate cut announced. Markets celebrate the decision.',
-      '🟢 Easing cycle begins. Expectations of capital rotation into equities.',
+      '🟢 Copom announces a cut to {rate}% annually, effective {date}.',
+      '🟢 Rate cut announced: {rate}% annually, effective {date}.',
+      '🟢 Copom lowers the target to {rate}% annually starting {date}.',
     ],
     reactions: {
       analistamacro: [
@@ -483,14 +487,14 @@ const TEMPLATES_EN: Record<EventType, TemplateSet> = {
   },
   INFLATION_UP: {
     media: [
-      '🔥 Inflation accelerates, worrying the market. Cost of living pressures households.',
-      '🔥 CPI rises above expectations. Analysts revise projections upward.',
-      '🔥 Inflation on the rise: food and fuel lead the increases.',
+      '🔥 Inflationary pressure raises the scenario inflation outlook.',
+      '🔥 Analysts revise inflation expectations upward; monthly CPI is still pending.',
+      '🔥 New cost pressures worsen the inflation outlook.',
     ],
     reactions: {
       analistamacro: [
         'Inflation above expectations pressures the Central Bank to keep rates high longer. Challenging outlook.',
-        'Worrying inflation data. Inflation-linked bonds become more attractive in this scenario.',
+        'Worrying inflation expectations. Inflation-linked bonds become more attractive in this scenario.',
       ],
       naborges: [
         'High inflation eats your idle money. NEVER leave it in savings. Inflation-linked bonds are the minimum!',
@@ -501,14 +505,14 @@ const TEMPLATES_EN: Record<EventType, TemplateSet> = {
   },
   INFLATION_DOWN: {
     media: [
-      '❄️ Inflation decelerates, easing pressure on the Central Bank.',
-      '❄️ CPI comes in below expectations. Markets celebrate positive data.',
-      '❄️ Cooling inflation opens room for rate cuts.',
+      '❄️ Lower inflation expectations ease pressure on the Central Bank.',
+      '❄️ The inflation outlook improves; realized CPI will be calculated at month-end.',
+      '❄️ Lower expected inflation may allow cuts at future meetings.',
     ],
     reactions: {
       analistamacro: [
         'Falling inflation is the ideal scenario for rate cuts. Market should price this in quickly.',
-        'Positive inflation data. Yield curve should flatten, benefiting fixed-rate bonds.',
+        'Improving inflation expectations. Yield curve should flatten, benefiting fixed-rate bonds.',
       ],
       thiagofinancas: [
         'Inflation falling! The tide is turning, folks. Position now and reap the rewards later! 🌊',
@@ -823,7 +827,7 @@ export function generateSocialPosts(
       if (!templates) continue;
 
       // Build interpolation vars — translate sector name if present
-      const postVars: Record<string, string> = {};
+      const postVars: Record<string, string> = { ...event.vars };
       if (event.vars?.sector) {
         postVars.sector = t ? t(`sector.${event.vars.sector}`) : event.vars.sector;
         // If t() returned the raw key, fallback to the sector id

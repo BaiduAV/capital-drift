@@ -228,8 +228,8 @@ export default function History() {
                 title={locale === 'pt-BR' ? 'Juros & Inflação' : 'Rates & Inflation'}
                 action={
                   <div className="flex gap-3 text-[10px] font-mono">
-                    <span className="text-[hsl(45,90%,55%)]">● SELIC</span>
-                    <span className="text-[hsl(0,72%,55%)]">● IPCA</span>
+                    <span className="text-[hsl(45,90%,55%)]">● Selic meta</span>
+                    <span className="text-[hsl(0,72%,55%)]">● IPCA 12m</span>
                   </div>
                 }
               >
@@ -242,12 +242,12 @@ export default function History() {
                       {...tooltipStyle}
                       formatter={(v: number, name: string) => [
                         v.toFixed(2) + '%',
-                        name === 'selic' ? 'SELIC' : 'IPCA'
+                        name === 'selic' ? 'Selic meta' : 'IPCA 12m'
                       ]}
                       labelFormatter={(l) => `${locale === 'pt-BR' ? 'Dia' : 'Day'} ${l}`}
                     />
-                    <Line type="monotone" dataKey="selic" stroke="hsl(45, 90%, 55%)" strokeWidth={1.5} dot={false} />
-                    <Line type="monotone" dataKey="ipca" stroke="hsl(0, 72%, 55%)" strokeWidth={1.5} dot={false} />
+                    <Line type="stepAfter" dataKey="selic" stroke="hsl(45, 90%, 55%)" strokeWidth={1.5} dot={false} />
+                    <Line type="stepAfter" dataKey="ipca" stroke="hsl(0, 72%, 55%)" strokeWidth={1.5} dot={false} />
                   </ComposedChart>
                 </ResponsiveContainer>
               </SectionCard>

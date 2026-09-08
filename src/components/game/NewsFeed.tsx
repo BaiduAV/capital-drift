@@ -2,6 +2,8 @@ import { useGame } from '@/context/GameContext';
 import type { EventCard, EventType } from '@/engine/types';
 
 const eventMeta: Record<EventType, { icon: string; colorClass: string }> = {
+  RATE_HOLD: { icon: '🏦', colorClass: 'text-muted-foreground' },
+  INFLATION_RELEASE: { icon: '📊', colorClass: 'text-muted-foreground' },
   RATE_HIKE:              { icon: '📈', colorClass: 'text-terminal-red' },
   RATE_CUT:               { icon: '📉', colorClass: 'text-terminal-green' },
   INFLATION_UP:           { icon: '🔥', colorClass: 'text-terminal-red' },

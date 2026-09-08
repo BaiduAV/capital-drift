@@ -3,31 +3,16 @@
 import type { GameState } from './types';
 import type { RNG } from './rng';
 import { MACRO } from './params';
+import { updateMonetaryPolicy } from './monetaryPolicy';
 
-export function updateMacro(state: GameState, rng: RNG): void {
+export function updateMacro(state: GameState, rng: RNG) {
   const regime = state.regime;
   const macro = state.macro;
 
   // Store previous values for causal links
   const prevRate = macro.baseRateAnnual;
 
-  // ── Base rate ──
-  const rateDrift = MACRO.baseRate.regimeDrift[regime];
-  const rateShock = rng.nextGaussian() * MACRO.baseRate.dailyVol;
-  // Causal: high inflation pushes rates up
-  const inflPressure = macro.inflationAnnual > 0.06 ? (macro.inflationAnnual - 0.06) * 0.005 : 0;
-  macro.baseRateAnnual = clamp(
-    macro.baseRateAnnual + rateDrift + rateShock + inflPressure,
-    MACRO.baseRate.min, MACRO.baseRate.max
-  );
-
-  // ── Inflation ──
-  const inflDrift = MACRO.inflation.regimeDrift[regime];
-  const inflShock = rng.nextGaussian() * MACRO.inflation.dailyVol;
-  macro.inflationAnnual = clamp(
-    macro.inflationAnnual + inflDrift + inflShock,
-    MACRO.inflation.min, MACRO.inflation.max
-  );
+  const events = updateMonetaryPolicy(state, rng);
 
   // ── FX USD/BRL ──
   const fxDrift = MACRO.fxUSDBRL.regimeDrift[regime];
@@ -57,6 +42,7 @@ export function updateMacro(state: GameState, rng: RNG): void {
     macro.riskIndex + riskDrift + riskShock,
     MACRO.risk.min, MACRO.risk.max
   );
+  return events;
 }
 
 function clamp(v: number, min: number, max: number): number {

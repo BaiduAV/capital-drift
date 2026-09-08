@@ -7,7 +7,7 @@ import { accrueFixedIncomeCustody, settleFixedIncomeMaturities, fixedIncomeSellC
 import { executeBuy, executeSell, quoteBuy, quoteSell } from '../trading';
 import { computeEquity } from '../invariants';
 import { simulateDay } from '../simulateDay';
-import { applyEventMacro, maybeGenerateEvents } from '../events';
+import { updateMonetaryPolicy } from '../monetaryPolicy';
 import { loadGame, saveGame } from '../persistence';
 import { settleReceivables } from '../cash';
 import type { GameState, FixedIncomeLot } from '../types';
@@ -67,10 +67,12 @@ describe('contractual fixed income returns', () => {
   });
   it('prices an actual rate-hike event through yields once, without a positive bond shock', () => {
     const s = createGameState(1);
-    const events = maybeGenerateEvents(s, { ...createRNG(1), next: () => 0 });
-    expect(events[0].card.type).toBe('RATE_HIKE');
-    expect(events[0].card.impact.TPRE).toBeUndefined();
-    applyEventMacro(s, [events[0]]);
+    s.calendarDate = '2026-01-27';
+    s.macro.dynamics!.policyExpectationAdjustment = .015;
+    const events = updateMonetaryPolicy(s, { ...createRNG(1), nextGaussian: () => 0 });
+    expect(events[0].type).toBe('RATE_HIKE');
+    expect(events[0].impact.TPRE).toBeUndefined();
+    expect(s.macro.baseRateAnnual).toBe(.11); // announced rate is effective next session
     const returns = generateReturns(s, createRNG(1));
     expect(returns.TPRE).toBeLessThan(0);
     expect(returns.TIPCA).toBeLessThan(0);
@@ -83,7 +85,7 @@ describe('contractual fixed income returns', () => {
     const inflation = Math.pow(1 + s.macro.inflationAnnual, days / 365);
     const r = generateReturns(s, createRNG(1));
     expect(100 * (1 + r.TIPCA)).toBeCloseTo(face * inflation, 8);
-    const high = structuredClone(s); high.macro.inflationAnnual = 0.10;
+    const high = structuredClone(s); high.macro.dynamics!.inflationExpectationAnnual = 0.10;
     expect(generateReturns(high, createRNG(1)).TIPCA).toBeGreaterThan(r.TIPCA);
   });
   it('risk held constant does not create a recurring loss in unchanged Treasury yields', () => {
@@ -283,7 +285,7 @@ describe('issuer failures, guarantees and migration', () => {
     s.dayIndex = 50; s.portfolio.TIPCA = { quantity: 2, avgPrice: 90, avgPurchaseDay: 10 };
     localStorage.setItem('patrimonio_save', JSON.stringify(s));
     const loaded = loadGame()!;
-    expect(loaded.saveVersion).toBe(2);
+    expect(loaded.saveVersion).toBe(3);
     expect(computeEquity(loaded)).toBe(computeEquity(s));
     expect(loaded.portfolio.TIPCA.avgPrice).toBe(90);
     expect(loaded.fixedIncomeMigrationDay).toBe(50);

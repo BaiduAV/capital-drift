@@ -6,29 +6,9 @@ import type { RegimeId, AssetClass, AssetDefinition, CreditRating } from './type
 export const MACRO = {
   baseRate: {
     initial: 0.11,
-    min: 0.02,
-    max: 0.20,
-    dailyVol: 0.00025,
-    regimeDrift: {
-      CALM: 0.0,
-      BULL: -0.0001,
-      BEAR: 0.0001,
-      CRISIS: 0.0002,
-      CRYPTO_EUPHORIA: -0.00005,
-    } as Record<RegimeId, number>,
   },
   inflation: {
     initial: 0.045,
-    min: 0.00,
-    max: 0.12,
-    dailyVol: 0.00020,
-    regimeDrift: {
-      CALM: 0.0,
-      BULL: -0.00005,
-      BEAR: 0.0001,
-      CRISIS: 0.00015,
-      CRYPTO_EUPHORIA: 0.0,
-    } as Record<RegimeId, number>,
   },
   fxUSDBRL: {
     initial: 5.0,
@@ -205,10 +185,8 @@ export const EVENT_BASE_PROB: Record<RegimeId, number> = {
 export const DOUBLE_EVENT_PROB = 0.10;
 
 export const EVENT_IMPACTS = {
-  rateHike:   { rateDelta: [0.003, 0.010], equityShock: [-0.015, -0.004] },
-  rateCut:    { rateDelta: [-0.010, -0.003], equityShock: [0.004, 0.015] },
-  inflationUp:   { inflDelta: [0.002, 0.010] },
-  inflationDown: { inflDelta: [-0.010, -0.002] },
+  inflationUp:   { inflDelta: [0.0005, 0.0025] },
+  inflationDown: { inflDelta: [-0.0025, -0.0005] },
   cryptoHack: { majorShock: [-0.10, -0.03], altShock: [-0.18, -0.06] },
   cryptoEuphoria: { altShock: [0.05, 0.20] },
   cryptoRugPull: { targetShock: [-0.80, -0.40] },

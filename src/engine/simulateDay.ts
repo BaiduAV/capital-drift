@@ -4,6 +4,7 @@ import type { SimulationState, DayResult, DayContext, PersistentEvent, IPOPipeli
 import { createRNG } from './rng';
 import { maybeSwitchRegime } from './regimes';
 import { updateMacro } from './macro';
+import { inflationAccrualFactor } from './monetaryPolicy';
 import { updateSectorBubble } from './bubbles';
 import { generateAssetIdentity, generateFIIIdentity } from './naming';
 import { maybeBankruptAsset } from './bankruptcy';
@@ -15,7 +16,7 @@ import { checkInvariants, computeEquity } from './invariants';
 import { checkAndExecuteMarginCall } from './marginCall';
 import { reservedCash, settleReceivables } from './cash';
 import { accrueFixedIncomeCustody, settleFixedIncomeMaturities, processFixedIncomeCredit } from './fixedIncome';
-import { annualToDaily, simulatedCDI, gameDate, addBusinessDays, calendarDaysBetween } from './financialCalendar';
+import { annualToDaily, simulatedCDI, gameDate, addBusinessDays } from './financialCalendar';
 import { IPO } from './params';
 
 export interface SimulateDayOptions {
@@ -76,10 +77,10 @@ function phaseShocks(state: SimulationState, ctx: DayContext): { next: Simulatio
   const next = structuredClone(state);
 
   // 2. Macro shocks and drift
-  updateMacro(next, ctx.rng.macro);
+  const macroEvents = updateMacro(next, ctx.rng.macro);
 
   // 3. Credit watch & defaults (idiosyncratic shocks)
-  const creditEvents = [...processCreditWatchAndDefaults(next, ctx.rng.events), ...processFixedIncomeCredit(next, ctx.rng.events.fork('fixed-income-credit'))];
+  const creditEvents = [...macroEvents, ...processCreditWatchAndDefaults(next, ctx.rng.events), ...processFixedIncomeCredit(next, ctx.rng.events.fork('fixed-income-credit'))];
 
   // 4. Exogenous Events
   const { active, generated } = rollEvents(next, ctx);
@@ -315,7 +316,7 @@ function phaseAccountingAndMetrics(
   next.history.cdiAccumulated.push(lastCDI * (1 + dailyCDI));
 
   const nextDate = addBusinessDays(gameDate(next), 1);
-  const dailyInfl = Math.pow(1 + next.macro.inflationAnnual, calendarDaysBetween(gameDate(next), nextDate) / 365) - 1;
+  const dailyInfl = inflationAccrualFactor(next) - 1;
   const lastInfl = next.history.inflationAccumulated[next.history.inflationAccumulated.length - 1] ?? 1;
   next.history.inflationAccumulated.push(lastInfl * (1 + dailyInfl));
 
