@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { useGame } from '@/context/GameContext';
+import { useGame } from '@/context/game-context';
 import { SectionCard } from '@/components/ui/SectionCard';
 import { Receipt, TrendingDown } from 'lucide-react';
 import { createInitialTaxState, type TaxCategory } from '@/engine/taxes';

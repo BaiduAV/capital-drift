@@ -57,6 +57,10 @@ export function checkAchievements(
     if (condition()) newlyUnlocked.push(id);
   }
 
+  tryUnlock('ipo_participant', () => dayResult.events.some(event =>
+    event.type === 'IPO_LISTED' && Number(event.vars?.filledQuantity ?? 0) > 0
+  ));
+
   // first_dividend
   tryUnlock('first_dividend', () => dayResult.metrics.dividendsPaid > 0);
 

@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { X, Lightbulb } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { useGame } from '@/context/GameContext';
+import { useGame } from '@/context/game-context';
 
 const STORAGE_KEY = 'capital-drift-tips-seen';
 

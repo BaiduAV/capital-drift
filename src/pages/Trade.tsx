@@ -1,7 +1,7 @@
 import { positionMarketValue, positionUnitValue } from '@/engine/valuation';
 import { useState, useMemo, useEffect, useCallback, useRef } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { useGame } from '@/context/GameContext';
+import { useGame } from '@/context/game-context';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Progress } from '@/components/ui/progress';

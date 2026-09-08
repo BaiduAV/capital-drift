@@ -1,7 +1,9 @@
+import { notifyBatchResult } from '@/utils/notifyBatchResult';
+import { maxAffordableBuyQuantity } from '@/engine/trading';
 import { computeEquity } from '@/engine/invariants';
 import { positionMarketValue } from '@/engine/valuation';
 import { useState, useMemo } from 'react';
-import { useGame } from '@/context/GameContext';
+import { useGame } from '@/context/game-context';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Shield, Scale, Flame, ArrowRightLeft, Lightbulb, ChevronDown } from 'lucide-react';
@@ -72,11 +74,11 @@ export default function RebalancePanel() {
 
   const recommendations = useMemo(
     () => generateRecommendations(state, equity),
-    [state.regime, state.macro, state.portfolio, state.assets, state.events.active, state.ipoPipeline, state.cash, equity, state.history.equity],
+    [state, equity],
   );
 
   const executeRebalance = () => {
-    batchTrades(({ buy, sell, getState }) => {
+    const result = batchTrades(({ buy, sell, getState }) => {
       const catalog = state.assetCatalog;
 
       // 1. Sell overweight positions
@@ -93,8 +95,8 @@ export default function RebalancePanel() {
           .filter(id => CLASS_MAP[group]?.some(c => c === catalog[id].class))
           .filter(id => getState().portfolio[id]?.quantity > 0)
           .sort((a, b) => {
-            const va = (getState().portfolio[a]?.quantity ?? 0) * (getState().assets[a]?.price ?? 0);
-            const vb = (getState().portfolio[b]?.quantity ?? 0) * (getState().assets[b]?.price ?? 0);
+            const va = positionMarketValue(getState(), a);
+            const vb = positionMarketValue(getState(), b);
             return vb - va;
           });
 
@@ -106,8 +108,7 @@ export default function RebalancePanel() {
           const remaining = excessValue - sold;
           const qtyToSell = Math.min(pos.quantity, Math.ceil(remaining / price));
           if (qtyToSell > 0) {
-            sell(id, qtyToSell);
-            sold += qtyToSell * price;
+            if (sell(id, qtyToSell)) sold += qtyToSell * price;
           }
         }
       }
@@ -149,23 +150,13 @@ export default function RebalancePanel() {
 
         for (const id of targets) {
           const price = getState().assets[id]?.price ?? 50;
-          const qty = Math.floor(perTarget / price);
+          const qty = Math.min(Math.floor(perTarget / price), maxAffordableBuyQuantity(getState(), id));
           if (qty > 0) buy(id, qty);
         }
       }
     });
 
-    const labels: Record<Profile, { pt: string; en: string }> = {
-      conservative: { pt: 'Conservador', en: 'Conservative' },
-      moderate: { pt: 'Moderado', en: 'Moderate' },
-      aggressive: { pt: 'Agressivo', en: 'Aggressive' },
-    };
-    toast.success(
-      locale === 'pt-BR'
-        ? `Portfólio rebalanceado para perfil ${labels[profile].pt}!`
-        : `Portfolio rebalanced to ${labels[profile].en} profile!`,
-      { duration: 3000 }
-    );
+    notifyBatchResult(result, locale);
     setConfirmPending(false);
   };
 

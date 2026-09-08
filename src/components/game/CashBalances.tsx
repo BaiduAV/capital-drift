@@ -1,5 +1,5 @@
 import { dateAtDay } from '@/engine/financialCalendar';
-import { useGame } from '@/context/GameContext';
+import { useGame } from '@/context/game-context';
 import { availableCash, reservedCash } from '@/engine/cash';
 
 export default function CashBalances() {

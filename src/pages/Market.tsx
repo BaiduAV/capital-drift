@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useGame } from '@/context/GameContext';
+import { useGame } from '@/context/game-context';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
@@ -42,10 +42,10 @@ export default function Market() {
     }));
   }, [state.assetCatalog, state.assets, state.portfolio]);
 
-  const activeTabClasses = CLASS_TABS.find(t => t.key === classFilter)?.classes || [];
   const filteredAssets = useMemo(() => {
+    const activeTabClasses = CLASS_TABS.find(t => t.key === classFilter)?.classes ?? [];
     return assetsList.filter(a => activeTabClasses.length === 0 || activeTabClasses.includes(a.def.class));
-  }, [assetsList, activeTabClasses]);
+  }, [assetsList, classFilter]);
 
   // Heatmap grouping
   const heatmapGroups = useMemo(() => {

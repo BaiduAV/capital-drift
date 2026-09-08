@@ -1,7 +1,7 @@
 import { expectedInflation } from '@/engine/monetaryPolicy';
 import { annualToDaily, simulatedCDI } from '@/engine/financialCalendar';
 import { useMemo, useRef, useEffect, useState } from 'react';
-import { useGame } from '@/context/GameContext';
+import { useGame } from '@/context/game-context';
 import { INITIAL_CASH } from '@/engine/params';
 import { volatility } from '@/engine/stats';
 import { ArrowUp, ArrowDown, Minus } from 'lucide-react';

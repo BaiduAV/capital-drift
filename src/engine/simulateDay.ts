@@ -121,11 +121,13 @@ function phaseShocks(state: SimulationState, ctx: DayContext): { next: Simulatio
       };
       next.assetCatalog[entry.ticker] = entry.catalogEntry;
 
+      let filledQuantity = 0;
       // Credit player reservation at offer price
       if (entry.playerReservation > 0) {
         const cost = entry.playerReservation * entry.offerPrice;
         if (next.cash - reservedCash(next, entry.ticker) + 1e-8 >= cost) {
           next.cash -= cost;
+          filledQuantity = entry.playerReservation;
           const existing = next.portfolio[entry.ticker];
           if (existing) {
             const totalQty = existing.quantity + entry.playerReservation;
@@ -151,7 +153,7 @@ function phaseShocks(state: SimulationState, ctx: DayContext): { next: Simulatio
           descriptionKey: 'event.ipo.listed.desc',
           impact: {},
           magnitude: Math.abs(popFactor),
-          vars: { company: entry.displayName, ticker: entry.ticker, sector: entry.sector, pop: popPct },
+          vars: { company: entry.displayName, ticker: entry.ticker, sector: entry.sector, pop: popPct, filledQuantity: String(filledQuantity) },
         },
         startedAtDay: next.dayIndex,
         durationDays: 1,

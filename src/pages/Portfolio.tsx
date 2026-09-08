@@ -1,6 +1,6 @@
 import { positionMarketValue, positionUnitValue } from '@/engine/valuation';
 import { useState, useMemo } from 'react';
-import { useGame } from '@/context/GameContext';
+import { useGame } from '@/context/game-context';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
 import { Button } from '@/components/ui/button';

@@ -6,7 +6,7 @@ import FixedIncomeDetails from '../FixedIncomeDetails';
 
 let state = createGameState(1);
 let locale: 'pt-BR' | 'en' = 'pt-BR';
-vi.mock('@/context/GameContext', () => ({ useGame: () => ({ state, locale }) }));
+vi.mock('@/context/game-context', () => ({ useGame: () => ({ state, locale }) }));
 afterEach(() => { cleanup(); state = createGameState(1); locale = 'pt-BR'; });
 
 describe('fixed income contract disclosure', () => {

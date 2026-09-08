@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { useGame } from '@/context/GameContext';
+import { useGame } from '@/context/game-context';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { computeHealthScore, type HealthScoreResult } from '@/engine/healthScore';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
@@ -46,7 +46,7 @@ export default function PortfolioHealth() {
 
   const result: HealthScoreResult = useMemo(
     () => computeHealthScore(state, equity),
-    [state.cash, state.portfolio, state.assets, state.assetCatalog, state.history.equity, state.history.cdiAccumulated, equity],
+    [state, equity],
   );
 
   const { total, breakdown, tips } = result;
