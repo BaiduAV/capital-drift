@@ -1,3 +1,4 @@
+import { gameDate } from '@/engine/financialCalendar';
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { Outlet, useLocation } from 'react-router-dom';
 import { NavLink } from '@/components/NavLink';
@@ -256,7 +257,7 @@ export default function AppLayout() {
               </span>
             ); })()}
             <span className="text-xs text-muted-foreground font-mono shrink-0">
-              {locale === 'pt-BR' ? 'DIA' : 'DAY'} {state.dayIndex}
+              {locale === 'pt-BR' ? 'PREGÃO' : 'SESSION'} {state.dayIndex} · {gameDate(state)}
             </span>
           </div>
 

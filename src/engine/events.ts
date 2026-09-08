@@ -80,7 +80,7 @@ function generateSingleEvent(state: GameState, rng: RNG): EventCard | null {
       const shock = randRange(rng, EVENT_IMPACTS.rateHike.equityShock as [number, number]);
       for (const [id, def] of Object.entries(state.assetCatalog)) {
         if (def.corrGroup === 'EQUITY') impact[id] = shock;
-        if (def.class === 'RF_PRE' || def.class === 'RF_IPCA') impact[id] = -shock * 0.8;
+        if (!def.fixedIncome && (def.class === 'RF_PRE' || def.class === 'RF_IPCA')) impact[id] = shock * 0.8;
       }
       magnitude = Math.abs(delta);
       break;
@@ -91,7 +91,7 @@ function generateSingleEvent(state: GameState, rng: RNG): EventCard | null {
       const shock = randRange(rng, EVENT_IMPACTS.rateCut.equityShock as [number, number]);
       for (const [id, def] of Object.entries(state.assetCatalog)) {
         if (def.corrGroup === 'EQUITY') impact[id] = shock;
-        if (def.class === 'RF_PRE' || def.class === 'RF_IPCA') impact[id] = shock * 0.8;
+        if (!def.fixedIncome && (def.class === 'RF_PRE' || def.class === 'RF_IPCA')) impact[id] = shock * 0.8;
       }
       magnitude = Math.abs(delta);
       break;

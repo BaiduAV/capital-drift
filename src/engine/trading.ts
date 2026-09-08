@@ -2,6 +2,7 @@
 
 import type { GameState, TradeQuote } from './types';
 import { availableCash } from './cash';
+import { quoteFixedIncomeSell, executeFixedIncomeSell, fixedIncomeLots, recordFixedIncomeBuy } from './fixedIncome';
 import { COSTS } from './params';
 import { calculateSellTax, applyTaxOnSell } from './taxes';
 
@@ -18,6 +19,10 @@ export function quoteBuy(state: GameState, assetId: string, quantity: number): T
   // Check halt
   if (asset.haltedUntilDay && state.dayIndex < asset.haltedUntilDay) {
     return { assetId, quantity, unitPrice: asset.price, totalCost: 0, fees: 0, spread: 0, canExecute: false, reason: 'trade.halted' };
+  }
+
+  if (def.fixedIncome && def.fixedIncome.kind !== 'BANK' && asset.fixedIncome && state.dayIndex + 1 >= asset.fixedIncome.maturityDay) {
+    return { assetId, quantity, unitPrice: asset.price, totalCost: 0, fees: 0, spread: 0, canExecute: false, reason: 'trade.at_maturity' };
   }
 
   let spreadRate = 0;
@@ -60,6 +65,8 @@ export function quoteSell(state: GameState, assetId: string, quantity: number): 
   if (!pos || pos.quantity < quantity) {
     return { assetId, quantity, unitPrice: asset.price, totalCost: 0, fees: 0, spread: 0, canExecute: false, reason: 'trade.no_position' };
   }
+
+  if (def.fixedIncome) return quoteFixedIncomeSell(state, assetId, quantity);
 
   let spreadRate = 0;
   let feeRate = 0;
@@ -113,6 +120,7 @@ export function executeBuy(state: GameState, quote: TradeQuote): boolean {
   if (!quote.canExecute) return false;
   const current = quoteBuy(state, quote.assetId, quote.quantity);
   if (!current.canExecute || current.totalCost !== quote.totalCost || current.unitPrice !== quote.unitPrice) return false;
+  const previousLots = state.assetCatalog[quote.assetId].fixedIncome ? fixedIncomeLots(state, quote.assetId) : [];
   state.cash -= quote.totalCost;
   const pos = state.portfolio[quote.assetId] ?? { quantity: 0, avgPrice: 0, avgPurchaseDay: state.dayIndex };
   const totalQty = pos.quantity + quote.quantity;
@@ -125,6 +133,7 @@ export function executeBuy(state: GameState, quote: TradeQuote): boolean {
     : 0;
   pos.quantity = totalQty;
   state.portfolio[quote.assetId] = pos;
+  if (state.assetCatalog[quote.assetId].fixedIncome) recordFixedIncomeBuy(state, quote.assetId, quote.quantity, quote.unitPrice, previousLots);
   return true;
 }
 
@@ -134,6 +143,7 @@ export function executeSell(state: GameState, quote: TradeQuote): boolean {
   if (!current.canExecute || current.totalCost !== quote.totalCost || current.unitPrice !== quote.unitPrice
     || current.taxBreakdown?.totalTax !== quote.taxBreakdown?.totalTax
     || current.settlementDay !== quote.settlementDay) return false;
+  if (state.assetCatalog[quote.assetId]?.fixedIncome) return executeFixedIncomeSell(state, current);
   // Apply tax (deducts from cash and updates taxState)
   const tax = applyTaxOnSell(state, quote.assetId, quote.quantity, quote.unitPrice);
   if (current.settlementDay > state.dayIndex) {

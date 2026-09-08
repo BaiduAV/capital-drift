@@ -2,6 +2,7 @@
 // Forces liquidation of positions when portfolio drawdown exceeds threshold.
 
 import type { SimulationState, EventCard, AssetClass } from './types';
+import { fixedIncomeSellCapacity } from './fixedIncome';
 import { availableCash } from './cash';
 import { MARGIN_CALL } from './params';
 import { computeEquity } from './invariants';
@@ -54,7 +55,7 @@ export function checkAndExecuteMarginCall(state: SimulationState): MarginCallRes
       def: state.assetCatalog[id],
       price: state.assets[id]?.price ?? 0,
     }))
-    .filter(p => p.def && p.def.liquidityRule !== 'D7' && Number.isFinite(p.price) && p.price > 0 && Number.isFinite(p.pos.quantity) && p.pos.quantity <= Number.MAX_SAFE_INTEGER)
+    .filter(p => p.def && p.def.liquidityRule !== 'D7' && (!p.def.fixedIncome || p.def.fixedIncome.settlementBusinessDays === 0) && Number.isFinite(p.price) && p.price > 0 && Number.isFinite(p.pos.quantity) && p.pos.quantity <= Number.MAX_SAFE_INTEGER)
     .sort((a, b) => {
       const orderA = LIQUIDATION_ORDER.indexOf(a.def.class);
       const orderB = LIQUIDATION_ORDER.indexOf(b.def.class);
@@ -66,25 +67,28 @@ export function checkAndExecuteMarginCall(state: SimulationState): MarginCallRes
 
   for (const { id, pos, price } of positionEntries) {
     if (targetReached()) break;
-    const fullQuote = quoteSell(state, id, pos.quantity);
+    const executableQuantity = state.assetCatalog[id].fixedIncome ? fixedIncomeSellCapacity(state, id) : pos.quantity;
+    if (executableQuantity <= 0) continue;
+    const fullQuote = quoteSell(state, id, executableQuantity);
     if (!fullQuote.canExecute && fullQuote.reason !== 'trade.insufficient_cash') continue;
 
     const currentEquity = computeEquity(state);
     const reachesTarget = (units: number) => {
-      const quantity = Math.min(units, pos.quantity);
+      const quantity = Math.min(units, executableQuantity);
       const quote = quoteSell(state, id, quantity);
       if (!quote.canExecute) return false;
       const net = quote.taxBreakdown?.netAfterTax ?? quote.totalCost;
-      const equityAfter = currentEquity - quantity * price + net;
+      const releasedCustody = state.assetCatalog[id].fixedIncome ? quote.fees : 0;
+      const equityAfter = currentEquity - quantity * price + net + releasedCustody;
       return availableCash(state) + net + 1e-8 >= equityAfter * cashTarget;
     };
 
     // Exemption is monotonic, but reaching the reserve is not: crossing the
     // stock/crypto monthly limit taxes the entire gain. Split at that boundary.
     // Use quotes so prior monthly sales, category limits and spreads stay in sync.
-    const maxUnits = Math.ceil(pos.quantity);
+    const maxUnits = Math.ceil(executableQuantity);
     const ranges: [number, number][] = [[1, maxUnits]];
-    const isExempt = (units: number) => quoteSell(state, id, Math.min(units, pos.quantity)).taxBreakdown?.exemptionReason;
+    const isExempt = (units: number) => quoteSell(state, id, Math.min(units, executableQuantity)).taxBreakdown?.exemptionReason;
     if (isExempt(1) && !fullQuote.taxBreakdown?.exemptionReason) {
       let lo = 1;
       let hi = maxUnits;
@@ -101,7 +105,7 @@ export function checkAndExecuteMarginCall(state: SimulationState): MarginCallRes
     // endpoint as a fallback if no range can reach the entire reserve target.
     let unitsToSell = 0;
     for (const [start, end] of ranges) {
-      if (!quoteSell(state, id, Math.min(end, pos.quantity)).canExecute) continue;
+      if (!quoteSell(state, id, Math.min(end, executableQuantity)).canExecute) continue;
       unitsToSell = end;
       if (!reachesTarget(end)) continue;
       let lo = start;
@@ -115,7 +119,7 @@ export function checkAndExecuteMarginCall(state: SimulationState): MarginCallRes
       break;
     }
     if (unitsToSell === 0) continue;
-    const qtyToSell = Math.min(unitsToSell, pos.quantity);
+    const qtyToSell = Math.min(unitsToSell, executableQuantity);
     const quote = quoteSell(state, id, qtyToSell);
     const cashBefore = state.cash;
     if (executeSell(state, quote)) {

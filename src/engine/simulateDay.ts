@@ -14,6 +14,8 @@ import { applyDividendsAndDistributions } from './dividends';
 import { checkInvariants, computeEquity } from './invariants';
 import { checkAndExecuteMarginCall } from './marginCall';
 import { reservedCash, settleReceivables } from './cash';
+import { accrueFixedIncomeCustody, settleFixedIncomeMaturities, processFixedIncomeCredit } from './fixedIncome';
+import { annualToDaily, simulatedCDI, gameDate, addBusinessDays, calendarDaysBetween } from './financialCalendar';
 import { IPO } from './params';
 
 export interface SimulateDayOptions {
@@ -77,7 +79,7 @@ function phaseShocks(state: SimulationState, ctx: DayContext): { next: Simulatio
   updateMacro(next, ctx.rng.macro);
 
   // 3. Credit watch & defaults (idiosyncratic shocks)
-  const creditEvents = processCreditWatchAndDefaults(next, ctx.rng.events);
+  const creditEvents = [...processCreditWatchAndDefaults(next, ctx.rng.events), ...processFixedIncomeCredit(next, ctx.rng.events.fork('fixed-income-credit'))];
 
   // 4. Exogenous Events
   const { active, generated } = rollEvents(next, ctx);
@@ -308,11 +310,12 @@ function phaseAccountingAndMetrics(
   const { totalPaid: dividendsPaid, payments: dividendDetails } = applyDividendsAndDistributions(next);
 
   // 10. CDI & Inflation accumulation
-  const dailyCDI = next.macro.baseRateAnnual / 252;
+  const dailyCDI = annualToDaily(simulatedCDI(next));
   const lastCDI = next.history.cdiAccumulated[next.history.cdiAccumulated.length - 1] ?? 1;
   next.history.cdiAccumulated.push(lastCDI * (1 + dailyCDI));
 
-  const dailyInfl = next.macro.inflationAnnual / 252;
+  const nextDate = addBusinessDays(gameDate(next), 1);
+  const dailyInfl = Math.pow(1 + next.macro.inflationAnnual, calendarDaysBetween(gameDate(next), nextDate) / 365) - 1;
   const lastInfl = next.history.inflationAccumulated[next.history.inflationAccumulated.length - 1] ?? 1;
   next.history.inflationAccumulated.push(lastInfl * (1 + dailyInfl));
 
@@ -320,8 +323,11 @@ function phaseAccountingAndMetrics(
   const baseRng = createRNG(prevState.rngState);
   baseRng.next(); // advance the base seed for the next day
   next.rngState = baseRng.state();
+  accrueFixedIncomeCustody(next);
   next.dayIndex++;
+  if (next.calendarDate) next.calendarDate = nextDate;
   settleReceivables(next);
+  settleFixedIncomeMaturities(next);
 
   // 11b. Apply bankruptcies
   for (const [id, a] of Object.entries(next.assets)) {

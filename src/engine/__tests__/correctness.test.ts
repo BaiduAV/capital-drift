@@ -77,7 +77,8 @@ describe('bankruptcy and invalid trades', () => {
 
 describe('event accounting', () => {
   it('includes generated shocks once in the daily pipeline', () => {
-    const result = simulateDay(createGameState(11));
+    // Seed 5 produces an exogenous event under the contractual-income pipeline.
+    const result = simulateDay(createGameState(5));
     const active = result.state.events.active;
     expect(active.some(e => e.id.startsWith('evt_'))).toBe(true);
     expect(new Set(active.map(e => e.id)).size).toBe(active.length);

@@ -1,5 +1,6 @@
 // ── Price generation with correlated market factors + macro tilt ──
 
+import { projectFixedIncome } from './fixedIncome';
 import type { GameState } from './types';
 import type { RNG } from './rng';
 import { DRIFT_VOL, CORR_STRENGTH, CRISIS_CRYPTO_CROSS_LINK, MACRO_TILT, MACRO, IPO } from './params';
@@ -33,6 +34,11 @@ export function generateReturns(state: GameState, rng: RNG): Record<string, numb
     const isBankrupt = state.assets[assetId]?.isBankrupt;
     if (isBankrupt) {
       returns[assetId] = 0;
+      continue;
+    }
+
+    if (def.fixedIncome && state.assets[assetId]?.fixedIncome) {
+      returns[assetId] = projectFixedIncome(state, assetId).price / state.assets[assetId].price - 1;
       continue;
     }
 
@@ -101,6 +107,13 @@ export function applyReturnsToPrices(state: GameState, returns: Record<string, n
     if (asset.isBankrupt) {
       asset.price = 0;
       asset.lastReturn = 0;
+      continue;
+    }
+    if (state.assetCatalog[assetId]?.fixedIncome && asset.fixedIncome) {
+      const projected = projectFixedIncome(state, assetId);
+      asset.lastReturn = projected.price / asset.price - 1;
+      asset.price = projected.price;
+      asset.fixedIncome = projected.instrument;
       continue;
     }
     asset.lastReturn = ret;
