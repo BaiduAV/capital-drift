@@ -2,6 +2,7 @@
 // Forces liquidation of positions when portfolio drawdown exceeds threshold.
 
 import type { SimulationState, EventCard, AssetClass } from './types';
+import { availableCash } from './cash';
 import { MARGIN_CALL } from './params';
 import { computeEquity } from './invariants';
 import { quoteSell, executeSell } from './trading';
@@ -39,7 +40,7 @@ export function checkAndExecuteMarginCall(state: SimulationState): MarginCallRes
   // Selling cannot restore lost equity. Reduce exposure by building a cash reserve.
   // Keep the recoveryTarget key so existing saved settings remain readable.
   const cashTarget = Math.max(0, Math.min(1, recoveryTarget));
-  const targetReached = () => state.cash + 1e-8 >= computeEquity(state) * cashTarget;
+  const targetReached = () => availableCash(state) + 1e-8 >= computeEquity(state) * cashTarget;
   if (targetReached()) {
     return { triggered: false, totalLiquidated: 0, assetsLiquidated: [], drawdownPct: drawdown };
   }
@@ -53,7 +54,7 @@ export function checkAndExecuteMarginCall(state: SimulationState): MarginCallRes
       def: state.assetCatalog[id],
       price: state.assets[id]?.price ?? 0,
     }))
-    .filter(p => p.def && Number.isFinite(p.price) && p.price > 0 && Number.isFinite(p.pos.quantity) && p.pos.quantity <= Number.MAX_SAFE_INTEGER)
+    .filter(p => p.def && p.def.liquidityRule !== 'D7' && Number.isFinite(p.price) && p.price > 0 && Number.isFinite(p.pos.quantity) && p.pos.quantity <= Number.MAX_SAFE_INTEGER)
     .sort((a, b) => {
       const orderA = LIQUIDATION_ORDER.indexOf(a.def.class);
       const orderB = LIQUIDATION_ORDER.indexOf(b.def.class);
@@ -66,7 +67,7 @@ export function checkAndExecuteMarginCall(state: SimulationState): MarginCallRes
   for (const { id, pos, price } of positionEntries) {
     if (targetReached()) break;
     const fullQuote = quoteSell(state, id, pos.quantity);
-    if (!fullQuote.canExecute) continue;
+    if (!fullQuote.canExecute && fullQuote.reason !== 'trade.insufficient_cash') continue;
 
     const currentEquity = computeEquity(state);
     const reachesTarget = (units: number) => {
@@ -75,7 +76,7 @@ export function checkAndExecuteMarginCall(state: SimulationState): MarginCallRes
       if (!quote.canExecute) return false;
       const net = quote.taxBreakdown?.netAfterTax ?? quote.totalCost;
       const equityAfter = currentEquity - quantity * price + net;
-      return state.cash + net + 1e-8 >= equityAfter * cashTarget;
+      return availableCash(state) + net + 1e-8 >= equityAfter * cashTarget;
     };
 
     // Exemption is monotonic, but reaching the reserve is not: crossing the
@@ -83,8 +84,8 @@ export function checkAndExecuteMarginCall(state: SimulationState): MarginCallRes
     // Use quotes so prior monthly sales, category limits and spreads stay in sync.
     const maxUnits = Math.ceil(pos.quantity);
     const ranges: [number, number][] = [[1, maxUnits]];
-    const isExempt = (units: number) => quoteSell(state, id, Math.min(units, pos.quantity)).taxBreakdown?.isExempt;
-    if (isExempt(1) && !fullQuote.taxBreakdown?.isExempt) {
+    const isExempt = (units: number) => quoteSell(state, id, Math.min(units, pos.quantity)).taxBreakdown?.exemptionReason;
+    if (isExempt(1) && !fullQuote.taxBreakdown?.exemptionReason) {
       let lo = 1;
       let hi = maxUnits;
       while (lo < hi) {

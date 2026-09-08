@@ -35,6 +35,7 @@ import { KPIChip } from '@/components/ui/KPIChip';
 import { cn } from '@/lib/utils';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import OnboardingTutorial, { openTutorial } from '@/components/game/OnboardingTutorial';
+import CashBalances from '@/components/game/CashBalances';
 import BottomNav from '@/components/game/BottomNav';
 import { loadTheme, saveTheme, type AppTheme } from '@/engine/persistence';
 import { Slider } from '@/components/ui/slider';
@@ -282,6 +283,7 @@ export default function AppLayout() {
 
         {/* Page content — extra bottom padding on mobile for BottomNav */}
         <main className="flex-1 overflow-auto p-3 sm:p-4 pb-20 md:pb-4 scrollbar-terminal">
+          <CashBalances />
           <Outlet />
         </main>
 

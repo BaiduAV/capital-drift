@@ -1,6 +1,7 @@
 // ── Trading helpers ──
 
 import type { GameState, TradeQuote } from './types';
+import { availableCash } from './cash';
 import { COSTS } from './params';
 import { calculateSellTax, applyTaxOnSell } from './taxes';
 
@@ -34,7 +35,7 @@ export function quoteBuy(state: GameState, assetId: string, quantity: number): T
   const fees = subtotal * feeRate;
   const totalCost = subtotal + fees;
 
-  if (!Number.isFinite(totalCost) || !Number.isFinite(state.cash) || totalCost > state.cash) {
+  if (!Number.isFinite(totalCost) || !Number.isFinite(state.cash) || totalCost > availableCash(state)) {
     return { assetId, quantity, unitPrice, totalCost, fees, spread: spreadRate, canExecute: false, reason: 'trade.insufficient_cash' };
   }
 
@@ -71,7 +72,7 @@ export function quoteSell(state: GameState, assetId: string, quantity: number): 
   }
 
   // CDB110 early penalty
-  if (def.id === 'CDB110') {
+  if (def.liquidityRule === 'D30_OR_PENALTY' && state.dayIndex - (pos.avgPurchaseDay ?? 0) < 30) {
     spreadRate = Math.max(spreadRate, COSTS.cdb110EarlyPenalty);
   }
 
@@ -87,8 +88,12 @@ export function quoteSell(state: GameState, assetId: string, quantity: number): 
   // Calculate tax estimate
   const taxResult = calculateSellTax(state, assetId, quantity, unitPrice);
 
+  const settlementDay = def.liquidityRule === 'D7' ? state.dayIndex + 7 : state.dayIndex;
+  const canExecute = settlementDay > state.dayIndex || availableCash(state) + totalCost - taxResult.totalTax >= -1e-8;
   return {
-    assetId, quantity, unitPrice, totalCost, fees, spread: spreadRate, canExecute: true,
+    assetId, quantity, unitPrice, totalCost, fees, spread: spreadRate, canExecute,
+    reason: canExecute ? undefined : 'trade.insufficient_cash',
+    settlementDay,
     taxBreakdown: {
       capitalGain: taxResult.capitalGain,
       irRate: taxResult.irRate,
@@ -126,10 +131,16 @@ export function executeBuy(state: GameState, quote: TradeQuote): boolean {
 export function executeSell(state: GameState, quote: TradeQuote): boolean {
   if (!quote.canExecute) return false;
   const current = quoteSell(state, quote.assetId, quote.quantity);
-  if (!current.canExecute || current.totalCost !== quote.totalCost || current.unitPrice !== quote.unitPrice) return false;
+  if (!current.canExecute || current.totalCost !== quote.totalCost || current.unitPrice !== quote.unitPrice
+    || current.taxBreakdown?.totalTax !== quote.taxBreakdown?.totalTax
+    || current.settlementDay !== quote.settlementDay) return false;
   // Apply tax (deducts from cash and updates taxState)
-  applyTaxOnSell(state, quote.assetId, quote.quantity, quote.unitPrice);
-  state.cash += quote.totalCost; // net proceeds before tax (tax already deducted by applyTaxOnSell)
+  const tax = applyTaxOnSell(state, quote.assetId, quote.quantity, quote.unitPrice);
+  if (current.settlementDay > state.dayIndex) {
+    state.cash += tax.totalTax; // Withheld from the receivable, not today's cash.
+    state.pendingSettlements ??= [];
+    state.pendingSettlements.push({ assetId: quote.assetId, amount: quote.totalCost - tax.totalTax, dueDay: current.settlementDay });
+  } else state.cash += quote.totalCost; // net proceeds before tax (tax already deducted by applyTaxOnSell)
   const pos = state.portfolio[quote.assetId]!;
   pos.quantity -= quote.quantity;
   if (pos.quantity <= 0) {
@@ -143,7 +154,7 @@ export function maxAffordableBuyQuantity(state: GameState, assetId: string): num
   const one = quoteBuy(state, assetId, 1);
   if (!one.canExecute || one.totalCost <= 0) return 0;
   let lo = 0;
-  let hi = Math.min(Number.MAX_SAFE_INTEGER, Math.floor(state.cash / one.totalCost));
+  let hi = Math.min(Number.MAX_SAFE_INTEGER, Math.floor(availableCash(state) / one.totalCost));
   while (lo < hi) {
     const mid = lo + Math.ceil((hi - lo) / 2);
     if (quoteBuy(state, assetId, mid).canExecute) lo = mid;

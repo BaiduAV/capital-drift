@@ -81,6 +81,7 @@ export function createInitialTaxState(): TaxState {
     totalIOFPaid: 0,
     accumulatedLosses: {},
     monthlySales: {},
+    monthlyResults: {},
     monthlySalesByCategory: {},
   };
 }
@@ -137,25 +138,20 @@ export function calculateSellTax(
       irAmount = taxableGain * irRate;
       break;
     }
-    case 'STOCK': {
-      // R$20k/month exemption (swing trade)
+    case 'STOCK':
+    case 'CRYPTO': {
       const monthKey = getMonthKey(state.dayIndex);
-      const currentMonthSales = taxState.monthlySalesByCategory?.[monthKey]?.[category] ?? 0;
-      const totalMonthSales = currentMonthSales + saleTotal;
-
-      if (totalMonthSales <= 20_000) {
-        isExempt = true;
-        exemptionReason = 'tax.exempt_20k';
-        irRate = 0;
-      } else {
-        irRate = 0.15; // 15% swing trade
-        // Apply loss carry-forward
-        if (capitalGain > 0) {
-          const accLoss = Math.abs(taxState.accumulatedLosses[category] ?? 0);
-          lossOffset = Math.min(accLoss, capitalGain);
-          irAmount = (capitalGain - lossOffset) * irRate;
-        }
-      }
+      const sales = (taxState.monthlySalesByCategory?.[monthKey]?.[category] ?? 0) + saleTotal;
+      const ledger = taxState.monthlyResults?.[monthKey]?.[category];
+      const openingLoss = ledger?.openingLoss ?? Math.min(0, taxState.accumulatedLosses[category] ?? 0);
+      const gain = (ledger?.gain ?? 0) + capitalGain;
+      isExempt = sales <= (category === 'STOCK' ? 20_000 : 35_000);
+      exemptionReason = isExempt ? (category === 'STOCK' ? 'tax.exempt_20k' : 'tax.exempt_35k') : undefined;
+      irRate = isExempt ? 0 : 0.15;
+      // Reconcile the entire simulated month. Losses can refund earlier withholding.
+      const due = Math.max(0, gain + openingLoss) * irRate;
+      irAmount = due - (ledger?.taxPaid ?? 0);
+      lossOffset = isExempt ? 0 : Math.min(-openingLoss, Math.max(0, gain));
       break;
     }
     case 'FII': {
@@ -178,26 +174,6 @@ export function calculateSellTax(
       }
       break;
     }
-    case 'CRYPTO': {
-      // Crypto: 15% on gains when monthly sales > R$35k
-      const monthKey = getMonthKey(state.dayIndex);
-      const currentMonthSales = taxState.monthlySalesByCategory?.[monthKey]?.[category] ?? 0;
-      const totalMonthSales = currentMonthSales + saleTotal;
-
-      if (totalMonthSales <= 35_000) {
-        isExempt = true;
-        exemptionReason = 'tax.exempt_35k';
-        irRate = 0;
-      } else {
-        irRate = 0.15;
-        if (capitalGain > 0) {
-          const accLoss = Math.abs(taxState.accumulatedLosses[category] ?? 0);
-          lossOffset = Math.min(accLoss, capitalGain);
-          irAmount = (capitalGain - lossOffset) * irRate;
-        }
-      }
-      break;
-    }
     case 'FX': {
       // Forex/Dollar: 15% on gains, R$35k exemption
       irRate = 0.15;
@@ -208,7 +184,7 @@ export function calculateSellTax(
     }
   }
 
-  irAmount = Math.max(0, irAmount);
+  if (category !== 'STOCK' && category !== 'CRYPTO') irAmount = Math.max(0, irAmount);
   iofAmount = Math.max(0, iofAmount);
   const totalTax = irAmount + iofAmount;
 
@@ -261,13 +237,22 @@ export function applyTaxOnSell(
   const monthKey = getMonthKey(state.dayIndex);
   state.taxState.monthlySales[monthKey] = (state.taxState.monthlySales[monthKey] ?? 0) + saleTotal;
 
-  // Update accumulated losses
-  if (breakdown.capitalGain < 0) {
-    // Add to accumulated losses
+  if (category === 'STOCK' || category === 'CRYPTO') {
+    state.taxState.monthlyResults ??= {};
+    const month = state.taxState.monthlyResults[monthKey] ??= {};
+    const ledger = month[category] ??= {
+      gain: 0, openingLoss: Math.min(0, state.taxState.accumulatedLosses[category] ?? 0), taxPaid: 0,
+    };
+    ledger.gain += breakdown.capitalGain;
+    ledger.taxPaid += breakdown.irAmount;
+    const exempt = categorySales[category] <= (category === 'STOCK' ? 20_000 : 35_000);
+    state.taxState.accumulatedLosses[category] = exempt
+      ? ledger.openingLoss + Math.min(0, ledger.gain)
+      : Math.min(0, ledger.openingLoss + ledger.gain);
+  } else if (breakdown.capitalGain < 0) {
     state.taxState.accumulatedLosses[category] =
-      (state.taxState.accumulatedLosses[category] ?? 0) + breakdown.capitalGain; // negative value
+      (state.taxState.accumulatedLosses[category] ?? 0) + breakdown.capitalGain;
   } else if (breakdown.lossOffset > 0) {
-    // Reduce accumulated losses by offset used
     state.taxState.accumulatedLosses[category] =
       (state.taxState.accumulatedLosses[category] ?? 0) + breakdown.lossOffset;
   }
@@ -278,6 +263,7 @@ export function applyTaxOnSell(
     if (Number(key) < currentMonth - 3) {
       delete state.taxState.monthlySales[Number(key)];
       delete state.taxState.monthlySalesByCategory[Number(key)];
+      if (state.taxState.monthlyResults) delete state.taxState.monthlyResults[Number(key)];
     }
   }
 

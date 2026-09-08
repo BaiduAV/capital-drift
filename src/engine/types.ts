@@ -82,10 +82,16 @@ export interface TaxState {
   accumulatedLosses: Partial<Record<string, number>>;
   /** Legacy mixed totals, retained for save compatibility only. */
   monthlySales: Record<number, number>;
+  reconciliationStartDay?: number;
+  monthlyResults?: Record<number, Partial<Record<'STOCK' | 'CRYPTO', {
+    gain: number; openingLoss: number; taxPaid: number;
+  }>>>;
   monthlySalesByCategory?: Record<number, Partial<Record<import('./taxes').TaxCategory, number>>>;
 }
 
 export interface GameState {
+  saveVersion?: number;
+  pendingSettlements?: { assetId: string; amount: number; dueDay: number }[];
   dayIndex: number;
   cash: number;
   portfolio: Record<string, Position>;
@@ -205,6 +211,7 @@ export interface TradeQuote {
   fees: number;
   spread: number;
   canExecute: boolean;
+  settlementDay?: number;
   reason?: string; // i18n key if can't execute
   // Tax fields (sell only)
   taxBreakdown?: {
