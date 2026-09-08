@@ -1,3 +1,4 @@
+import { expectedInflation } from '@/engine/monetaryPolicy';
 import { annualToDaily, simulatedCDI } from '@/engine/financialCalendar';
 import { useMemo, useRef, useEffect, useState } from 'react';
 import { useGame } from '@/context/GameContext';
@@ -59,8 +60,8 @@ const regimeGlowColors: Record<RegimeId, string> = {
 
 const tooltips = {
   'pt-BR': {
-    selic: 'Taxa básica de juros da economia. Afeta o rendimento da renda fixa e o custo de crédito. Selic alta favorece RF, baixa favorece ações.',
-    ipca: 'Índice de inflação oficial. Corrói o poder de compra. Ativos IPCA+ protegem contra inflação, ações sofrem com inflação alta.',
+    selic: 'Selic meta anual, constante entre decisões do Copom. Decisões simuladas entram em vigor no próximo dia útil.',
+    ipca: 'Inflação simulada acumulada por composição das últimas 12 taxas mensais. Atualiza no primeiro pregão após o fechamento do mês.',
     usd: 'Câmbio dólar/real. Sobe em crises e fuga de capitais. Impacta empresas exportadoras (positivo) e importadoras (negativo).',
     activity: 'Crescimento econômico anualizado. Atividade forte impulsiona lucros e ações. Recessão pressiona ativos de risco.',
     risk: 'Índice de risco-país (0-100). Mede a percepção de risco do mercado. Alto risco = juros maiores e pressão em ativos.',
@@ -69,8 +70,8 @@ const tooltips = {
     drawdown: 'Queda máxima desde o pico. Mede o risco realizado da carteira. Acima de 10% é preocupante.',
   },
   en: {
-    selic: 'Base interest rate. Affects fixed income yields and credit costs. High rates favor bonds, low rates favor equities.',
-    ipca: 'Official inflation index. Erodes purchasing power. IPCA+ bonds hedge inflation; stocks suffer under high inflation.',
+    selic: 'Annual Selic target, unchanged between Copom decisions. Simulated decisions take effect next business day.',
+    ipca: 'Simulated inflation compounded over the last 12 monthly observations. Updated on the first session after month-end.',
     usd: 'USD/BRL exchange rate. Rises during crises and capital flight. Impacts exporters (positive) and importers (negative).',
     activity: 'Annualized economic growth. Strong activity boosts corporate earnings and equities. Recession pressures risk assets.',
     risk: 'Country risk index (0-100). Measures market risk perception. High risk = higher rates and pressure on assets.',
@@ -109,17 +110,29 @@ export default function MacroPanel() {
     <TooltipProvider delayDuration={200}>
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-1 overflow-hidden">
         <MacroItem
-          label="SELIC"
-          value={formatPct(macro.baseRateAnnual)}
+          label={locale === 'pt-BR' ? 'Selic meta' : 'Selic target'}
+          value={formatPct(macro.baseRateAnnual) + ' a.a.'}
           trend={<TrendArrow current={macro.baseRateAnnual} previous={prevMacro?.baseRateAnnual} />}
           tooltip={tt.selic}
         />
         <MacroItem
-          label="IPCA"
+          label="IPCA 12m"
           value={formatPct(macro.inflationAnnual)}
           trend={<TrendArrow current={macro.inflationAnnual} previous={prevMacro?.inflationAnnual} />}
           tooltip={tt.ipca}
         />
+        {macro.dynamics && <>
+          <MacroItem label={locale === 'pt-BR' ? 'IPCA mês' : 'IPCA month'} value={formatPct(macro.dynamics.inflationMonths[11])}
+            tooltip={`${locale === 'pt-BR' ? 'Mês de referência' : 'Reference month'}: ${macro.dynamics.inflationReferenceMonth}. ${locale === 'pt-BR' ? 'Apuração simulada.' : 'Simulated observation.'}`} />
+          <MacroItem label={locale === 'pt-BR' ? 'Inflação esperada' : 'Expected inflation'} value={formatPct(expectedInflation(state)) + ' a.a.'}
+            tooltip={locale === 'pt-BR' ? 'Tendência anualizada do cenário. Pode mudar diariamente e orientar a decisão de juros; não é IPCA realizado nem pesquisa Focus.' : 'Annualized scenario trend. May change daily and guide policy; not realized CPI or a Focus survey.'} />
+          <p className="col-span-2 sm:col-span-4 text-[10px] text-muted-foreground">
+            {locale === 'pt-BR' ? 'Próximo Copom' : 'Next Copom'}: {macro.dynamics.nextPolicyDate}.
+            {' '}{macro.dynamics.pendingPolicy && `${locale === 'pt-BR' ? 'Selic anunciada' : 'Announced Selic'}: ${formatPct(macro.dynamics.pendingPolicy.rate)}, ${locale === 'pt-BR' ? 'vigente em' : 'effective'} ${macro.dynamics.pendingPolicy.effectiveDate}. `}
+            {Number(macro.dynamics.nextPolicyDate.slice(0, 4)) > 2027 && (locale === 'pt-BR' ? 'Calendário futuro ilustrativo. ' : 'Illustrative future schedule. ')}
+            {macro.dynamics.estimatedHistoryMonths > 0 && (locale === 'pt-BR' ? `Histórico inicial estimado: ${macro.dynamics.estimatedHistoryMonths} meses ainda compõem o IPCA 12m.` : `Estimated starting history: ${macro.dynamics.estimatedHistoryMonths} months still included in trailing CPI.`)}
+          </p>
+        </>}
         <MacroItem
           label="USD/BRL"
           value={macro.fxUSDBRL.toFixed(2)}

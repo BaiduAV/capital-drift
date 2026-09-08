@@ -2,6 +2,7 @@
 
 import type { GameState, SimulationState, EventCard, EventType, PersistentEvent, DayContext } from './types';
 import type { RNG } from './rng';
+import { initializeMonetaryPolicy } from './monetaryPolicy';
 import { EVENT_BASE_PROB, DOUBLE_EVENT_PROB, EVENT_IMPACTS } from './params';
 
 function randRange(rng: RNG, range: [number, number] | number[]): number {
@@ -30,8 +31,6 @@ function generateSingleEvent(state: GameState, rng: RNG): EventCard | null {
   const regime = state.regime;
 
   const weights: [EventType, number][] = [
-    ['RATE_HIKE', regime === 'BEAR' || regime === 'CRISIS' ? 3 : 1],
-    ['RATE_CUT', regime === 'BULL' || regime === 'CALM' ? 3 : 1],
     ['INFLATION_UP', regime === 'CRISIS' ? 2 : 1],
     ['INFLATION_DOWN', regime === 'CALM' ? 2 : 1],
     ['SECTOR_BOOM', regime === 'BULL' ? 3 : 1],
@@ -62,7 +61,7 @@ function generateSingleEvent(state: GameState, rng: RNG): EventCard | null {
 
   const totalWeight = weights.reduce((s, [, w]) => s + w, 0);
   let roll = rng.next() * totalWeight;
-  let picked: EventType = 'RATE_HIKE';
+  let picked: EventType = 'INFLATION_UP';
   for (const [type, w] of weights) {
     roll -= w;
     if (roll <= 0) { picked = type; break; }
@@ -74,28 +73,6 @@ function generateSingleEvent(state: GameState, rng: RNG): EventCard | null {
   let vars: Record<string, string> | undefined;
 
   switch (picked) {
-    case 'RATE_HIKE': {
-      const delta = randRange(rng, EVENT_IMPACTS.rateHike.rateDelta as [number, number]);
-      macroImpact = { baseRateDelta: delta };
-      const shock = randRange(rng, EVENT_IMPACTS.rateHike.equityShock as [number, number]);
-      for (const [id, def] of Object.entries(state.assetCatalog)) {
-        if (def.corrGroup === 'EQUITY') impact[id] = shock;
-        if (!def.fixedIncome && (def.class === 'RF_PRE' || def.class === 'RF_IPCA')) impact[id] = shock * 0.8;
-      }
-      magnitude = Math.abs(delta);
-      break;
-    }
-    case 'RATE_CUT': {
-      const delta = randRange(rng, EVENT_IMPACTS.rateCut.rateDelta as [number, number]);
-      macroImpact = { baseRateDelta: delta };
-      const shock = randRange(rng, EVENT_IMPACTS.rateCut.equityShock as [number, number]);
-      for (const [id, def] of Object.entries(state.assetCatalog)) {
-        if (def.corrGroup === 'EQUITY') impact[id] = shock;
-        if (!def.fixedIncome && (def.class === 'RF_PRE' || def.class === 'RF_IPCA')) impact[id] = shock * 0.8;
-      }
-      magnitude = Math.abs(delta);
-      break;
-    }
     case 'INFLATION_UP': {
       const delta = randRange(rng, EVENT_IMPACTS.inflationUp.inflDelta as [number, number]);
       macroImpact = { inflationDelta: delta };
@@ -221,7 +198,7 @@ function generateSingleEvent(state: GameState, rng: RNG): EventCard | null {
   }
 
   const typeToKey: Record<EventType, string> = {
-    RATE_HIKE: 'rate_hike', RATE_CUT: 'rate_cut',
+    RATE_HIKE: 'rate_hike', RATE_CUT: 'rate_cut', RATE_HOLD: 'rate_hold', INFLATION_RELEASE: 'inflation_release',
     INFLATION_UP: 'inflation_up', INFLATION_DOWN: 'inflation_down',
     SECTOR_BOOM: 'sector_boom', SECTOR_BUST: 'sector_bust',
     CRYPTO_HACK: 'crypto_hack', CRYPTO_EUPHORIA_EVENT: 'crypto_euphoria',
@@ -291,17 +268,18 @@ export function rollEvents(state: SimulationState, ctx: DayContext): { active: P
 }
 
 export function applyEventMacro(state: GameState, events: PersistentEvent[]): void {
+  initializeMonetaryPolicy(state);
   for (const ev of events) {
     const impact = ev.card.macroImpact;
     if (!impact) continue;
 
     if (impact.baseRateDelta) {
-      state.macro.baseRateAnnual = Math.max(0.02, Math.min(0.20,
-        state.macro.baseRateAnnual + impact.baseRateDelta));
+      state.macro.dynamics!.policyExpectationAdjustment = Math.max(-0.03, Math.min(0.03,
+        state.macro.dynamics!.policyExpectationAdjustment + impact.baseRateDelta));
     }
     if (impact.inflationDelta) {
-      state.macro.inflationAnnual = Math.max(0.00, Math.min(0.12,
-        state.macro.inflationAnnual + impact.inflationDelta));
+      state.macro.dynamics!.inflationExpectationAnnual = Math.max(-0.02, Math.min(0.15,
+        state.macro.dynamics!.inflationExpectationAnnual + impact.inflationDelta));
     }
     if (impact.fxDelta) {
       state.macro.fxUSDBRL = Math.max(3.5, Math.min(7.5,

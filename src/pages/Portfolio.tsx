@@ -1,3 +1,4 @@
+import { positionMarketValue, positionUnitValue } from '@/engine/valuation';
 import { useState, useMemo } from 'react';
 import { useGame } from '@/context/GameContext';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -48,14 +49,14 @@ export default function Portfolio() {
     return Object.entries(state.portfolio).map(([id, pos]) => {
       const asset = state.assets[id];
       const def = state.assetCatalog[id];
-      const marketValue = pos.quantity * asset.price;
+      const marketValue = positionMarketValue(state, id);
       const costBasis = pos.quantity * pos.avgPrice;
       const pnl = marketValue - costBasis;
       const pnlPct = costBasis > 0 ? pnl / costBasis : 0;
       const weight = equity > 0 ? marketValue / equity : 0;
       return { id, def, pos, asset, marketValue, costBasis, pnl, pnlPct, weight };
     }).sort((a, b) => b.marketValue - a.marketValue);
-  }, [state.portfolio, state.assets, state.assetCatalog, equity]);
+  }, [state, equity]);
 
   const investedTotal = positions.reduce((s, p) => s + p.marketValue, 0);
   const cashWeight = equity > 0 ? state.cash / equity : 0;
@@ -237,7 +238,7 @@ export default function Portfolio() {
                   render: p => (
                     <div className="flex flex-col items-end font-mono">
                       <span className="text-xs text-foreground">{formatCompact(p.marketValue)}</span>
-                      <span className="text-[10px] text-muted-foreground">{formatCurrency(p.asset.price)}/un</span>
+                      <span className="text-[10px] text-muted-foreground">{formatCurrency(positionUnitValue(state, p.id))}/un</span>
                     </div>
                   )
                 },

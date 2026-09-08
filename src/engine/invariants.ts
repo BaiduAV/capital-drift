@@ -1,6 +1,7 @@
 // ── Invariant checks ──
 
 import type { GameState } from './types';
+import { positionMarketValue } from './valuation';
 
 export function checkInvariants(state: GameState): string[] {
   const errors: string[] = [];
@@ -25,7 +26,7 @@ export function computeEquity(state: GameState): number {
   for (const [assetId, pos] of Object.entries(state.portfolio)) {
     const asset = state.assets[assetId];
     if (asset) {
-      total += pos.quantity * asset.price - (pos.fixedIncomeLots ?? []).reduce((sum, l) => sum + l.custodyAccrued, 0);
+      total += positionMarketValue(state, assetId) - (pos.fixedIncomeLots ?? []).reduce((sum, l) => sum + l.custodyAccrued, 0);
     }
   }
   return total;

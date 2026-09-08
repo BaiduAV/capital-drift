@@ -2,7 +2,7 @@
 
 import type { GameState, TradeQuote } from './types';
 import { availableCash } from './cash';
-import { quoteFixedIncomeSell, executeFixedIncomeSell, fixedIncomeLots, recordFixedIncomeBuy } from './fixedIncome';
+import { quoteFixedIncomeSell, executeFixedIncomeSell, fixedIncomeLots, recordFixedIncomeBuy, fixedIncomeOfferRate } from './fixedIncome';
 import { COSTS } from './params';
 import { calculateSellTax, applyTaxOnSell } from './taxes';
 
@@ -44,7 +44,7 @@ export function quoteBuy(state: GameState, assetId: string, quantity: number): T
     return { assetId, quantity, unitPrice, totalCost, fees, spread: spreadRate, canExecute: false, reason: 'trade.insufficient_cash' };
   }
 
-  return { assetId, quantity, unitPrice, totalCost, fees, spread: spreadRate, canExecute: true };
+  return { assetId, quantity, unitPrice, totalCost, fees, spread: spreadRate, canExecute: true, fixedIncomeAnnualRate: fixedIncomeOfferRate(state, assetId) };
 }
 
 export function quoteSell(state: GameState, assetId: string, quantity: number): TradeQuote {
@@ -119,7 +119,8 @@ export function quoteSell(state: GameState, assetId: string, quantity: number): 
 export function executeBuy(state: GameState, quote: TradeQuote): boolean {
   if (!quote.canExecute) return false;
   const current = quoteBuy(state, quote.assetId, quote.quantity);
-  if (!current.canExecute || current.totalCost !== quote.totalCost || current.unitPrice !== quote.unitPrice) return false;
+  if (!current.canExecute || current.totalCost !== quote.totalCost || current.unitPrice !== quote.unitPrice
+    || current.fixedIncomeAnnualRate !== quote.fixedIncomeAnnualRate) return false;
   const previousLots = state.assetCatalog[quote.assetId].fixedIncome ? fixedIncomeLots(state, quote.assetId) : [];
   state.cash -= quote.totalCost;
   const pos = state.portfolio[quote.assetId] ?? { quantity: 0, avgPrice: 0, avgPurchaseDay: state.dayIndex };

@@ -41,6 +41,9 @@ export interface FixedIncomeTerms {
 }
 
 export interface FixedIncomeLot {
+  fixedAnnualRate?: number;
+  bookUnitValue?: number;
+  valuationDay?: number;
   quantity: number;
   unitCost: number;
   purchaseDay: number;
@@ -50,6 +53,7 @@ export interface FixedIncomeLot {
 }
 
 export interface FixedIncomeInstrument {
+  curveYieldAdjustment?: number;
   creditSpreadAdjustment?: number;
   volumeDay?: number;
   volumeSold?: number;
@@ -102,11 +106,27 @@ export interface CreditWatchState {
 }
 
 export interface MacroState {
+  dynamics?: MacroDynamics;
   baseRateAnnual: number;
   inflationAnnual: number;
   fxUSDBRL: number;
   activityAnnual: number;
   riskIndex: number;
+}
+
+export interface MacroDynamics {
+  inflationExpectationAnnual: number;
+  laggedRealRate: number;
+  policyExpectationAdjustment: number;
+  nextPolicyDate: string;
+  pendingPolicy?: { rate: number; effectiveDate: string };
+  lastPolicy?: { date: string; rate: number; effectiveDate: string };
+  inflationMonths: number[];
+  inflationReferenceMonth: string;
+  inflationCurrentMonth: string;
+  inflationMonthFactor: number;
+  estimatedHistoryMonths: number;
+  inflationStep?: { from: string; to: string; factor: number };
 }
 
 
@@ -130,6 +150,7 @@ export interface TaxState {
 }
 
 export interface GameState {
+  yieldCurves?: YieldCurveState;
   saveVersion?: number;
   calendarDate?: string;
   fixedIncomeMigrationDay?: number;
@@ -186,7 +207,7 @@ export interface PersistentEvent {
 
 export type SimulationState = GameState;
 
-export type EventType = 'RATE_HIKE' | 'RATE_CUT' | 'INFLATION_UP' | 'INFLATION_DOWN' | 'SECTOR_BOOM' | 'SECTOR_BUST' | 'CRYPTO_HACK' | 'CRYPTO_EUPHORIA_EVENT' | 'CRYPTO_RUG_PULL' | 'CREDIT_DOWNGRADE' | 'FX_SHOCK' | 'FISCAL_STRESS' | 'COMMODITY_BOOM' | 'SECTOR_CRASH' | 'FLASH_CRASH' | 'MARGIN_CALL' | 'IPO_ANNOUNCED' | 'IPO_BOOKBUILDING' | 'IPO_LISTED';
+export type EventType = 'RATE_HIKE' | 'RATE_CUT' | 'RATE_HOLD' | 'INFLATION_RELEASE' | 'INFLATION_UP' | 'INFLATION_DOWN' | 'SECTOR_BOOM' | 'SECTOR_BUST' | 'CRYPTO_HACK' | 'CRYPTO_EUPHORIA_EVENT' | 'CRYPTO_RUG_PULL' | 'CREDIT_DOWNGRADE' | 'FX_SHOCK' | 'FISCAL_STRESS' | 'COMMODITY_BOOM' | 'SECTOR_CRASH' | 'FLASH_CRASH' | 'MARGIN_CALL' | 'IPO_ANNOUNCED' | 'IPO_BOOKBUILDING' | 'IPO_LISTED';
 
 export interface EventCard {
   type: EventType;
@@ -250,6 +271,7 @@ export interface PeriodResult {
 }
 
 export interface TradeQuote {
+  fixedIncomeAnnualRate?: number;
   assetId: string;
   quantity: number;
   unitPrice: number;
@@ -272,4 +294,19 @@ export interface TradeQuote {
     exemptionReason?: string;
     lossOffset: number;
   };
+}
+
+export interface YieldCurvePoint {
+  businessDays: number;
+  annualRate: number;
+}
+
+export interface YieldCurveState {
+  nominal: YieldCurvePoint[];
+  real: YieldCurvePoint[];
+  selicSpread: YieldCurvePoint[];
+  referencePolicyRate: number;
+  referenceInflationExpectation: number;
+  referenceRiskIndex: number;
+  referenceActivity: number;
 }

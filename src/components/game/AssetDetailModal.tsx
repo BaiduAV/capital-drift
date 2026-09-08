@@ -1,3 +1,4 @@
+import { positionMarketValue, positionUnitValue } from '@/engine/valuation';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
@@ -109,8 +110,8 @@ export default function AssetDetailModal({ assetId, onClose }: Props) {
               <InfoRow label={locale === 'pt-BR' ? 'Posição' : 'Position'} value={String(position.quantity)} />
               <InfoRow
                 label="P&L"
-                value={formatCurrency((asset.price - position.avgPrice) * position.quantity)}
-                className={(asset.price - position.avgPrice) >= 0 ? 'price-up' : 'price-down'}
+                value={formatCurrency(positionMarketValue(state, assetId) - position.avgPrice * position.quantity)}
+                className={(positionUnitValue(state, assetId) - position.avgPrice) >= 0 ? 'price-up' : 'price-down'}
               />
             </>
           )}

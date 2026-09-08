@@ -1,7 +1,8 @@
 // ── LocalStorage persistence ──
 
 import type { GameState } from './types';
-import { initializeFixedIncome } from './fixedIncome';
+import { initializeMonetaryPolicy } from './monetaryPolicy';
+import { initializeFixedIncome, migrateFixedIncomeCurves } from './fixedIncome';
 import { annualToDaily, simulatedCDI } from './financialCalendar';
 import { saveSchema } from './saveSchema';
 import { normalizeReservations } from './cash';
@@ -55,8 +56,10 @@ function decode(raw: string): GameState {
       state.taxState.monthlyResults = {};
     }
     state.pendingSettlements ??= [];
-    initializeFixedIncome(state, state.saveVersion !== 2);
-    state.saveVersion = 2;
+    initializeFixedIncome(state, (state.saveVersion ?? 1) < 2);
+    initializeMonetaryPolicy(state);
+    if ((state.saveVersion ?? 1) < 4) migrateFixedIncomeCurves(state);
+    state.saveVersion = 4;
     return state;
 }
 
@@ -86,7 +89,7 @@ export function loadGame(): GameState | null {
 
 /** Never replace unreadable data unless the player explicitly requests recovery/reset. */
 export function saveGame(state: GameState, replaceInvalid = false): SaveResult {
-  const candidate = { ...state, saveVersion: 2 };
+  const candidate = { ...state, saveVersion: 4 };
   if (!saveSchema.safeParse(candidate).success) return { ok: false, reason: 'invalid' };
   try {
     const raw = localStorage.getItem(STORAGE_KEY);

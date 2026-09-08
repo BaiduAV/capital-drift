@@ -1,3 +1,4 @@
+import { positionMarketValue, positionUnitValue } from '@/engine/valuation';
 import { useState, useMemo, useEffect, useCallback, useRef } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useGame } from '@/context/GameContext';
@@ -251,8 +252,8 @@ export default function Trade() {
                 <span className="text-foreground font-semibold">{position.quantity}</span>
               </div>
               {(() => {
-                const pnl = (selectedAsset.price - position.avgPrice) * position.quantity;
-                const pnlPct = (selectedAsset.price / position.avgPrice - 1);
+                const pnl = positionMarketValue(state, assetId) - position.avgPrice * position.quantity;
+                const pnlPct = (positionUnitValue(state, assetId) / position.avgPrice - 1);
                 const holdingDays = Math.max(0, state.dayIndex - (position.avgPurchaseDay ?? state.dayIndex));
                 return (
                   <>
@@ -601,8 +602,8 @@ export default function Trade() {
                 let pnl: number | null = null;
                 let pnlPct: number | null = null;
                 if (a.position && a.position.avgPrice > 0) {
-                  pnl = (a.assetState.price - a.position.avgPrice) * a.position.quantity;
-                  pnlPct = a.assetState.price / a.position.avgPrice - 1;
+                  pnl = positionMarketValue(state, a.id) - a.position.avgPrice * a.position.quantity;
+                  pnlPct = positionUnitValue(state, a.id) / a.position.avgPrice - 1;
                 }
 
                 return (
