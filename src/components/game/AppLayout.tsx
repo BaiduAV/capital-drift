@@ -70,6 +70,7 @@ export default function AppLayout() {
   const [mcThreshold, setMcThreshold] = useState(() => Math.round(state.marginCallSettings.drawdownThreshold * 100));
   const [mcRecovery, setMcRecovery] = useState(() => Math.round(state.marginCallSettings.recoveryTarget * 100));
   const location = useLocation();
+  const contentRef = useRef<HTMLElement>(null);
 
   // Apply theme class to document
   useEffect(() => {
@@ -83,9 +84,10 @@ export default function AppLayout() {
     saveTheme(next);
   }, [theme]);
 
-  // Close mobile menu on navigation
+  // Close the drawer and reset the content scroll on navigation.
   useEffect(() => {
     setMobileOpen(false);
+    if (contentRef.current) contentRef.current.scrollTop = 0;
   }, [location.pathname]);
 
   const formatCurrency = (val: number) =>
@@ -99,8 +101,8 @@ export default function AppLayout() {
   const totalReturn = (equity - 5000) / 5000;
 
   const sidebarContent = (
-    <>
-      <nav className="flex-1 py-2 space-y-0.5 px-1.5">
+    <div className="flex min-h-0 flex-1 flex-col overflow-y-auto overscroll-contain scrollbar-terminal">
+      <nav className="flex-1 shrink-0 py-2 space-y-0.5 px-1.5">
         {navItems.map((item) => (
           <NavLink
             key={item.path}
@@ -115,7 +117,7 @@ export default function AppLayout() {
         ))}
       </nav>
 
-      <div className="border-t border-sidebar-border p-2 space-y-1">
+      <div className="shrink-0 border-t border-sidebar-border p-2 space-y-1">
         <Button
           variant="ghost"
           size="sm"
@@ -162,7 +164,7 @@ export default function AppLayout() {
           {(!collapsed || mobileOpen) && <span>{locale === 'pt-BR' ? 'Novo Jogo' : 'New Game'}</span>}
         </Button>
       </div>
-    </>
+    </div>
   );
 
   const handleNewGame = () => {
@@ -181,13 +183,13 @@ export default function AppLayout() {
   };
 
   return (
-    <div className="flex min-h-screen w-full bg-background">
+    <div className="flex h-dvh w-full overflow-hidden bg-background">
       {/* Desktop sidebar */}
       <aside className={cn(
-        "hidden md:flex flex-col border-r border-border bg-sidebar transition-all duration-200",
+        "hidden md:flex min-h-0 shrink-0 flex-col overflow-hidden border-r border-border bg-sidebar transition-all duration-200",
         collapsed ? "w-14" : "w-52"
       )}>
-        <div className="flex items-center gap-2 border-b border-border px-3 py-3">
+        <div className="flex shrink-0 items-center gap-2 border-b border-border px-3 py-3">
           {!collapsed && (
             <span className="font-sans text-sm font-bold tracking-wider text-primary terminal-glow">
               PATRIMÔNIO
@@ -216,10 +218,10 @@ export default function AppLayout() {
 
       {/* Mobile drawer */}
       <aside className={cn(
-        "fixed inset-y-0 left-0 z-50 flex flex-col w-56 bg-sidebar border-r border-border transition-transform duration-200 md:hidden",
+        "fixed inset-y-0 left-0 z-50 flex h-dvh flex-col overflow-hidden w-56 bg-sidebar border-r border-border transition-transform duration-200 md:hidden",
         mobileOpen ? "translate-x-0" : "-translate-x-full"
       )}>
-        <div className="flex items-center justify-between border-b border-border px-3 py-3">
+        <div className="flex shrink-0 items-center justify-between border-b border-border px-3 py-3">
           <span className="font-sans text-sm font-bold tracking-wider text-primary terminal-glow">
             PATRIMÔNIO
           </span>
@@ -237,9 +239,9 @@ export default function AppLayout() {
       </aside>
 
       {/* Main content */}
-      <div className="flex-1 flex flex-col min-w-0">
+      <div className="flex-1 flex flex-col min-h-0 min-w-0">
         {/* Top bar */}
-        <header className="flex items-center justify-between border-b border-border px-3 py-2 bg-card gap-2">
+        <header className="flex shrink-0 flex-wrap items-center justify-between border-b border-border px-3 py-2 bg-card gap-2">
           {/* Left: hamburger (mobile) + regime + day */}
           <div className="flex items-center gap-2 sm:gap-4 min-w-0">
             <Button
@@ -287,13 +289,13 @@ export default function AppLayout() {
         </header>
 
         {/* Page content — extra bottom padding on mobile for BottomNav */}
-        <main className="flex-1 overflow-auto p-3 sm:p-4 pb-20 md:pb-4 scrollbar-terminal">
+        <main ref={contentRef} tabIndex={0} className="min-h-0 flex-1 overflow-auto overscroll-contain p-3 sm:p-4 pb-20 md:pb-4 scrollbar-terminal">
           <CashBalances />
           <Outlet />
         </main>
 
         {/* Footer with seed */}
-        <footer className="flex items-center justify-center border-t border-border/50 px-3 py-1.5 bg-card/50">
+        <footer className="mb-[calc(3.5rem+env(safe-area-inset-bottom))] md:mb-0 flex shrink-0 items-center justify-center border-t border-border/50 px-3 py-1.5 bg-card/50">
           <button
             className="text-[10px] text-muted-foreground/50 font-mono hover:text-muted-foreground transition-colors cursor-pointer rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background"
             onClick={() => {
