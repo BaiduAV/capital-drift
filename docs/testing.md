@@ -43,3 +43,17 @@ O V8 inclui arquivos de produção que nenhum teste importou. Exclui testes, fix
 Além do piso global, há pisos específicos para negociação, renda fixa, margin call, política monetária, curvas, estatísticas e GameContext. Cada um dos cinco módulos financeiros tem sua própria entrada de limite, impedindo que a cobertura de um compense a de outro. Os valores exatos ficam em `vitest.config.ts`. Não reduza os pisos para acomodar uma regressão. Ao comparar relatórios, mantenha os mesmos filtros: o percentual global não é comparável a auditorias que incluam os componentes de UI base.
 
 Os testes em jsdom verificam estado e interações, mas não substituem validação em navegador de layout responsivo, gestos reais, áudio, instalação PWA, service worker e atualização offline. Essas continuam sendo verificações de release.
+
+## Regressão de rolagem em navegador
+
+Com a aplicação servida, execute `verification/verify_viewport.cjs` com Playwright Core e Chromium disponíveis. Para instalar as ferramentas separadamente das dependências da aplicação:
+
+```sh
+npm install --prefix /tmp/capital-drift-browser playwright-core
+/tmp/capital-drift-browser/node_modules/.bin/playwright-core install chromium
+NODE_PATH=/tmp/capital-drift-browser/node_modules node verification/verify_viewport.cjs
+```
+
+`BASE_URL` permite apontar para outro servidor/preview; `CHROMIUM_EXECUTABLE_PATH` permite usar um Chromium já instalado. O script testa seis rotas em cinco dimensões, ausência de rolagem externa, rolagem interna, teclado, menu recolhido, mudança de rota e diálogos. Ele usa um contexto de navegador isolado, sem acessar o save do usuário.
+
+O `main` precisa ser um ancestral posicionado (`relative`): elementos absolutos, inclusive textos `sr-only`, devem permanecer contidos na área rolável. Sem isso, podem aumentar o documento mesmo com `overflow-hidden` no layout e criar uma área vazia abaixo dele.

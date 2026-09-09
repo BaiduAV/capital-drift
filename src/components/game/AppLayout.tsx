@@ -289,7 +289,7 @@ export default function AppLayout() {
         </header>
 
         {/* Page content — extra bottom padding on mobile for BottomNav */}
-        <main ref={contentRef} tabIndex={0} className="min-h-0 flex-1 overflow-auto overscroll-contain p-3 sm:p-4 pb-20 md:pb-4 scrollbar-terminal">
+        <main ref={contentRef} tabIndex={0} className="relative min-h-0 flex-1 overflow-auto overscroll-contain p-3 sm:p-4 pb-20 md:pb-4 scrollbar-terminal">
           <CashBalances />
           <Outlet />
         </main>
