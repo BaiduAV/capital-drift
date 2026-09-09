@@ -165,4 +165,4 @@ it('refreshes dividend notification language when the locale changes after mount
   } finally {
     success.mockRestore();
   }
-});
+}, 15_000); // Two locale changes and real dashboard advances under V8 coverage on CI.
